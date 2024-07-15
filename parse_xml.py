@@ -4,14 +4,13 @@ from collections import defaultdict
 from antlr4.tree.Tree import TerminalNodeImpl
 
 if __name__ is not None and "." in __name__:
-    from .XMLLexer import XMLLexer
+    from .DAO_XML_lexer import DAO_XML_lexer
     from .XMLParser import XMLParser
     from .XMLParserVisitor import XMLParserVisitor
 else:
-    from XMLLexer import XMLLexer
+    from DAO_XML_lexer import DAO_XML_lexer
     from XMLParser import XMLParser
     from XMLParserVisitor import XMLParserVisitor
-
 
 class DAO:
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
@@ -215,7 +214,7 @@ def traverse(tree, rule_names, indent=0):
 
 def main(argv):
     input_stream = FileStream(argv[1])
-    lexer = XMLLexer(input_stream)
+    lexer = DAO_XML_lexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = XMLParser(stream)
     tree = parser.document()

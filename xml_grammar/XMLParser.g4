@@ -2,7 +2,7 @@
 parser grammar XMLParser;
 
 options {
-    tokenVocab = XMLLexer;
+    tokenVocab = DAO_XML_lexer;
 }
 
 document
