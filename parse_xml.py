@@ -1,83 +1,22 @@
+'''
 import sys
 from antlr4 import *
 from collections import defaultdict
 from antlr4.tree.Tree import TerminalNodeImpl
-
+'''
+from collections import defaultdict
+from antlr4 import *
+from antlr4.tree.Tree import TerminalNodeImpl
 if __name__ is not None and "." in __name__:
-    from .DAO_XML_lexer import DAO_XML_lexer
-    from .XMLParser import XMLParser
+#    from .XMLLexer import XMLLexer
+#    from .XMLParser import XMLParser
     from .XMLParserVisitor import XMLParserVisitor
 else:
-    from DAO_XML_lexer import DAO_XML_lexer
-    from XMLParser import XMLParser
+#    from XMLLexer import XMLLexer
+#    from XMLParser import XMLParser
     from XMLParserVisitor import XMLParserVisitor
-
-class DAO:
-    def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
-        self.dao_id = dao_id
-        self.dao_name = dao_name
-        self.mission_statement = mission_statement
-        self.hierarchical_inheritance = hierarchical_inheritance
-        self.roles = []
-        self.committees = []
-
-    def add_role(self, role):
-        self.roles.append(role)
-
-    def add_committee(self, committee):
-        self.committees.append(committee)
-
-    def __str__(self):
-        return f'DAO(dao_id={self.dao_id}, dao_name={self.dao_name}, mission_statement={self.mission_statement}, hierarchical_inheritance={self.hierarchical_inheritance}, roles={self.roles}, committees={self.committees})'
-
-
-class Role:
-    def __init__(self, role_id, role_name, role_assignment_method, agent_type):
-        self.role_id = role_id
-        self.role_name = role_name
-        self.role_assignment_method = role_assignment_method
-        self.agent_type = agent_type
-        self.permissions = []
-        self.controllers = []
-
-    def add_permission(self, permission):
-        self.permissions.append(permission)
-
-    def add_controller(self, controller_id):
-        self.controllers.append(controller_id)
-
-    def __str__(self):
-        return f'Role(role_id={self.role_id}, role_name={self.role_name}, role_assignment_method={self.role_assignment_method}, agent_type={self.agent_type}, permissions={self.permissions}, controllers={self.controllers})'
-
-
-class Committee:
-    def __init__(self, committee_id, committee_description, n_agent_min, n_agent_max, appointment_method):
-        self.committee_id = committee_id
-        self.committee_description = committee_description
-        self.n_agent_min = n_agent_min
-        self.n_agent_max = n_agent_max
-        self.appointment_method = appointment_method
-        self.permissions = []
-        self.controllers = []
-
-    def add_permission(self, permission):
-        self.permissions.append(permission)
-
-    def add_controller(self, controller_id):
-        self.controllers.append(controller_id)
-
-    def __str__(self):
-        return f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, n_agent_min={self.n_agent_min}, n_agent_max={self.n_agent_max}, appointment_method={self.appointment_method}, permissions={self.permissions}, controllers={self.controllers})'
-
-
-class Permission:
-    def __init__(self, permission_id, allowed_action, permission_type):
-        self.permission_id = permission_id
-        self.allowed_action = allowed_action
-        self.permission_type = permission_type
-
-    def __str__(self):
-        return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type})'
+from DAOclasses import*
+from translator import*
 
 
 class DAO_ML_Visitor(XMLParserVisitor):
@@ -87,6 +26,7 @@ class DAO_ML_Visitor(XMLParserVisitor):
         self.committees = {}
         self.permissions = {}
 
+# dictionaries storing relations to be associated to roles and committees during the visit with role as key and list of related ids as values
         self.aggregations = defaultdict(list)
         self.associations = defaultdict(list)
         self.control_relations = defaultdict(list)
@@ -100,26 +40,40 @@ class DAO_ML_Visitor(XMLParserVisitor):
         self.daos[dao_id] = dao
         print(f'DAO created with ID: {dao_id}')
         return_var = self.visitChildren(ctx)
+
         # Assign permissions to roles and committees in DAO based on association relations
         for permission in self.permissions:
             for role in self.roles.values():
                 if permission in self.associations[role.role_id]:
-                    role.add_permission(permission)
-                    print(f'Permission {permission} assigned to Role {role.role_id} at the end of the execution \n')
+                    role.add_permission(self.permissions[permission])
+                    print(f'Permission {permission} assigned to Role {role.role_id} \n')
             for committee in self.committees.values():
                 if permission in self.associations[committee.committee_id]:
-                    committee.add_permission(permission)
-                    print(f'Permission {permission} assigned to Committee {committee.committee_id} at the end of the execution \n')
-        print(f'End of permission assignment execution and visiting DAO \n')
+                    committee.add_permission(self.permissions[permission])
+                    print(f'Permission {permission} assigned to Committee {committee.committee_id}\n')
+       # print(f'End of permission assignment execution and visiting DAO \n')
+
         # Assign controllers to roles and committees in DAO based on control relations
         for role in self.roles.values():
             for controller in self.control_relations[role.role_id]:
                 role.add_controller(controller)
-                print(f'Controller {controller} assigned to Role {role.role_id} at the end of the execution \n')
+                print(f'Controller {controller} assigned to Role {role.role_id} \n')
         for committee in self.committees.values():
             for controller in self.control_relations[committee.committee_id]:
                 committee.add_controller(controller)
-                print(f'Controller {controller} assigned to Committee {committee.committee_id} at the end of the execution \n')
+                print(f'Controller {controller} assigned to Committee {committee.committee_id} \n')
+
+        #assignemnt of roles and committees defined to the DAO
+        for role in self.roles.values():
+            self.daos[dao_id].add_role(role)
+            print(f'Role: {role.role_id} assigned to DAO {dao_id} \n')
+        for committee in self.committees.values():
+            self.daos[dao_id].add_committee(committee)
+            print(f'Committee: {committee.committee_id} assigned to DAO {dao_id} \n')
+            #code generation
+        translator = SolidityTranslator(self.daos[dao_id])
+        translator.save_to_file()
+
         return return_var
 
     def visitRole(self, ctx):
@@ -150,10 +104,10 @@ class DAO_ML_Visitor(XMLParserVisitor):
         permission = Permission(permission_id, allowed_action, permission_type)
         self.permissions[permission_id] = permission
         print(f'Permission created with ID: {permission_id}')
-        # Assign permission to roles and committees
         return self.visitChildren(ctx)
 
     def visitRelations(self, ctx):
+    #visits associated to relations and stores them in the dictionary
         if ctx.associated_to():
             for assoc in ctx.associated_to():
                 content = self.aggregate_texts(assoc.content().chardata())
@@ -166,6 +120,7 @@ class DAO_ML_Visitor(XMLParserVisitor):
                     print(f'Role {id} is associated with {content}')
                 else:
                     print(f'did not add {content} to Role {id}')
+        #visits control relations and stores them in the dictionary
         if ctx.controlled_by():
             for control in ctx.controlled_by():
                 content = self.aggregate_texts(control.content().chardata())
@@ -210,11 +165,10 @@ def traverse(tree, rule_names, indent=0):
         print("{0}{1}".format("\t" * indent, rule_names[tree.getRuleIndex()]))
         for child in tree.children:
             traverse(child, rule_names, indent + 1)
-
-
+'''
 def main(argv):
     input_stream = FileStream(argv[1])
-    lexer = DAO_XML_lexer(input_stream)
+    lexer = XMLLexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = XMLParser(stream)
     tree = parser.document()
@@ -222,10 +176,12 @@ def main(argv):
     visitor = DAO_ML_Visitor()
     traverse(tree, parser.ruleNames, 0)
     visitor.visit(tree)
-    
-    # Print all the object properties at the end
+
+    print("\n -----PRINTING VISITOR CONTENT----")
     print(visitor)
+    print("\n -----PRINTING VISITOR CONTENT----")
 
 
 if __name__ == '__main__':
     main(sys.argv)
+'''

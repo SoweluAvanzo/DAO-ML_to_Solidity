@@ -1,4 +1,4 @@
-# Generated from DAO_XML_lexer.g4 by ANTLR 4.13.1
+# Generated from XMLLexer.g4 by ANTLR 4.13.1
 from antlr4 import *
 from io import StringIO
 import sys
@@ -230,7 +230,7 @@ def serializedATN():
         582,588,603,606,5,6,0,0,5,1,0,3,0,0,5,2,0,4,0,0
     ]
 
-class DAO_XML_lexer(Lexer):
+class XMLLexer(Lexer):
 
     atn = ATNDeserializer().deserialize(serializedATN())
 
@@ -320,7 +320,7 @@ class DAO_XML_lexer(Lexer):
                   "HEXDIGIT", "DIGIT", "NameChar", "NameStartChar", "PI", 
                   "IGNORE" ]
 
-    grammarFileName = "DAO_XML_lexer.g4"
+    grammarFileName = "XMLLexer.g4"
 
     def __init__(self, input=None, output:TextIO = sys.stdout):
         super().__init__(input, output)
