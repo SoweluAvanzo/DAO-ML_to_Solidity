@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0; 
+pragma solidity ^0.8.0; 
  /**
  * @title GCDAO has the following mission: Managing the governance of Group Currencies in the Circles UBI system. 
  */

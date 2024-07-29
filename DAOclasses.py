@@ -1,4 +1,6 @@
 
+import networkx as nx
+import matplotlib.pyplot as plt
 #stores DAO information and metadata
 class DAO:
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
@@ -8,6 +10,7 @@ class DAO:
         self.hierarchical_inheritance = hierarchical_inheritance
         self.roles = []
         self.committees = []
+        self.dao_control_graph = nx.DiGraph()
 
     def add_role(self, role):
         self.roles.append(role)

@@ -4,6 +4,8 @@ from antlr4 import *
 from collections import defaultdict
 from antlr4.tree.Tree import TerminalNodeImpl
 '''
+import networkx as nx
+import matplotlib.pyplot as plt
 from collections import defaultdict
 from antlr4 import *
 from antlr4.tree.Tree import TerminalNodeImpl
@@ -25,6 +27,7 @@ class DAO_ML_Visitor(XMLParserVisitor):
         self.roles = {}
         self.committees = {}
         self.permissions = {}
+        self.control_graph = nx.DiGraph()
 
 # dictionaries storing relations to be associated to roles and committees during the visit with role as key and list of related ids as values
         self.aggregations = defaultdict(list)
@@ -70,6 +73,29 @@ class DAO_ML_Visitor(XMLParserVisitor):
         for committee in self.committees.values():
             self.daos[dao_id].add_committee(committee)
             print(f'Committee: {committee.committee_id} assigned to DAO {dao_id} \n')
+        
+        #control graph generation based on control relations stored
+        for role in self.roles.values():
+            for controller in role.controllers:
+                self.control_graph.add_edge(role.role_id,controller)
+        for committee in self.committees.values():
+            for controller in committee.controllers:
+                self.control_graph.add_edge(committee.committee_id,controller)
+        print(f'Control graph generated for DAO {dao_id} \n')
+        #assignment of control graph to DAO object
+        self.daos[dao_id].dao_control_graph = self.control_graph
+        #edges
+        for node in self.daos[dao_id].dao_control_graph.nodes:
+            print(f'Node: {node} \n')
+        for edge in self.control_graph.edges:
+            print(f'Edge: {edge} \n')
+        #paths
+        for node1 in self.daos[dao_id].dao_control_graph.nodes:
+            for node2 in self.control_graph.nodes:
+                for path in nx.all_simple_paths(self.daos[dao_id].dao_control_graph, source=node1, target=node2):
+                    print(f'Path: {path} \n')
+                for loop in nx.simple_cycles(self.daos[dao_id].dao_control_graph):
+                    print(f'Loop: {loop} \n')
             #code generation
         translator = SolidityTranslator(self.daos[dao_id])
         translator.save_to_file()
