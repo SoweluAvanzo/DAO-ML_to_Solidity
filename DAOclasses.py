@@ -10,6 +10,7 @@ class DAO:
         self.hierarchical_inheritance = hierarchical_inheritance
         self.roles = []
         self.committees = []
+        self.permissions = []
         self.dao_control_graph = nx.DiGraph()
     
     def add_role(self, role):
@@ -17,10 +18,31 @@ class DAO:
 
     def add_committee(self, committee):
         self.committees.append(committee)
-    
+
+    def add_permission(self, permission):
+        self.permissions.append(permission)
 
     def __str__(self):
-        return f'DAO(dao_id={self.dao_id}, dao_name={self.dao_name}, mission_statement={self.mission_statement}, hierarchical_inheritance={self.hierarchical_inheritance}, roles={self.roles}, committees={self.committees})'
+        result = [
+            "DAOs:",
+            f'\tdao_id={self.dao_id}',
+            f'\tdao_name={self.dao_name}',
+            f'\tmission_statement={self.mission_statement}',
+            f'\thierarchical_inheritance={self.hierarchical_inheritance}'
+        ]
+        #for dao in self.daos.values():
+        #    result.append(str(dao))
+        result.append("\nRoles:")
+        for role in self.roles:
+            result.append("\t\t" + str(role))
+        result.append("\nCommittees:")
+        for committee in self.committees:
+            result.append("\t\t" + str(committee))
+        result.append("\nPermissions:")
+        for permission in self.permissions:
+            result.append("\t\t" + str(permission))
+        return "\n".join(result)
+
 
 #stores role information with control relations and associated permissions
 class Role:

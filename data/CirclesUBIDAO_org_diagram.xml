@@ -72,4 +72,12 @@
         <Permission permission_ID="set_contribution_attestation" allowed_action="set contribution attestation" permission_type="structural"/>
         <Permission permission_ID="member_data_management" allowed_action="member data management" permission_type="structural"/>
     </DAO>
+    <DAO DAO_ID="DAODAO" DAO_name="DAODAODAO Currency DAO" mission_statement="Managing the governance of Group Currencies in the Circles UBI system." hierarchical_inheritance="1">
+        <Role role_ID="GroupMember" role_name="Group Member" role_assignment_method="depositing Circles tokens" agent_type="human">
+            <associated_to>propose_service_provision</associated_to>
+            <associated_to>update_user_profile</associated_to>
+            <associated_to>funding_request_submission</associated_to>
+            <associated_to>ServiceProvision</associated_to>
+        </Role>
+    </DAO>
 </DAO-ML_diagram>

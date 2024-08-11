@@ -34,9 +34,10 @@ from translator import*
 class DAO_ML_Visitor(XMLParserVisitor):
     def __init__(self):
         self.daos = {}
-        self.roles = {}
-        self.committees = {}
-        self.permissions = {}
+        self.current_dao = None
+        self.roles = {} # roles_by_dao_name
+        self.committees = {} # roles_by_dao_name
+        self.permissions = {} # roles_by_dao_name
         self.control_graph = nx.DiGraph()
 # dictionaries storing relations to be associated to roles and committees during the visit with role as key and list of related ids as values
         self.aggregations = defaultdict(list)
@@ -71,6 +72,7 @@ class DAO_ML_Visitor(XMLParserVisitor):
         permission_type = ctx.permission_type().STRING().getText().strip('"')
         permission = Permission(permission_id, allowed_action, permission_type)
         self.permissions[permission_id] = permission
+        self.current_dao.add_permission(permission)
         print(f'Permission created with ID: {permission_id}')
         return self.visitChildren(ctx)
 
@@ -126,7 +128,9 @@ class DAO_ML_Visitor(XMLParserVisitor):
         self.daos[dao_id] = dao
         print(f'DAO created with ID: {dao_id}')
         #recursively visits the children of the dao
+        self.current_dao = dao
         self.visitChildren(ctx)
+        self.current_dao = None
 
         # Assign permissions to roles and committees in DAO based on association relations
         for permission in self.permissions:
