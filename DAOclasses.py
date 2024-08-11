@@ -11,12 +11,13 @@ class DAO:
         self.roles = []
         self.committees = []
         self.dao_control_graph = nx.DiGraph()
-
+    
     def add_role(self, role):
         self.roles.append(role)
 
     def add_committee(self, committee):
         self.committees.append(committee)
+    
 
     def __str__(self):
         return f'DAO(dao_id={self.dao_id}, dao_name={self.dao_name}, mission_statement={self.mission_statement}, hierarchical_inheritance={self.hierarchical_inheritance}, roles={self.roles}, committees={self.committees})'
@@ -30,12 +31,16 @@ class Role:
         self.agent_type = agent_type
         self.permissions = []
         self.controllers = []
+        self.aggregated =  []
 
     def add_permission(self, permission):
         self.permissions.append(permission)
 
     def add_controller(self, controller_id):
         self.controllers.append(controller_id)
+    
+    def add_aggregated(self, aggregated_id):
+        self.aggregated.append(aggregated_id)
 
     def __str__(self):
         return f'Role(role_id={self.role_id}, role_name={self.role_name}, role_assignment_method={self.role_assignment_method}, agent_type={self.agent_type}, permissions={self.permissions}, controllers={self.controllers})'
@@ -50,12 +55,16 @@ class Committee:
         self.appointment_method = appointment_method
         self.permissions = []
         self.controllers = []
+        self.aggregated =  []
 
     def add_permission(self, permission):
         self.permissions.append(permission)
 
     def add_controller(self, controller_id):
         self.controllers.append(controller_id)
+        
+    def add_aggregated(self, aggregated_id):
+        self.aggregated.append(aggregated_id)
 
     def __str__(self):
         return f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, n_agent_min={self.n_agent_min}, n_agent_max={self.n_agent_max}, appointment_method={self.appointment_method}, permissions={self.permissions}, controllers={self.controllers})'

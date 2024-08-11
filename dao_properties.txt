@@ -1,0 +1,39 @@
+
+--- DAO 1 ---
+DAOs:
+DAO(dao_id=GCDAO, dao_name=Group Currency DAO, mission_statement=Managing the governance of Group Currencies in the Circles UBI system., hierarchical_inheritance=1, roles=[<DAOclasses.Role object at 0x00000216829730A0>, <DAOclasses.Role object at 0x00000216829728C0>, <DAOclasses.Role object at 0x0000021682972AD0>], committees=[<DAOclasses.Committee object at 0x00000216829726E0>, <DAOclasses.Committee object at 0x00000216829726B0>, <DAOclasses.Committee object at 0x0000021682971F30>, <DAOclasses.Committee object at 0x00000216829733A0>])
+
+Roles:
+Role(role_id=GroupMember, role_name=Group Member, role_assignment_method=depositing Circles tokens, agent_type=human, permissions=[<DAOclasses.Permission object at 0x0000021682972E30>, <DAOclasses.Permission object at 0x00000216829702B0>, <DAOclasses.Permission object at 0x0000021682972740>], controllers=[])
+Role(role_id=TreasuryManager, role_name=Treasury Manager, role_assignment_method=election, agent_type=human, permissions=[<DAOclasses.Permission object at 0x0000021682970820>, <DAOclasses.Permission object at 0x00000216829734F0>], controllers=['EconomicCouncil'])
+Role(role_id=ActiveMember, role_name=Active Member, role_assignment_method=Perishable Share ownership, agent_type=human, permissions=[], controllers=[])
+
+Committees:
+Committee(committee_id=GeneralAssembly, committee_description=General Assembly, n_agent_min=None, n_agent_max=None, appointment_method=group currency ownership, permissions=[<DAOclasses.Permission object at 0x0000021682972A70>, <DAOclasses.Permission object at 0x0000021682971E40>], controllers=['TechnicalCouncil', 'CommunityCouncil'])
+Committee(committee_id=EconomicCouncil, committee_description=Economic Council, n_agent_min=3, n_agent_max=15, appointment_method=Perishable Share ownership threshold, permissions=[<DAOclasses.Permission object at 0x0000021682971180>], controllers=['CommunityCouncil'])
+Committee(committee_id=CommunityCouncil, committee_description=Community Council, n_agent_min=None, n_agent_max=None, appointment_method=rotation, permissions=[<DAOclasses.Permission object at 0x00000216829709D0>, <DAOclasses.Permission object at 0x0000021682971A20>, <DAOclasses.Permission object at 0x0000021682971270>], controllers=[])
+Committee(committee_id=TechnicalCouncil, committee_description=Technical Council, n_agent_min=1, n_agent_max=7, appointment_method=election, permissions=[<DAOclasses.Permission object at 0x0000021682973B50>, <DAOclasses.Permission object at 0x0000021682973E20>, <DAOclasses.Permission object at 0x0000021682970CA0>, <DAOclasses.Permission object at 0x0000021682973640>], controllers=['TechnicalCouncil'])
+
+Permissions:
+Permission(permission_id=activate_suspend_service_provision, allowed_action=suspend service provision, permission_type=strategic)
+Permission(permission_id=evaluate_service_provision, allowed_action=evaluate service provision, permission_type=strategic)
+Permission(permission_id=propose_service_provision, allowed_action=propose service provision, permission_type=operational)
+Permission(permission_id=update_user_profile, allowed_action=update user profile, permission_type=structural)
+Permission(permission_id=funding_request_submission, allowed_action=funding request submission, permission_type=operational)
+Permission(permission_id=set_limits_to_group_currency_minting, allowed_action=set limits to group currency minting, permission_type=strategic)
+Permission(permission_id=add_remove_allowed_collateral_type, allowed_action=add/remove allowed collateral type, permission_type=strategic)
+Permission(permission_id=funding_request_assessment, allowed_action=funding request assessment, permission_type=strategic)
+Permission(permission_id=set_membership_requirements, allowed_action=set membership requirements, permission_type=structural)
+Permission(permission_id=suspension_of_the_group_currency, allowed_action=suspension of the Group Currency, permission_type=structural)
+Permission(permission_id=upgrade_Group_Currency_smart_contracts, allowed_action=upgrade Group Currency smart contracts, permission_type=structural)
+Permission(permission_id=upgrade_DAO_smart_contracts, allowed_action=upgrade DAO smart contracts, permission_type=structural)
+Permission(permission_id=include_exclude_group_members, allowed_action=include/exclude members, permission_type=structural)
+Permission(permission_id=set_contribution_attestation, allowed_action=set contribution attestation, permission_type=structural)
+Permission(permission_id=member_data_management, allowed_action=member data management, permission_type=structural)
+TreasuryManager aggregates into ['Economic', 'ActiveMember']
+ActiveMember aggregates into ['CommunityCouncil', 'EconomicCouncil', 'TechnicalCouncil', 'GroupMember']
+GroupMember aggregates into []
+GeneralAssembly aggregates into []
+EconomicCouncil aggregates into []
+CommunityCouncil aggregates into []
+TechnicalCouncil aggregates into []

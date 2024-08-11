@@ -20,7 +20,11 @@ def main(argv):
     visitor = DAO_ML_Visitor()
     traverse(tree, parser.ruleNames, 0)
     visitor.visit(tree)
-    
+    for dao_id in visitor.daos:
+        print(visitor.daos[dao_id])
+    #code generation
+        translator = SolidityTranslator(visitor.daos[dao_id])
+        translator.save_to_file()
 
     print("\n -----PRINTING VISITOR CONTENT----")
     print(visitor)
