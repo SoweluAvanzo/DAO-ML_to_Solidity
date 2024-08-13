@@ -28,7 +28,7 @@ else:
 #    from XMLParser import XMLParser
     from XMLParserVisitor import XMLParserVisitor
 from DAOclasses import*
-from translator import*
+#from TranslationPolicies.translator import*
 
 
 class DAO_ML_Visitor(XMLParserVisitor):
@@ -130,7 +130,7 @@ class DAO_ML_Visitor(XMLParserVisitor):
         #recursively visits the children of the dao
         self.current_dao = dao
         self.visitChildren(ctx)
-        self.current_dao = None
+        #self.current_dao = None
 
         # Assign permissions to roles and committees in DAO based on association relations
         for permission in self.permissions:
@@ -144,24 +144,42 @@ class DAO_ML_Visitor(XMLParserVisitor):
                     print(f'Permission {permission} assigned to Committee {committee.committee_id}\n')
 
         # Assign controllers to roles and committees in DAO based on control relations
-        for role in self.roles.values():
-            for controller in self.control_relations[role.role_id]:
-                role.add_controller(controller)
-                print(f'Controller {controller} assigned to Role {role.role_id} \n')
-        for committee in self.committees.values():
-            for controller in self.control_relations[committee.committee_id]:
-                committee.add_controller(controller)
-                print(f'Controller {controller} assigned to Committee {committee.committee_id} \n')
+        # for role in self.roles.values():
+        #     for controller in self.control_relations[role.role_id]:
+        #         role.add_controller(controller)
+        #         print(f'Controller {controller} assigned to Role {role.role_id} \n')
+        # for committee in self.committees.values():
+        #     for controller in self.control_relations[committee.committee_id]:
+        #         committee.add_controller(controller)
+        #         print(f'Controller {controller} assigned to Committee {committee.committee_id} \n')
 
-        # Assign aggregated roles and committees to roles and committees in DAO based on aggregation relations
+        # # Assign aggregated roles and committees to roles and committees in DAO based on aggregation relations
+        # for role in self.roles.values():
+        #     for aggregated in self.aggregations[role.role_id]:
+        #         role.add_aggregated(aggregated)
+        #         print(f'Role {role.role_id} aggregates into: {aggregated} \n')
+        # for committee in self.committees.values():
+        #     for aggregated in self.aggregations[committee.committee_id]:
+        #         committee.add_aggregated(aggregated)
+        #         print(f' Committee "{role.role_id}" aggregates into  {aggregated}\n')
+        
+        # Assign controllers to roles and committees in DAO based on control relations
         for role in self.roles.values():
-            for aggregated in self.aggregations[role.role_id]:
-                role.add_aggregated(aggregated)
-                print(f'Role {role.role_id} aggregates into: {aggregated} \n')
+            for controller_id in self.control_relations[role.role_id]:
+                if controller_id in self.roles:
+                    role.add_controller(self.roles[controller_id])
+                    print(f'Controller {controller_id} assigned to Role {role.role_id} \n')
+                elif controller_id in self.committees:
+                    role.add_controller(self.committees[controller_id])
+                    print(f'Controller {controller_id} assigned to Role {role.role_id} \n')
         for committee in self.committees.values():
-            for aggregated in self.aggregations[committee.committee_id]:
-                committee.add_aggregated(aggregated)
-                print(f' Committee "{role.role_id}" aggregates into  {aggregated}\n')
+            for controller_id in self.control_relations[committee.committee_id]:
+                if controller_id in self.roles:
+                    committee.add_controller(self.roles[controller_id])
+                    print(f'Controller {controller_id} assigned to Committee {committee.committee_id} \n')
+                elif controller_id in self.committees:
+                    committee.add_controller(self.committees[controller_id])
+                    print(f'Controller {controller_id} assigned to Committee {committee.committee_id} \n')
 
         #assignemnt of roles and committees defined to the DAO
         for role in self.roles.values():
