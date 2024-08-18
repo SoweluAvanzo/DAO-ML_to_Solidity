@@ -25,11 +25,8 @@ def main(argv):
     #code generation
         translator = SolidityTranslator(visitor.daos[dao_id], "optimized")
         translator.save_to_file()
-
     # print("\n -----PRINTING VISITOR CONTENT----")
     # print(visitor)
     # print("\n -----PRINTING VISITOR CONTENT----")
-
-
 if __name__ == '__main__':
     main(sys.argv)

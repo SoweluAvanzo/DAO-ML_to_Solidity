@@ -33,11 +33,11 @@ contract GCDAO {
         require(roles[msg.sender] == GroupMemberRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }
-    function set_limits_to_group_currency_minting() public {
+    function funding_request_assessment() public {
         require(roles[msg.sender] == TreasuryManagerRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }
-    function funding_request_assessment() public {
+    function set_limits_to_group_currency_minting() public {
         require(roles[msg.sender] == TreasuryManagerRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }
@@ -53,6 +53,10 @@ contract GCDAO {
         require(roles[msg.sender] == EconomicCouncilRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }
+    function set_contribution_attestation() public {
+        require(roles[msg.sender] == CommunityCouncilRole , "Only authorized roles can execute this function.");
+//TODO: define the behavior of the function
+    }
     function set_membership_requirements() public {
         require(roles[msg.sender] == CommunityCouncilRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
@@ -61,23 +65,19 @@ contract GCDAO {
         require(roles[msg.sender] == CommunityCouncilRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }
-    function set_contribution_attestation() public {
-        require(roles[msg.sender] == CommunityCouncilRole , "Only authorized roles can execute this function.");
+    function upgrade_Group_Currency_smart_contracts() public {
+        require(roles[msg.sender] == TechnicalCouncilRole , "Only authorized roles can execute this function.");
+//TODO: define the behavior of the function
+    }
+    function member_data_management() public {
+        require(roles[msg.sender] == TechnicalCouncilRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }
     function suspension_of_the_Group_Currency() public {
         require(roles[msg.sender] == TechnicalCouncilRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }
-    function upgrade_Group_Currency_smart_contracts() public {
-        require(roles[msg.sender] == TechnicalCouncilRole , "Only authorized roles can execute this function.");
-//TODO: define the behavior of the function
-    }
     function upgrade_DAO_smart_contracts() public {
-        require(roles[msg.sender] == TechnicalCouncilRole , "Only authorized roles can execute this function.");
-//TODO: define the behavior of the function
-    }
-    function member_data_management() public {
         require(roles[msg.sender] == TechnicalCouncilRole , "Only authorized roles can execute this function.");
 //TODO: define the behavior of the function
     }

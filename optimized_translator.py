@@ -30,9 +30,9 @@ class OptimizedSolidityTranslator:
         lines.append("    mapping(bytes32 => uint256) private controlRelations;")
         lines.append("    address public creator;")
         # Declare role and committee identifiers as bytes32 constants
-        for role in self.dao.roles:
+        for role in self.dao.roles.values():
             lines.append(f"    bytes32 public constant {role.role_id} = keccak256(\"{role.role_id}\");")
-        for committee in self.dao.committees:
+        for committee in self.dao.committees.values():
             lines.append(f"    bytes32 public constant {committee.committee_id} = keccak256(\"{committee.committee_id}\");")
         return "\n".join(lines)
 
@@ -41,10 +41,10 @@ class OptimizedSolidityTranslator:
         lines = []
         lines.append("    constructor() {")
         lines.append("        creator = msg.sender;")
-        for role in self.dao.roles:
+        for role in self.dao.roles.values():
             control_mask = self.get_control_mask(role)
             lines.append(f"        controlRelations[{role.role_id}] = {control_mask};")
-        for committee in self.dao.committees:
+        for committee in self.dao.committees.values():
             control_mask = self.get_control_mask(committee)
             lines.append(f"        controlRelations[{committee.committee_id}] = {control_mask};")
         lines.append("    }")
@@ -94,7 +94,7 @@ class OptimizedSolidityTranslator:
 
     def generate_permission_functions(self):
         lines = []
-        for permission in self.dao.permissions:
+        for permission in self.dao.permissions.values():
             function_name = self.preprocess_function_name(permission.allowed_action)
             permission_index = self.get_permission_index(permission)
 

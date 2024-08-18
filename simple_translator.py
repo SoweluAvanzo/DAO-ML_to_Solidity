@@ -61,13 +61,13 @@ class SimpleSolidityTranslator:
         lines.append(f"// role declarations")
         lines.append(f"    uint constant OwnerRole = 0;")
         i=1
-        for role in self.dao.roles:
+        for role in self.dao.roles.values():
             print(f"\ngeneerating the code for role: {role.role_id}")
             lines.append(f"    uint constant {role.role_id}Role = {i};")
             i+=1
         lines.append(f"// committee declarations")
         j=i
-        for committtee in self.dao.committees:
+        for committtee in self.dao.committees.values():
             lines.append(f"    uint constant {committtee.committee_id}Role = {j};")
             j+=1
         lines.append("    mapping(address => uint) roles;")
@@ -86,12 +86,12 @@ class SimpleSolidityTranslator:
     def generate_functions(self):
         lines = []
         # Generate functions for each permission assigned to roles
-        for role in self.dao.roles:
+        for role in self.dao.roles.values():
             for permission in role.permissions:
                 if isinstance(permission, Permission):  # Check if permission is an instance of Permission class
                     lines.append(self.generate_function(permission))
         # Generate functions for each permission assigned to committees
-        for committee in self.dao.committees:
+        for committee in self.dao.committees.values():
             for permission in committee.permissions:
                 if isinstance(permission, Permission):  # Check if permission is an instance of Permission class
                     lines.append(self.generate_function(permission))
@@ -124,12 +124,12 @@ class SimpleSolidityTranslator:
     def check_permissions(self, permission):
         # Check the roles and committees that have the permission and stores them in a list
         role_ids = []
-        for role in self.dao.roles:
+        for role in self.dao.roles.values():
             for perm in role.permissions:
                 if perm.allowed_action == permission.allowed_action:
                     role_ids.append(role.role_id)
                     print(f"FOR FUNCTION {permission.permission_id}, ROLE {role.role_id} is REQUIRED")
-        for committee in self.dao.committees:
+        for committee in self.dao.committees.values():
             for perm in committee.permissions:
                 if perm.allowed_action == permission.allowed_action:
                     role_ids.append(committee.committee_id)
