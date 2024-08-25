@@ -1,6 +1,5 @@
 
 import networkx as nx
-import matplotlib.pyplot as plt
 #stores DAO information and metadata
 from enum import Enum
 
@@ -51,6 +50,17 @@ class DAO:
         return "\n".join(result)
 
 
+#stores permission metadata
+class Permission:
+    def __init__(self, permission_id, allowed_action, permission_type):
+        self.permission_id = permission_id
+        self.allowed_action = allowed_action
+        self.permission_type = permission_type
+
+    def __str__(self):
+        return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type})'
+    
+
 #stores role information with control relations and associated permissions
 class Role:
     def __init__(self, role_id, role_name, role_assignment_method, agent_type):
@@ -58,18 +68,18 @@ class Role:
         self.role_name = role_name
         self.role_assignment_method = role_assignment_method
         self.agent_type = agent_type
-        self.permissions = [] # just the ID
-        self.controllers = [] # just the ID
-        self.aggregated =  [] # just the ID
+        self.permissions: list[Permission] = []
+        self.controllers:list[str] = [] # just the ID
+        self.aggregated:list[Role|Committee] =  []
 
-    def add_permission(self, permission):
+    def add_permission(self, permission: Permission):
         self.permissions.append(permission)
 
-    def add_controller(self, controller_id):
+    def add_controller(self, controller_id:str):
         self.controllers.append(controller_id)
     
-    def add_aggregated(self, aggregated_id):
-        self.aggregated.append(aggregated_id)
+    def add_aggregated(self, aggregated):
+        self.aggregated.append(aggregated)
 
     def __str__(self):
         parts = [f'Role(role_id={self.role_id}, role_name={self.role_name}, role_assignment_method={self.role_assignment_method}, agent_type={self.agent_type}']
@@ -110,17 +120,17 @@ class Committee:
         self.n_agent_min = n_agent_min
         self.n_agent_max = n_agent_max
         self.appointment_method = appointment_method
-        self.permissions = []
-        self.controllers = []
-        self.aggregated =  []
+        self.permissions:list[Permission] = []
+        self.controllers:list[str] = []
+        self.aggregated:list[str] =  []
 
     def add_permission(self, permission):
         self.permissions.append(permission)
 
-    def add_controller(self, controller_id):
+    def add_controller(self, controller_id:str):
         self.controllers.append(controller_id)
         
-    def add_aggregated(self, aggregated_id):
+    def add_aggregated(self, aggregated_id:str):
         self.aggregated.append(aggregated_id)
 
     def __str__(self):
@@ -154,16 +164,6 @@ class Committee:
         parts.append("]")
         return "".join(parts)
         
-#stores permission metadata
-class Permission:
-    def __init__(self, permission_id, allowed_action, permission_type):
-        self.permission_id = permission_id
-        self.allowed_action = allowed_action
-        self.permission_type = permission_type
-
-    def __str__(self):
-        return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type})'
-    
 #graph structures
 
 class GraphType(Enum):
@@ -213,7 +213,7 @@ class ControlGraph:
 
     def get_graph_type(self):
         if nx.is_directed_acyclic_graph(self.control_graph):
-            if self.is_list(self.control_graph):
+            if self.is_list():
                 print("the graph is a list and doesn't contain cycles")
                 return GraphType.LIST #the graph is a list and doesn't contain cycles
             else:
@@ -222,5 +222,5 @@ class ControlGraph:
             self.is_cyclic = True
             return GraphType.GRAPH #the graph contains cycles
         
-    def is_list(self, graph):
-        return all(graph.out_degree(n) <= 1 for n in graph.nodes)
+    def is_list(self):
+        return all(self.control_graph.out_degree(n) <= 1 for n in self.control_graph.nodes)

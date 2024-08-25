@@ -1,28 +1,31 @@
-
-"""
-
-"""
-import os
-from DAOclasses import*
-from simple_translator import*
-from optimized_translator import*
-from enum import Enum
+'''
+from simple_translator import SimpleSolidityTranslator
+from optimized_translator import OptimizedSolidityTranslator
+'''
 
 
-class ContractSourcetype (Enum):
-    DAO = 1
-    COMMITTEE = 2
+class TranslatedSmartContract:
+    def __init__(self, lines_of_code, name):
+        self.lines_of_code = lines_of_code
+        self.name = name
+    def get_code_as_text(self) -> str:
+        return "\n".join(self.lines_of_code)
+    def get_code_as_lines(self) -> list[str]:
+        return self.lines_of_code
+
     
-class SolidityTranslator:
-    def __init__(self, source, source_type: ContractSourcetype, translation_type, additional_metadata = None):
-        self.source_type = source_type
+class Translator:
+    def translate(self) -> list[TranslatedSmartContract]:
+        pass
+
+'''
+class SolidityTranslator_OLD(Translator):
+    def __init__(self, source, translation_type, additional_metadata = None):
         self.source = source
         self.translation_type = translation_type
         self.additional_metadata = additional_metadata
         
-    def translate(self):
-        if self.source_type != ContractSourcetype.DAO:
-            return None
+    def translate(self) -> list[TranslatedSmartContract]:     
         if self.translation_type == "simple":
             translator = SimpleSolidityTranslator(self.source)
         elif self.translation_type == "optimized":
@@ -34,3 +37,4 @@ class SolidityTranslator:
     #     with open(f"{self.dao.dao_id}.sol", "w") as f:
     #         f.write(self.translate())
     #     print(f"Generated Solidity code saved to {self.dao.dao_id}.sol")
+'''
