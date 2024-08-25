@@ -1,6 +1,7 @@
 <DAO-ML_diagram xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="XSD_TDM_Decentralized_Organization.xsd" name="Group Currency DAO Diagram" uniqueID="GCDAOdiagram" >
     <DAO DAO_ID="GCDAO" DAO_name="Group Currency DAO" mission_statement="Managing the governance of Group Currencies in the Circles UBI system." hierarchical_inheritance="1">
         <Role role_ID="GroupMember" role_name="Group Member" role_assignment_method="depositing Circles tokens" agent_type="human">
+            <aggregates>GeneralAssembly</aggregates>
             <associated_to>propose_service_provision</associated_to>
             <associated_to>update_user_profile</associated_to>
             <associated_to>funding_request_submission</associated_to>
@@ -37,7 +38,9 @@
             <associated_to>set_membership_requirements</associated_to>
             <associated_to>GroupMembership</associated_to>
             <associated_to>include_exclude_group_members</associated_to>
-            <is_controlled_by>EconomicCouncil</is_controlled_by>
+            <is_controlled_by>TechnicalCouncil</is_controlled_by>
+
+
         </Committee>
         <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" n_agent_min="1" n_agent_max="7" appointment_method="election">
             <associated_to>upgrade_Group_Currency_smart_contracts</associated_to>
