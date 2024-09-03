@@ -134,6 +134,8 @@ class DiagramManager:
                         elif content in dao.roles:
                             committee.add_aggregated(dao.roles[content])
                             print(f' Committee "{fromID}" aggregates into  {content}\n')
+            dao.metadata.save_user_functionalities_group_size(dao.roles, dao.committees)
+        
         print(f' in process raw instances DAO: {dao_id} is processed. \n DAO Conent: {dao} \n')            
         self.createControlGraph()
 

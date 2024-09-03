@@ -8,48 +8,6 @@ class RelationType(Enum):
     CONTROL = 2
     AGGREGATION = 3
 
-class DAO:
-    def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
-        self.dao_id = dao_id
-        self.dao_name = dao_name
-        self.mission_statement = mission_statement
-        self.hierarchical_inheritance = hierarchical_inheritance
-        self.roles: dict[str, Role] = {}
-        self.committees: dict[str, Committee] = {}
-        self.permissions: dict[str, Permission] = {}
-        self.dao_control_graph: ControlGraph
-    
-    def add_role(self, role):
-        self.roles[role.role_id] = role
-
-    def add_committee(self, committee):
-        self.committees[committee.committee_id] = committee
-
-    def add_permission(self, permission):
-        self.permissions[permission.permission_id] = permission
-
-    def __str__(self):
-        result = [
-            "DAOs:",
-            f'\tdao_id={self.dao_id}',
-            f'\tdao_name={self.dao_name}',
-            f'\tmission_statement={self.mission_statement}',
-            f'\thierarchical_inheritance={self.hierarchical_inheritance}'
-        ]
-        #for dao in self.daos.values():
-        #    result.append(str(dao))
-        result.append("\nRoles:")
-        for role in self.roles.values():
-            result.append("\t\t" + str(role))
-        result.append("\nCommittees:")
-        for committee in self.committees:
-            result.append("\t\t" + str(committee))
-        result.append("\nPermissions:")
-        for permission in self.permissions:
-            result.append("\t\t" + str(permission))
-        return "\n".join(result)
-
-
 #stores permission metadata
 class Permission:
     def __init__(self, permission_id, allowed_action, permission_type):
@@ -172,8 +130,8 @@ class GraphType(Enum):
     GRAPH = 2
 
 class ControlGraph:
-    def __init__(self, dao: DAO):
-        self.dao = dao
+    def __init__(self, dao):
+        self.dao: DAO = dao
         self.control_graph: nx.DiGraph = None
         self.graph_type: GraphType = None #is calculated before the transitive closure is applied in case of hierarchical inheritance
         self.is_cyclic = False #hypotesis
@@ -224,3 +182,76 @@ class ControlGraph:
         
     def is_list(self):
         return all(self.control_graph.out_degree(n) <= 1 for n in self.control_graph.nodes)
+    
+class UserFunctionalitiesGroupSize(Enum):
+    SMALL = (32,5)
+    MEDIUM = (64,6)
+    LARGE = (128,7)
+    EXTRA_LARGE = (256,8)
+    def from_size(size):
+        if size <= 32:
+            return UserFunctionalitiesGroupSize.SMALL
+        elif size <= 64:
+            return UserFunctionalitiesGroupSize.MEDIUM
+        elif size <= 128:
+            return UserFunctionalitiesGroupSize.LARGE
+        elif size <= 256:
+            return UserFunctionalitiesGroupSize.EXTRA_LARGE
+        else:
+            return None
+        
+class DAOMetadata:
+    def __init__(self):
+        self.user_functionalities_group_size = None
+        self.size_user_functionalities_group = None
+
+    def save_user_functionalities_group_size(self, roles, committees):
+        self.size_user_functionalities_group = len(roles) + len(committees)
+        self.user_functionalities_group_size = UserFunctionalitiesGroupSize.from_size(self.size_user_functionalities_group)
+
+class DAO:
+    def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
+        self.dao_id = dao_id
+        self.dao_name = dao_name
+        self.mission_statement = mission_statement
+        self.hierarchical_inheritance = hierarchical_inheritance
+        self.roles: dict[str, Role] = {}
+        self.committees: dict[str, Committee] = {}
+        self.permissions: dict[str, Permission] = {}
+        self.dao_control_graph: ControlGraph
+        self.metadata = DAOMetadata()
+        
+    
+    def add_role(self, role):
+        self.roles[role.role_id] = role
+
+    def add_committee(self, committee):
+        self.committees[committee.committee_id] = committee
+
+    def add_permission(self, permission):
+        self.permissions[permission.permission_id] = permission
+
+    def __str__(self):
+        result = [
+            "DAOs:",
+            f'\tdao_id={self.dao_id}',
+            f'\tdao_name={self.dao_name}',
+            f'\tmission_statement={self.mission_statement}',
+            f'\thierarchical_inheritance={self.hierarchical_inheritance}'
+        ]
+        #for dao in self.daos.values():
+        #    result.append(str(dao))
+        result.append("\nRoles:")
+        for role in self.roles.values():
+            result.append("\t\t" + str(role))
+        result.append("\nCommittees:")
+        for committee in self.committees:
+            result.append("\t\t" + str(committee))
+        result.append("\nPermissions:")
+        for permission in self.permissions:
+            result.append("\t\t" + str(permission))
+        return "\n".join(result)
+
+
+
+

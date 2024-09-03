@@ -161,8 +161,8 @@ class SolidityTranslator(Translator):
     def translate(self) -> list[TranslatedSmartContract]:
 
         # voting_protocol_translator = VotingProtocolTranslator() #TODO: instanziare il traduttore del protocollo di voto
-
-        if self.translation_type == "simple":
+        group_size = self.dao.metadata.user_functionalities_group_size
+        if self.translation_type == "simple" or group_size == None:
             translator = SimpleSolidityTranslator(self.dao) # , voting_protocol_translator)
         elif self.translation_type == "optimized":
             translator = OptimizedSolidityTranslator(self.dao) # , voting_protocol_translator)
@@ -173,3 +173,5 @@ class SolidityTranslator(Translator):
     #     with open(f"{self.dao.dao_id}.sol", "w") as f:
     #         f.write(self.translate())
     #     print(f"Generated Solidity code saved to {self.dao.dao_id}.sol")
+
+
