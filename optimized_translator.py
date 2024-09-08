@@ -1,4 +1,5 @@
 import os
+import networkx as nx
 from DAOclasses import*
 from translator import TranslatedSmartContract, CommitteeTranslator, TranslationContext, Translator
 
@@ -75,15 +76,27 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(f" * @notice {self.context.dao.mission_statement}")
         lines.append(f" */")
         return "\n".join(lines)
-        return f"pragma solidity {self.context.solidity_version}\n/**\n * @title {self.context.dao.dao_id}\n * @notice {self.context.dao.mission_statement}\n */"
+        #return f"pragma solidity {self.context.solidity_version}\n/**\n * @title {self.context.dao.dao_id}\n * @notice {self.context.dao.mission_statement}\n */"
 
     def generate_contract_declaration(self):
         return f"contract {self.context.dao.dao_id} {'{'}"
     
-    def get_control_bitflags(self, role_or_committee,group_size, functionalities_ids):
+    def get_control_bitflags(self, role_or_committee, r_o_c_ID, group_size, functionalities_ids):
             bits_for_id = group_size.value[1]
             mask = 0
-            for controller in role_or_committee.controllers:
+            is_transitive = self.context.control_transitivity
+
+            if not self.context.dao.dao_control_graph.control_graph.has_node(r_o_c_ID):
+                return 0, 0
+
+            all_controllers = list( nx.descendants(self.context.dao.dao_control_graph.control_graph, r_o_c_ID) ) \
+                if is_transitive else \
+                role_or_committee.controllers
+            if is_transitive and self.context.dao.dao_control_graph.control_graph.has_edge(r_o_c_ID, r_o_c_ID):
+                all_controllers.append(r_o_c_ID)
+            print("for role? " + r_o_c_ID + " we have this controllers:")
+            print(all_controllers)
+            for controller in all_controllers:
                 index = functionalities_ids[controller]
                 mask |= (1 << index) 
             return  mask << bits_for_id, mask
@@ -151,11 +164,11 @@ class OptimizedSolidityTranslator(Translator):
         
         
         for role in self.context.dao.roles.values():
-            mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(role,self.group_size, functionalities_ids)
+            mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(role, role.role_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[role.role_id] | mask_shifted_for_id_bits
             lines.append(f"    {id_var_type} public constant {role.role_id} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
         for committee in self.context.dao.committees.values():
-            mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee,self.group_size, functionalities_ids)
+            mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[committee.committee_id] | mask_shifted_for_id_bits
             lines.append(f"    {id_var_type} public constant {committee.committee_id} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
         return "\n".join(lines)

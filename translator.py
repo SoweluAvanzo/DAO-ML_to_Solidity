@@ -45,7 +45,7 @@ class TranslationContext:
         self.dao = dao
         self.role_declaration_policy = role_declaration_policy
         self.solidity_version = solidity_version
-        self.control_transitivity = dao.hierarchical_inheritance == 1
+        self.control_transitivity = dao.hierarchical_inheritance == 1 or dao.hierarchical_inheritance == "1"
         self.daoOwner = daoOwner
 
 
