@@ -6,15 +6,16 @@ from optimized_translator import OptimizedSolidityTranslator
 from DAOclasses import DAO, Committee, GraphType, Permission
 
 class TranslatedSmartContract:
-    def __init__(self, lines_of_code, name):
+    def __init__(self, lines_of_code, name, folder = None):
         self.lines_of_code = lines_of_code
         self.name = name
+        self.folder = folder
     def get_code_as_text(self) -> str:
         return "\n".join(self.lines_of_code)
     def get_code_as_lines(self) -> list[str]:
         return self.lines_of_code
-
     
+
 class Translator:
     def translate(self) -> list[TranslatedSmartContract]:
         pass
@@ -152,3 +153,34 @@ class CommitteeTranslator:
        
         name = committee.committee_id
         return TranslatedSmartContract(lines, name)
+    
+class CommitteeTranslatorDiamond(CommitteeTranslator):
+    def __init__(self, context: TranslationContext):
+        super().__init__(context)
+    
+    def generate_library_declaration(self, lib_type, comment = ""):
+        lines:list[str] = []
+        lines.append(comment)
+        lines.append(f"library Lib{lib_type} {'{'}")
+        return lines
+    
+    def generate_library_header(self):
+        lines = []
+        lines.append("// SPDX-License-Identifier: MIT")
+        lines.append(f"pragma solidity {self.context.solidity_version};")
+        return lines
+    
+    def translateCommittee(self,committee: Committee) -> TranslatedSmartContract:
+        self.committee = committee
+        contract_name = committee.committee_id + "Voting"
+        lines:list[str] = []
+        committee_delcaration_comment = f"// @title Committee {self.committee.committee_id} in DAO {self.context.dao.dao_id}"
+        lines.extend(self.generate_library_header())
+        lines.extend(self.generate_import_statements())
+        lines.extend(self.generate_library_declaration(contract_name, committee_delcaration_comment))
+        lines.extend(self.generate_overrides())
+        lines.extend(self.generate_closure())
+
+        name = committee.committee_id
+        folder = "libraries"
+        return TranslatedSmartContract(lines, name, folder=folder)

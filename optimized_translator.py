@@ -26,7 +26,8 @@ class OptimizedSolidityTranslator(Translator):
 
         lines = []
         lines.append("\n")
-        lines.append(f"    modifier controlledBy({id_var_type} target_role_id, {id_var_type} controller_role_id) {'{'}")
+        lines.append(f"    modifier controlledBy({id_var_type} target_role_id, address controller_role_address) {'{'}")
+        lines.append(f"       {id_var_type} controller_role_id = roles[controller_role_address];")
         lines.append("        //we obtain the control relations of the controller role by shifting the its id by the number of bits contained in ids")
         lines.append(f"        require( (controller_role_id >> {id_bit_size} ) &")
         lines.append(f"                (1 << ( target_role_id & {mask} )") #we obtain the id of the target role by using the bit mask which removes its control relations
@@ -70,7 +71,7 @@ class OptimizedSolidityTranslator(Translator):
     def generate_header(self):
         lines = []
         lines.append("// SPDX-License-Identifier: MIT")
-        lines.append(f"pragma solidity {self.context.solidity_version}")
+        lines.append(f"pragma solidity {self.context.solidity_version};")
         lines.append(f"/**")
         lines.append(f" * @title {self.context.dao.dao_id}")
         lines.append(f" * @notice {self.context.dao.mission_statement}")
@@ -130,11 +131,11 @@ class OptimizedSolidityTranslator(Translator):
             perm_var_type = "uint256"
         return perm_var_type
 
-    def generate_state_variables(self):
+    def generate_state_variables(self, visibility = "public", constant = "constant"):
         id_var_type = self.get_variable_type()
         
         lines = []
-        lines.append(f"    mapping(address => {id_var_type}) private roles;")
+        lines.append(f"    mapping(address => {id_var_type}) {visibility} roles;")
 
         # Now, define the way a "role_permission" must work; in particular how
         # its data is accessed: if we are still "optimizing" (i.e., the
@@ -149,9 +150,9 @@ class OptimizedSolidityTranslator(Translator):
             # therefore their total amount is fixed -> the "role_permissions" array can be optimized as a 
             # "fixed array" by specifying its size
             total_roles_amount = len(self.context.dao.roles) + len(self.context.dao.committees)
-            lines.append(f"    {self.perm_var_type}[{total_roles_amount}] private role_permissions;")
+            lines.append(f"    {self.perm_var_type}[{total_roles_amount}] {visibility} role_permissions;")
         else:
-            lines.append(f"    mapping({id_var_type} => {self.perm_var_type}) private role_permissions;")
+            lines.append(f"    mapping({id_var_type} => {self.perm_var_type}) {visibility} role_permissions;")
         i = 0
         functionalities_ids = {}
         
@@ -166,11 +167,11 @@ class OptimizedSolidityTranslator(Translator):
         for role in self.context.dao.roles.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(role, role.role_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[role.role_id] | mask_shifted_for_id_bits
-            lines.append(f"    {id_var_type} public constant {role.role_id} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            lines.append(f"    {id_var_type} {visibility} {constant} {role.role_id} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
         for committee in self.context.dao.committees.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[committee.committee_id] | mask_shifted_for_id_bits
-            lines.append(f"    {id_var_type} public constant {committee.committee_id} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            lines.append(f"    {id_var_type} {visibility} {constant} {committee.committee_id} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
         return "\n".join(lines)
 
 
@@ -210,11 +211,11 @@ class OptimizedSolidityTranslator(Translator):
         id_var_type = self.get_variable_type()
 
         return f"""
-        function assignRole(address _user, {id_var_type} _role) external controlledBy(_role,roles[msg.sender]) {{
+        function assignRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
             roles[_user] = _role;
         }}
 
-        function revokeRole(address _user, {id_var_type} _role) external controlledBy(_role,roles[msg.sender]) {{
+        function revokeRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
             delete roles[_user];
         }}
             """

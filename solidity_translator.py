@@ -1,6 +1,7 @@
 from translator import Translator, TranslatedSmartContract
 from simple_translator import SimpleSolidityTranslator
 from optimized_translator import OptimizedSolidityTranslator
+from optimized_diamond_translator import OptimizedDiamondTranslator
 
 
 class VotingProtocolTranslator(Translator):
@@ -153,10 +154,11 @@ class VotingProtocolTranslator(Translator):
 
 
 class SolidityTranslator(Translator):
-    def __init__(self, dao, translation_type, additional_metadata = None):
+    def __init__(self, dao, translation_type, additional_metadata = None, diamond=False):
         self.dao = dao
         self.translation_type = translation_type
         self.additional_metadata = additional_metadata
+        self.diamond = diamond
         
     def translate(self) -> list[TranslatedSmartContract]:
 
@@ -165,7 +167,10 @@ class SolidityTranslator(Translator):
         if self.translation_type == "simple" or group_size == None:
             translator = SimpleSolidityTranslator(self.dao) # , voting_protocol_translator)
         elif self.translation_type == "optimized":
-            translator = OptimizedSolidityTranslator(self.dao) # , voting_protocol_translator)
+            if self.diamond:
+                translator = OptimizedDiamondTranslator(self.dao)
+            else:
+                translator = OptimizedSolidityTranslator(self.dao) # , voting_protocol_translator)
         else:
             raise ValueError("Invalid translation type")
         return translator.translate()
