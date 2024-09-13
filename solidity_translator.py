@@ -167,7 +167,7 @@ class SolidityTranslator(Translator):
         if self.translation_type == "simple" or group_size == None:
             translator = SimpleSolidityTranslator(self.dao) # , voting_protocol_translator)
         elif self.translation_type == "optimized":
-            if self.diamond:
+            if self.diamond == True:
                 translator = OptimizedDiamondTranslator(self.dao)
             else:
                 translator = OptimizedSolidityTranslator(self.dao) # , voting_protocol_translator)

@@ -70,6 +70,20 @@ class OptimizedDiamondTranslator(OptimizedSolidityTranslator):
         lines.append("\n")
         return "\n".join(lines)
 
+    def generate_facet():
+        lines = []
+        lines.append("// SPDX-License-Identifier: MIT")
+        lines.append(f"pragma solidity {self.context.solidity_version};")
+        lines.append(f"/**")
+        lines.append(f" * @title {self.context.dao.dao_id}")
+        lines.append(f" * @notice {self.context.dao.mission_statement}")
+        lines.append(f" */")
+        lines.append("import {IDaoRegistry} from \"../interfaces/IDaoRegistry.sol\";")
+        lines.append(f"library Lib{self.context.dao.dao_id}Facet {'{'}")
+        
+        folder = "facets"
+        
+    
 
     def generate_has_permission_modifier(self):
         #id_var_type = self.get_variable_type()
