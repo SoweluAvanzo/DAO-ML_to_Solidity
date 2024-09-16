@@ -154,33 +154,51 @@ class CommitteeTranslator:
         name = committee.committee_id
         return TranslatedSmartContract(lines, name)
     
+
+
+
 class CommitteeTranslatorDiamond(CommitteeTranslator):
     def __init__(self, context: TranslationContext):
         super().__init__(context)
-    
-    def generate_library_declaration(self, lib_type, comment = ""):
-        lines:list[str] = []
-        lines.append(comment)
-        lines.append(f"library Lib{lib_type} {'{'}")
-        return lines
-    
-    def generate_library_header(self):
-        lines = []
-        lines.append("// SPDX-License-Identifier: MIT")
-        lines.append(f"pragma solidity {self.context.solidity_version};")
-        return lines
-    
+
+        
     def translateCommittee(self,committee: Committee) -> TranslatedSmartContract:
         self.committee = committee
-        contract_name = committee.committee_id + "Voting"
+        contract_name = committee.committee_id + "Voting" + "Facet"
         lines:list[str] = []
-        committee_delcaration_comment = f"// @title Committee {self.committee.committee_id} in DAO {self.context.dao.dao_id}"
-        lines.extend(self.generate_library_header())
+        committee_delcaration_comment = f"// @title {contract_name} in DAO {self.context.dao.dao_id}"
+        lines.extend(self.generate_smart_contract_header(committee_delcaration_comment))
         lines.extend(self.generate_import_statements())
-        lines.extend(self.generate_library_declaration(contract_name, committee_delcaration_comment))
+        lines.append(self.generate_contract_declaration(contract_name))
+        #lines.extend(self.generate_constructor(contract_name))
         lines.extend(self.generate_overrides())
         lines.extend(self.generate_closure())
+        folder = "facets"
+        return TranslatedSmartContract(lines, contract_name, folder=folder)
+    
+    # def generate_library_declaration(self, lib_type, comment = ""):
+    #     lines:list[str] = []
+    #     lines.append(comment)
+    #     lines.append(f"library Lib{lib_type} {'{'}")
+    #     return lines
+    
+    # def generate_library_header(self):
+    #     lines = []
+    #     lines.append("// SPDX-License-Identifier: MIT")
+    #     lines.append(f"pragma solidity {self.context.solidity_version};")
+    #     return lines
+    
 
-        name = committee.committee_id
-        folder = "libraries"
-        return TranslatedSmartContract(lines, name, folder=folder)
+    # def translateCommittee(self,committee: Committee) -> TranslatedSmartContract:
+    #     self.committee = committee
+    #     contract_name = committee.committee_id + "Voting"
+    #     lines:list[str] = []
+    #     committee_delcaration_comment = f"// @title Committee {self.committee.committee_id} in DAO {self.context.dao.dao_id}"
+    #     lines.extend(self.generate_library_header())
+    #     lines.extend(self.generate_import_statements())
+    #     lines.extend(self.generate_library_declaration(contract_name, committee_delcaration_comment))
+    #     lines.extend(self.generate_overrides())
+    #     lines.extend(self.generate_closure())
+        # name = committee.committee_id
+        # folder = "libraries"
+        # return TranslatedSmartContract(lines, name, folder=folder)
