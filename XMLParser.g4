@@ -34,11 +34,11 @@ role
     ;
 
 committee
-    : OPEN COMMITTEE committee_id misc* committee_description misc* n_agent_min? misc* n_agent_max? misc* appointment_method misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
+    : OPEN COMMITTEE committee_id misc* committee_description misc* n_agent_min? misc* n_agent_max? misc* appointment_method misc* decision_making_method misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
     ;
 
 permission
-    : OPEN PERMISSION permission_id misc* allowed_action misc* permission_type misc* SLASH_CLOSE
+    : OPEN PERMISSION permission_id misc* allowed_action misc* permission_type misc* ref_gov_area? misc* SLASH_CLOSE
     ;
 
 gov
@@ -86,11 +86,13 @@ committee_description : COMMITTEEDESCRIPTION EQUALS STRING ;
 n_agent_min : NAGENTMIN EQUALS STRING;
 n_agent_max : NAGENTMAX EQUALS STRING ;
 appointment_method : APPOINTMENTMETHOD EQUALS STRING ;
+decision_making_method : DMMETHOD EQUALS STRING ;
 
 // Permission attributes
 permission_id : PERMISSIONID EQUALS STRING ;
 allowed_action : ALLOWEDACTION EQUALS STRING ;
 permission_type: PERMISSIONTYPE EQUALS STRING;
+ref_gov_area : REF_GOV_AREA EQUALS STRING; 
 
 //generic attribute definition
 attribute

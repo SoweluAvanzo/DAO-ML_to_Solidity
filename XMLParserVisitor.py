@@ -154,6 +154,11 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#decision_making_method.
+    def visitDecision_making_method(self, ctx:XMLParser.Decision_making_methodContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#permission_id.
     def visitPermission_id(self, ctx:XMLParser.Permission_idContext):
         return self.visitChildren(ctx)
@@ -166,6 +171,11 @@ class XMLParserVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLParser#permission_type.
     def visitPermission_type(self, ctx:XMLParser.Permission_typeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#ref_gov_area.
+    def visitRef_gov_area(self, ctx:XMLParser.Ref_gov_areaContext):
         return self.visitChildren(ctx)
 
 

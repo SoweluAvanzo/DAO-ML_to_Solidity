@@ -10,13 +10,14 @@ class RelationType(Enum):
 
 #stores permission metadata
 class Permission:
-    def __init__(self, permission_id, allowed_action, permission_type):
+    def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None):
         self.permission_id = permission_id
         self.allowed_action = allowed_action
         self.permission_type = permission_type
+        self.ref_gov_area = ref_gov_area
 
     def __str__(self):
-        return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type})'
+        return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type}, ref_gov_area={self.ref_gov_area})'
     
 
 #stores role information with control relations and associated permissions
@@ -31,6 +32,7 @@ class Role:
         self.aggregated:list[Role|Committee] =  []
 
     def add_permission(self, permission: Permission):
+        print(f'Adding permission {str(permission)} to role {self.role_id}')
         self.permissions.append(permission)
 
     def add_controller(self, controller_id:str):
@@ -72,17 +74,20 @@ class Role:
 
 #stores committee information with control relations and permissions
 class Committee:
-    def __init__(self, committee_id, committee_description, n_agent_min, n_agent_max, appointment_method):
+    def __init__(self, committee_id, committee_description, n_agent_min, n_agent_max, appointment_method, decision_making_method):
         self.committee_id = committee_id
         self.committee_description = committee_description
         self.n_agent_min = n_agent_min
         self.n_agent_max = n_agent_max
         self.appointment_method = appointment_method
+        self.decision_making_method = decision_making_method
+
         self.permissions:list[Permission] = []
         self.controllers:list[str] = []
         self.aggregated:list[str] =  []
 
     def add_permission(self, permission):
+        print(f'Adding permission {str(permission)} to committee {self.committee_id}')
         self.permissions.append(permission)
 
     def add_controller(self, controller_id:str):

@@ -21,18 +21,18 @@
             <aggregates>TechnicalCouncil</aggregates>
             <aggregates>GroupMember</aggregates>
         </Role>
-        <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" appointment_method="group currency ownership">
+        <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" appointment_method="group currency ownership" decision_making_method="simple_majority_voting">
             <associated_to>activate_suspend_service_provision</associated_to>
             <associated_to>evaluate_service_provision</associated_to>
             <is_controlled_by>TechnicalCouncil</is_controlled_by>
             <is_controlled_by>CommunityCouncil</is_controlled_by>
         </Committee>
-        <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" n_agent_min="3" n_agent_max="15" appointment_method="Perishable Share ownership threshold">
+        <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" n_agent_min="3" n_agent_max="15" appointment_method="Perishable Share ownership threshold" decision_making_method="simple_majority_voting">
             <associated_to>add_remove_allowed_collateral_type</associated_to>
             <associated_to>TreasuryManagement</associated_to>
             <is_controlled_by>CommunityCouncil</is_controlled_by>
         </Committee>
-        <Committee committee_ID="CommunityCouncil" committee_description="Community Council" appointment_method="rotation">
+        <Committee committee_ID="CommunityCouncil" committee_description="Community Council" appointment_method="rotation" decision_making_method="simple_majority_voting">
             <associated_to>Attestations</associated_to>
             <associated_to>set_contribution_attestation</associated_to>
             <associated_to>set_membership_requirements</associated_to>
@@ -42,7 +42,7 @@
 
 
         </Committee>
-        <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" n_agent_min="1" n_agent_max="7" appointment_method="election">
+        <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" n_agent_min="1" n_agent_max="7" appointment_method="election" decision_making_method="simple_majority_voting">
             <associated_to>upgrade_Group_Currency_smart_contracts</associated_to>
             <associated_to>member_data_management</associated_to>
             <associated_to>suspension_of_the_group_currency</associated_to>
@@ -57,7 +57,7 @@
         <GovernanceArea gov_area_ID="Attestations" gov_area_description="Attestations" implementation="on-chain"/>
         <GovernanceArea gov_area_ID="TreasuryManagement" gov_area_description="Treasury Management" implementation="on-chain"/>
         <GovernanceArea gov_area_ID="EmergencyResponse" gov_area_description="Emergency Response" implementation="hybrid"/>
-        <Permission permission_ID="activate_suspend_service_provision" allowed_action="suspend service provision" permission_type="strategic"/>
+        <Permission permission_ID="activate_suspend_service_provision" allowed_action="suspend service provision" permission_type="strategic" ref_gov_area = "ServiceProvision"/>
         <Permission permission_ID="evaluate_service_provision" allowed_action="evaluate service provision" permission_type="strategic"/>
         <Permission permission_ID="propose_service_provision" allowed_action="propose service provision" permission_type="operational"/>
         <Permission permission_ID="update_user_profile" allowed_action="update user profile" permission_type="structural"/>

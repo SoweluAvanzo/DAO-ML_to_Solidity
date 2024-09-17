@@ -142,7 +142,7 @@ class CommitteeTranslator:
         self.committee = committee
         contract_name = committee.committee_id + "Voting"
         lines:list[str] = []
-        committee_delcaration_comment = f"// @title {contract_name} in DAO {self.context.dao.dao_id}"
+        committee_delcaration_comment = f"// @title {contract_name} in DAO {self.context.dao.dao_id}, using the voting protocol: {committee.decision_making_method}"
         lines.extend(self.generate_smart_contract_header(committee_delcaration_comment))
         lines.extend(self.generate_import_statements())
         lines.append(self.generate_contract_declaration(contract_name))
