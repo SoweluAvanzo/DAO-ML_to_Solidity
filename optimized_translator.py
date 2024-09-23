@@ -209,6 +209,7 @@ class OptimizedSolidityTranslator(Translator):
 #TODO: Sono arrivato qui: implementare le funzioni per assegnare e revocare i permessi correttamente
     def generate_functions(self):
         id_var_type = self.get_variable_type()
+        perm_var_type = self.perm_var_type
 
         return f"""
         function assignRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
@@ -218,15 +219,29 @@ class OptimizedSolidityTranslator(Translator):
         function revokeRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
             delete roles[_user];
         }}
-            """
- # function grantPermission({id_var_type} _role, uint8 _permissionIndex) external controlledBy(roles[msg.sender],_role) {{
-        #     roles[_role] |= (uint256(1) << _permissionIndex);
-        # }}
 
-        # function revokePermission({id_var_type} _role, uint8 _permissionIndex) external controlledBy(roles[msg.sender],_role) {{
-        #     roles[_role] &= ~(uint256(1) << _permissionIndex);
-        # }}
-        
+        function grantPermission({id_var_type} _role, {perm_var_type} _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
+
+            {perm_var_type} new_role_perm_value;
+            new_role_perm_value  = role_permissions[_role & {self.id_mask} ] | ({perm_var_type}(1) << _permissionIndex);
+            role_permissions[_role & {self.id_mask} ] = new_role_perm_value;
+        }}
+
+        function revokePermission({id_var_type} _role, {perm_var_type}  _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
+
+            {perm_var_type} new_role_perm_value;
+            new_role_perm_value = role_permissions[_role & {self.id_mask}] & ~({perm_var_type}(1) << _permissionIndex);
+            role_permissions[_role & {self.id_mask}] = new_role_perm_value;
+        }}
+             
+         """
+        # function grantPermission({id_var_type} _role, {self.perm_var_type} _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
+        #     _role |= ({id_var_type}(1) << _permissionIndex);
+        #  }}
+
+        #  function revokePermission({id_var_type} _role, {self.perm_var_type}  _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
+        #     _role &= ~({id_var_type}(1) << _permissionIndex);
+        #  }}
     #TO BE TESTED
     def generate_role_permission_mapping(self):
         # Create a mapping from role IDs to the indices of the permissions they have

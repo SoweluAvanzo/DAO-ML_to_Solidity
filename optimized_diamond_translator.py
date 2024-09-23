@@ -183,15 +183,18 @@ class OptimizedDiamondTranslator(OptimizedSolidityTranslator):
         function revokeRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
             Lib{self.context.dao.dao_id}.{self.context.dao.dao_id}Storage storage ds =  Lib{self.context.dao.dao_id}.get{self.context.dao.dao_id}Storage();
             delete ds.roles[_user];
+        
         }}
-            """
- # function grantPermission({id_var_type} _role, uint8 _permissionIndex) external controlledBy(roles[msg.sender],_role) {{
-        #     roles[_role] |= (uint256(1) << _permissionIndex);
-        # }}
+        """
+        # function grantPermission({id_var_type} _role, {self.perm_var_type} _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
+        #     roles[_role] |= ({id_var_type}(1) << _permissionIndex);
+        #  }}
 
-        # function revokePermission({id_var_type} _role, uint8 _permissionIndex) external controlledBy(roles[msg.sender],_role) {{
-        #     roles[_role] &= ~(uint256(1) << _permissionIndex);
-        # }}
+        #  function revokePermission({id_var_type} _role, {self.perm_var_type}  _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
+        #     roles[_role] &= ~({id_var_type}(1) << _permissionIndex);
+        #  }}
+        
+       
 
     def generate_dao_storage_struct(self):
         id_var_type = self.get_variable_type()
