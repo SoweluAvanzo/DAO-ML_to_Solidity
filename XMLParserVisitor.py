@@ -84,6 +84,11 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#federates_into.
+    def visitFederates_into(self, ctx:XMLParser.Federates_intoContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#reference.
     def visitReference(self, ctx:XMLParser.ReferenceContext):
         return self.visitChildren(ctx)

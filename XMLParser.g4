@@ -34,7 +34,7 @@ role
     ;
 
 committee
-    : OPEN COMMITTEE committee_id misc* committee_description misc* n_agent_min? misc* n_agent_max? misc* appointment_method misc* decision_making_method misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
+    : OPEN COMMITTEE committee_id misc* committee_description misc* n_agent_min? misc* n_agent_max? misc* appointment_method? misc* decision_making_method? misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
     ;
 
 permission
@@ -51,7 +51,7 @@ daocontent
 
 
 relations
-        : chardata? ((associated_to | controlled_by | aggregates | COMMENT) chardata?)*
+        : chardata? ((associated_to | controlled_by | aggregates | federates_into | COMMENT) chardata?)*
         ;
     
 associated_to: OPEN ASSOCIATION attribute* CLOSE content OPEN SLASH ASSOCIATION CLOSE
@@ -61,6 +61,9 @@ controlled_by: OPEN CONTROL attribute* CLOSE content OPEN SLASH CONTROL CLOSE
     ;
 
 aggregates: OPEN AGGREGATES attribute* CLOSE content OPEN SLASH AGGREGATES CLOSE
+    ;
+
+federates_into: OPEN FEDERATES attribute* CLOSE content OPEN SLASH FEDERATES CLOSE
     ;
 
 reference

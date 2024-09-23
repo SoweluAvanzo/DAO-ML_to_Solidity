@@ -32,6 +32,7 @@ GOV: 'GovernanceArea';
 ASSOCIATION: 'associated_to';
 CONTROL: 'is_controlled_by';
 AGGREGATES: 'aggregates';
+FEDERATES: 'federates_into';
 
 // Lexer attribute rules
 DAOID : 'DAO_ID';
