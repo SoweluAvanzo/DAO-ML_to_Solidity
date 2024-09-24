@@ -129,6 +129,16 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#n_agent_min.
+    def visitN_agent_min(self, ctx:XMLParser.N_agent_minContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#n_agent_max.
+    def visitN_agent_max(self, ctx:XMLParser.N_agent_maxContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#agent_type.
     def visitAgent_type(self, ctx:XMLParser.Agent_typeContext):
         return self.visitChildren(ctx)
@@ -141,16 +151,6 @@ class XMLParserVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLParser#committee_description.
     def visitCommittee_description(self, ctx:XMLParser.Committee_descriptionContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by XMLParser#n_agent_min.
-    def visitN_agent_min(self, ctx:XMLParser.N_agent_minContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by XMLParser#n_agent_max.
-    def visitN_agent_max(self, ctx:XMLParser.N_agent_maxContext):
         return self.visitChildren(ctx)
 
 

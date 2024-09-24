@@ -30,11 +30,11 @@ dao
     ;
 
 role
-    : OPEN ROLE misc* role_id misc* role_name misc* role_assignment_method misc* agent_type misc* CLOSE relations OPEN SLASH ROLE CLOSE
+    : OPEN ROLE misc* role_id misc* role_name misc* role_assignment_method misc* n_agent_min? misc* n_agent_max? misc* agent_type misc* CLOSE relations OPEN SLASH ROLE CLOSE
     ;
 
 committee
-    : OPEN COMMITTEE committee_id misc* committee_description misc* n_agent_min? misc* n_agent_max? misc* appointment_method? misc* decision_making_method? misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
+    : OPEN COMMITTEE committee_id misc* committee_description misc* appointment_method? misc* decision_making_method? misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
     ;
 
 permission
@@ -81,13 +81,13 @@ hierarchical_inheritance : HIERARCHICALINHERITANCE EQUALS STRING ;
 role_id : ROLEID EQUALS STRING ;
 role_name : ROLENAME EQUALS STRING ;
 role_assignment_method : ROLEASSIGNMENTMETHOD EQUALS STRING ;
+n_agent_min : NAGENTMIN EQUALS STRING;
+n_agent_max : NAGENTMAX EQUALS STRING ;
 agent_type : AGENTTYPE EQUALS STRING;
 
 // Committee attributes
 committee_id : COMMITTEEID EQUALS STRING ;
 committee_description : COMMITTEEDESCRIPTION EQUALS STRING ;
-n_agent_min : NAGENTMIN EQUALS STRING;
-n_agent_max : NAGENTMAX EQUALS STRING ;
 appointment_method : APPOINTMENTMETHOD EQUALS STRING ;
 decision_making_method : DMMETHOD EQUALS STRING ;
 

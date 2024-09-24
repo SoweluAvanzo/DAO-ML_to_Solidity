@@ -23,11 +23,14 @@ class Permission:
 
 #stores role information with control relations and associated permissions
 class Role:
-    def __init__(self, role_id, role_name, role_assignment_method, agent_type):
+    def __init__(self, role_id, role_name, role_assignment_method, n_agent_min, n_agent_max,agent_type):
         self.role_id = role_id
         self.role_name = role_name
         self.role_assignment_method = role_assignment_method
+        self.n_agent_min = n_agent_min
+        self.n_agent_max = n_agent_max
         self.agent_type = agent_type
+    
         self.permissions: list[Permission] = []
         self.controllers:list[str] = [] # just the ID
         self.aggregated:list[Role|Committee] =  []
@@ -47,7 +50,7 @@ class Role:
         self.federated_committees.append(target_committee_id)
 
     def __str__(self):
-        parts = [f'Role(role_id={self.role_id}, role_name={self.role_name}, role_assignment_method={self.role_assignment_method}, agent_type={self.agent_type}']
+        parts = [f'Role(role_id={self.role_id}, role_name={self.role_name}, role_assignment_method={self.role_assignment_method}, n_agent_min={self.n_agent_min}, n_agent_max={self.n_agent_max} agent_type={self.agent_type}']
         is_not_first = False
         parts.append(f", permissions<{len(self.permissions)}>=[")
         for p in self.permissions:
@@ -79,11 +82,12 @@ class Role:
 
 #stores committee information with control relations and permissions
 class Committee:
-    def __init__(self, committee_id, committee_description, n_agent_min, n_agent_max, appointment_method, decision_making_method):
+    #removed n_agent_min, n_agent_max
+    def __init__(self, committee_id, committee_description, appointment_method, decision_making_method):
         self.committee_id = committee_id
         self.committee_description = committee_description
-        self.n_agent_min = n_agent_min
-        self.n_agent_max = n_agent_max
+        # self.n_agent_min = n_agent_min
+        # self.n_agent_max = n_agent_max
         self.appointment_method = appointment_method
         self.decision_making_method = decision_making_method
 
@@ -110,7 +114,7 @@ class Committee:
         self.federated_committees.append(entity_id)
 
     def __str__(self):
-        parts=[f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, n_agent_min={self.n_agent_min}, n_agent_max={self.n_agent_max}, appointment_method={self.appointment_method}']
+        parts=[f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, appointment_method={self.appointment_method}']
         is_not_first = False
         parts.append(", permissions=[")
         for p in self.permissions:

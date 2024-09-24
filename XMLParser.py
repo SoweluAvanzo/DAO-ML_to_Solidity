@@ -30,12 +30,12 @@ def serializedATN():
         5,12,5,219,9,5,1,5,1,5,5,5,223,8,5,10,5,12,5,226,9,5,1,5,1,5,1,5,
         1,5,1,5,1,5,1,5,1,6,1,6,1,6,5,6,238,8,6,10,6,12,6,241,9,6,1,6,1,
         6,5,6,245,8,6,10,6,12,6,248,9,6,1,6,1,6,5,6,252,8,6,10,6,12,6,255,
-        9,6,1,6,1,6,5,6,259,8,6,10,6,12,6,262,9,6,1,6,1,6,5,6,266,8,6,10,
-        6,12,6,269,9,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,7,1,7,1,7,1,7,5,7,282,
-        8,7,10,7,12,7,285,9,7,1,7,1,7,5,7,289,8,7,10,7,12,7,292,9,7,1,7,
-        3,7,295,8,7,1,7,5,7,298,8,7,10,7,12,7,301,9,7,1,7,3,7,304,8,7,1,
-        7,5,7,307,8,7,10,7,12,7,310,9,7,1,7,3,7,313,8,7,1,7,5,7,316,8,7,
-        10,7,12,7,319,9,7,1,7,3,7,322,8,7,1,7,5,7,325,8,7,10,7,12,7,328,
+        9,6,1,6,1,6,5,6,259,8,6,10,6,12,6,262,9,6,1,6,3,6,265,8,6,1,6,5,
+        6,268,8,6,10,6,12,6,271,9,6,1,6,3,6,274,8,6,1,6,5,6,277,8,6,10,6,
+        12,6,280,9,6,1,6,1,6,5,6,284,8,6,10,6,12,6,287,9,6,1,6,1,6,1,6,1,
+        6,1,6,1,6,1,6,1,7,1,7,1,7,1,7,5,7,300,8,7,10,7,12,7,303,9,7,1,7,
+        1,7,5,7,307,8,7,10,7,12,7,310,9,7,1,7,3,7,313,8,7,1,7,5,7,316,8,
+        7,10,7,12,7,319,9,7,1,7,3,7,322,8,7,1,7,5,7,325,8,7,10,7,12,7,328,
         9,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,8,1,8,1,8,1,8,5,8,341,8,8,10,8,
         12,8,344,9,8,1,8,1,8,5,8,348,8,8,10,8,12,8,351,9,8,1,8,1,8,5,8,355,
         8,8,10,8,12,8,358,9,8,1,8,3,8,361,8,8,1,8,5,8,364,8,8,10,8,12,8,
@@ -59,7 +59,7 @@ def serializedATN():
         28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,
         72,74,0,3,1,0,4,5,2,0,6,6,9,9,3,0,1,1,6,6,46,46,594,0,77,1,0,0,0,
         2,94,1,0,0,0,4,104,1,0,0,0,6,145,1,0,0,0,8,147,1,0,0,0,10,191,1,
-        0,0,0,12,234,1,0,0,0,14,277,1,0,0,0,16,336,1,0,0,0,18,370,1,0,0,
+        0,0,0,12,234,1,0,0,0,14,295,1,0,0,0,16,336,1,0,0,0,18,370,1,0,0,
         0,20,381,1,0,0,0,22,402,1,0,0,0,24,419,1,0,0,0,26,434,1,0,0,0,28,
         449,1,0,0,0,30,464,1,0,0,0,32,479,1,0,0,0,34,481,1,0,0,0,36,485,
         1,0,0,0,38,489,1,0,0,0,40,493,1,0,0,0,42,497,1,0,0,0,44,501,1,0,
@@ -120,36 +120,36 @@ def serializedATN():
         22,0,250,252,3,74,37,0,251,250,1,0,0,0,252,255,1,0,0,0,253,251,1,
         0,0,0,253,254,1,0,0,0,254,256,1,0,0,0,255,253,1,0,0,0,256,260,3,
         46,23,0,257,259,3,74,37,0,258,257,1,0,0,0,259,262,1,0,0,0,260,258,
-        1,0,0,0,260,261,1,0,0,0,261,263,1,0,0,0,262,260,1,0,0,0,263,267,
-        3,48,24,0,264,266,3,74,37,0,265,264,1,0,0,0,266,269,1,0,0,0,267,
-        265,1,0,0,0,267,268,1,0,0,0,268,270,1,0,0,0,269,267,1,0,0,0,270,
-        271,5,38,0,0,271,272,3,22,11,0,272,273,5,7,0,0,273,274,5,41,0,0,
-        274,275,5,12,0,0,275,276,5,38,0,0,276,13,1,0,0,0,277,278,5,7,0,0,
-        278,279,5,13,0,0,279,283,3,50,25,0,280,282,3,74,37,0,281,280,1,0,
-        0,0,282,285,1,0,0,0,283,281,1,0,0,0,283,284,1,0,0,0,284,286,1,0,
-        0,0,285,283,1,0,0,0,286,290,3,52,26,0,287,289,3,74,37,0,288,287,
-        1,0,0,0,289,292,1,0,0,0,290,288,1,0,0,0,290,291,1,0,0,0,291,294,
-        1,0,0,0,292,290,1,0,0,0,293,295,3,54,27,0,294,293,1,0,0,0,294,295,
-        1,0,0,0,295,299,1,0,0,0,296,298,3,74,37,0,297,296,1,0,0,0,298,301,
-        1,0,0,0,299,297,1,0,0,0,299,300,1,0,0,0,300,303,1,0,0,0,301,299,
-        1,0,0,0,302,304,3,56,28,0,303,302,1,0,0,0,303,304,1,0,0,0,304,308,
-        1,0,0,0,305,307,3,74,37,0,306,305,1,0,0,0,307,310,1,0,0,0,308,306,
-        1,0,0,0,308,309,1,0,0,0,309,312,1,0,0,0,310,308,1,0,0,0,311,313,
-        3,58,29,0,312,311,1,0,0,0,312,313,1,0,0,0,313,317,1,0,0,0,314,316,
-        3,74,37,0,315,314,1,0,0,0,316,319,1,0,0,0,317,315,1,0,0,0,317,318,
-        1,0,0,0,318,321,1,0,0,0,319,317,1,0,0,0,320,322,3,60,30,0,321,320,
-        1,0,0,0,321,322,1,0,0,0,322,326,1,0,0,0,323,325,3,74,37,0,324,323,
-        1,0,0,0,325,328,1,0,0,0,326,324,1,0,0,0,326,327,1,0,0,0,327,329,
-        1,0,0,0,328,326,1,0,0,0,329,330,5,38,0,0,330,331,3,22,11,0,331,332,
-        5,7,0,0,332,333,5,41,0,0,333,334,5,13,0,0,334,335,5,38,0,0,335,15,
-        1,0,0,0,336,337,5,7,0,0,337,338,5,14,0,0,338,342,3,62,31,0,339,341,
-        3,74,37,0,340,339,1,0,0,0,341,344,1,0,0,0,342,340,1,0,0,0,342,343,
-        1,0,0,0,343,345,1,0,0,0,344,342,1,0,0,0,345,349,3,64,32,0,346,348,
-        3,74,37,0,347,346,1,0,0,0,348,351,1,0,0,0,349,347,1,0,0,0,349,350,
-        1,0,0,0,350,352,1,0,0,0,351,349,1,0,0,0,352,356,3,66,33,0,353,355,
-        3,74,37,0,354,353,1,0,0,0,355,358,1,0,0,0,356,354,1,0,0,0,356,357,
-        1,0,0,0,357,360,1,0,0,0,358,356,1,0,0,0,359,361,3,68,34,0,360,359,
-        1,0,0,0,360,361,1,0,0,0,361,365,1,0,0,0,362,364,3,74,37,0,363,362,
+        1,0,0,0,260,261,1,0,0,0,261,264,1,0,0,0,262,260,1,0,0,0,263,265,
+        3,48,24,0,264,263,1,0,0,0,264,265,1,0,0,0,265,269,1,0,0,0,266,268,
+        3,74,37,0,267,266,1,0,0,0,268,271,1,0,0,0,269,267,1,0,0,0,269,270,
+        1,0,0,0,270,273,1,0,0,0,271,269,1,0,0,0,272,274,3,50,25,0,273,272,
+        1,0,0,0,273,274,1,0,0,0,274,278,1,0,0,0,275,277,3,74,37,0,276,275,
+        1,0,0,0,277,280,1,0,0,0,278,276,1,0,0,0,278,279,1,0,0,0,279,281,
+        1,0,0,0,280,278,1,0,0,0,281,285,3,52,26,0,282,284,3,74,37,0,283,
+        282,1,0,0,0,284,287,1,0,0,0,285,283,1,0,0,0,285,286,1,0,0,0,286,
+        288,1,0,0,0,287,285,1,0,0,0,288,289,5,38,0,0,289,290,3,22,11,0,290,
+        291,5,7,0,0,291,292,5,41,0,0,292,293,5,12,0,0,293,294,5,38,0,0,294,
+        13,1,0,0,0,295,296,5,7,0,0,296,297,5,13,0,0,297,301,3,54,27,0,298,
+        300,3,74,37,0,299,298,1,0,0,0,300,303,1,0,0,0,301,299,1,0,0,0,301,
+        302,1,0,0,0,302,304,1,0,0,0,303,301,1,0,0,0,304,308,3,56,28,0,305,
+        307,3,74,37,0,306,305,1,0,0,0,307,310,1,0,0,0,308,306,1,0,0,0,308,
+        309,1,0,0,0,309,312,1,0,0,0,310,308,1,0,0,0,311,313,3,58,29,0,312,
+        311,1,0,0,0,312,313,1,0,0,0,313,317,1,0,0,0,314,316,3,74,37,0,315,
+        314,1,0,0,0,316,319,1,0,0,0,317,315,1,0,0,0,317,318,1,0,0,0,318,
+        321,1,0,0,0,319,317,1,0,0,0,320,322,3,60,30,0,321,320,1,0,0,0,321,
+        322,1,0,0,0,322,326,1,0,0,0,323,325,3,74,37,0,324,323,1,0,0,0,325,
+        328,1,0,0,0,326,324,1,0,0,0,326,327,1,0,0,0,327,329,1,0,0,0,328,
+        326,1,0,0,0,329,330,5,38,0,0,330,331,3,22,11,0,331,332,5,7,0,0,332,
+        333,5,41,0,0,333,334,5,13,0,0,334,335,5,38,0,0,335,15,1,0,0,0,336,
+        337,5,7,0,0,337,338,5,14,0,0,338,342,3,62,31,0,339,341,3,74,37,0,
+        340,339,1,0,0,0,341,344,1,0,0,0,342,340,1,0,0,0,342,343,1,0,0,0,
+        343,345,1,0,0,0,344,342,1,0,0,0,345,349,3,64,32,0,346,348,3,74,37,
+        0,347,346,1,0,0,0,348,351,1,0,0,0,349,347,1,0,0,0,349,350,1,0,0,
+        0,350,352,1,0,0,0,351,349,1,0,0,0,352,356,3,66,33,0,353,355,3,74,
+        37,0,354,353,1,0,0,0,355,358,1,0,0,0,356,354,1,0,0,0,356,357,1,0,
+        0,0,357,360,1,0,0,0,358,356,1,0,0,0,359,361,3,68,34,0,360,359,1,
+        0,0,0,360,361,1,0,0,0,361,365,1,0,0,0,362,364,3,74,37,0,363,362,
         1,0,0,0,364,367,1,0,0,0,365,363,1,0,0,0,365,366,1,0,0,0,366,368,
         1,0,0,0,367,365,1,0,0,0,368,369,5,40,0,0,369,17,1,0,0,0,370,371,
         5,7,0,0,371,375,5,15,0,0,372,374,3,70,35,0,373,372,1,0,0,0,374,377,
@@ -192,11 +192,11 @@ def serializedATN():
         5,43,0,0,496,41,1,0,0,0,497,498,5,24,0,0,498,499,5,42,0,0,499,500,
         5,43,0,0,500,43,1,0,0,0,501,502,5,25,0,0,502,503,5,42,0,0,503,504,
         5,43,0,0,504,45,1,0,0,0,505,506,5,26,0,0,506,507,5,42,0,0,507,508,
-        5,43,0,0,508,47,1,0,0,0,509,510,5,36,0,0,510,511,5,42,0,0,511,512,
-        5,43,0,0,512,49,1,0,0,0,513,514,5,27,0,0,514,515,5,42,0,0,515,516,
-        5,43,0,0,516,51,1,0,0,0,517,518,5,28,0,0,518,519,5,42,0,0,519,520,
-        5,43,0,0,520,53,1,0,0,0,521,522,5,29,0,0,522,523,5,42,0,0,523,524,
-        5,43,0,0,524,55,1,0,0,0,525,526,5,30,0,0,526,527,5,42,0,0,527,528,
+        5,43,0,0,508,47,1,0,0,0,509,510,5,29,0,0,510,511,5,42,0,0,511,512,
+        5,43,0,0,512,49,1,0,0,0,513,514,5,30,0,0,514,515,5,42,0,0,515,516,
+        5,43,0,0,516,51,1,0,0,0,517,518,5,36,0,0,518,519,5,42,0,0,519,520,
+        5,43,0,0,520,53,1,0,0,0,521,522,5,27,0,0,522,523,5,42,0,0,523,524,
+        5,43,0,0,524,55,1,0,0,0,525,526,5,28,0,0,526,527,5,42,0,0,527,528,
         5,43,0,0,528,57,1,0,0,0,529,530,5,31,0,0,530,531,5,42,0,0,531,532,
         5,43,0,0,532,59,1,0,0,0,533,534,5,32,0,0,534,535,5,42,0,0,535,536,
         5,43,0,0,536,61,1,0,0,0,537,538,5,33,0,0,538,539,5,42,0,0,539,540,
@@ -207,7 +207,7 @@ def serializedATN():
         5,43,0,0,556,71,1,0,0,0,557,558,7,1,0,0,558,73,1,0,0,0,559,560,7,
         2,0,0,560,75,1,0,0,0,56,77,82,89,98,104,111,114,118,126,141,145,
         152,158,164,169,176,179,183,196,203,210,217,224,239,246,253,260,
-        267,283,290,294,299,303,308,312,317,321,326,342,349,356,360,365,
+        264,269,273,278,285,301,308,312,317,321,326,342,349,356,360,365,
         375,381,391,394,398,402,409,412,416,424,439,454,469
     ]
 
@@ -270,11 +270,11 @@ class XMLParser ( Parser ):
     RULE_role_id = 21
     RULE_role_name = 22
     RULE_role_assignment_method = 23
-    RULE_agent_type = 24
-    RULE_committee_id = 25
-    RULE_committee_description = 26
-    RULE_n_agent_min = 27
-    RULE_n_agent_max = 28
+    RULE_n_agent_min = 24
+    RULE_n_agent_max = 25
+    RULE_agent_type = 26
+    RULE_committee_id = 27
+    RULE_committee_description = 28
     RULE_appointment_method = 29
     RULE_decision_making_method = 30
     RULE_permission_id = 31
@@ -290,11 +290,11 @@ class XMLParser ( Parser ):
                    "relations", "associated_to", "controlled_by", "aggregates", 
                    "federates_into", "reference", "dao_id", "dao_name", 
                    "mission_statement", "hierarchical_inheritance", "role_id", 
-                   "role_name", "role_assignment_method", "agent_type", 
-                   "committee_id", "committee_description", "n_agent_min", 
-                   "n_agent_max", "appointment_method", "decision_making_method", 
-                   "permission_id", "allowed_action", "permission_type", 
-                   "ref_gov_area", "attribute", "chardata", "misc" ]
+                   "role_name", "role_assignment_method", "n_agent_min", 
+                   "n_agent_max", "agent_type", "committee_id", "committee_description", 
+                   "appointment_method", "decision_making_method", "permission_id", 
+                   "allowed_action", "permission_type", "ref_gov_area", 
+                   "attribute", "chardata", "misc" ]
 
     EOF = Token.EOF
     COMMENT=1
@@ -1165,6 +1165,14 @@ class XMLParser ( Parser ):
                 return self.getTypedRuleContext(XMLParser.MiscContext,i)
 
 
+        def n_agent_min(self):
+            return self.getTypedRuleContext(XMLParser.N_agent_minContext,0)
+
+
+        def n_agent_max(self):
+            return self.getTypedRuleContext(XMLParser.N_agent_maxContext,0)
+
+
         def getRuleIndex(self):
             return XMLParser.RULE_role
 
@@ -1226,37 +1234,75 @@ class XMLParser ( Parser ):
             self.role_assignment_method()
             self.state = 260
             self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 70368744177730) != 0):
-                self.state = 257
-                self.misc()
+            _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt==1:
+                    self.state = 257
+                    self.misc() 
                 self.state = 262
                 self._errHandler.sync(self)
-                _la = self._input.LA(1)
+                _alt = self._interp.adaptivePredict(self._input,26,self._ctx)
 
-            self.state = 263
-            self.agent_type()
-            self.state = 267
+            self.state = 264
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==29:
+                self.state = 263
+                self.n_agent_min()
+
+
+            self.state = 269
+            self._errHandler.sync(self)
+            _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
+            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
+                if _alt==1:
+                    self.state = 266
+                    self.misc() 
+                self.state = 271
+                self._errHandler.sync(self)
+                _alt = self._interp.adaptivePredict(self._input,28,self._ctx)
+
+            self.state = 273
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            if _la==30:
+                self.state = 272
+                self.n_agent_max()
+
+
+            self.state = 278
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 70368744177730) != 0):
-                self.state = 264
+                self.state = 275
                 self.misc()
-                self.state = 269
+                self.state = 280
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 270
+            self.state = 281
+            self.agent_type()
+            self.state = 285
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & 70368744177730) != 0):
+                self.state = 282
+                self.misc()
+                self.state = 287
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+
+            self.state = 288
             self.match(XMLParser.CLOSE)
-            self.state = 271
+            self.state = 289
             self.relations()
-            self.state = 272
+            self.state = 290
             self.match(XMLParser.OPEN)
-            self.state = 273
+            self.state = 291
             self.match(XMLParser.SLASH)
-            self.state = 274
+            self.state = 292
             self.match(XMLParser.ROLE)
-            self.state = 275
+            self.state = 293
             self.match(XMLParser.CLOSE)
         except RecognitionException as re:
             localctx.exception = re
@@ -1314,14 +1360,6 @@ class XMLParser ( Parser ):
                 return self.getTypedRuleContext(XMLParser.MiscContext,i)
 
 
-        def n_agent_min(self):
-            return self.getTypedRuleContext(XMLParser.N_agent_minContext,0)
-
-
-        def n_agent_max(self):
-            return self.getTypedRuleContext(XMLParser.N_agent_maxContext,0)
-
-
         def appointment_method(self):
             return self.getTypedRuleContext(XMLParser.Appointment_methodContext,0)
 
@@ -1349,62 +1387,24 @@ class XMLParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 277
+            self.state = 295
             self.match(XMLParser.OPEN)
-            self.state = 278
+            self.state = 296
             self.match(XMLParser.COMMITTEE)
-            self.state = 279
+            self.state = 297
             self.committee_id()
-            self.state = 283
+            self.state = 301
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & 70368744177730) != 0):
-                self.state = 280
+                self.state = 298
                 self.misc()
-                self.state = 285
+                self.state = 303
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 286
+            self.state = 304
             self.committee_description()
-            self.state = 290
-            self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
-            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
-                if _alt==1:
-                    self.state = 287
-                    self.misc() 
-                self.state = 292
-                self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,29,self._ctx)
-
-            self.state = 294
-            self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            if _la==29:
-                self.state = 293
-                self.n_agent_min()
-
-
-            self.state = 299
-            self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,31,self._ctx)
-            while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
-                if _alt==1:
-                    self.state = 296
-                    self.misc() 
-                self.state = 301
-                self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,31,self._ctx)
-
-            self.state = 303
-            self._errHandler.sync(self)
-            _la = self._input.LA(1)
-            if _la==30:
-                self.state = 302
-                self.n_agent_max()
-
-
             self.state = 308
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,33,self._ctx)
@@ -2726,153 +2726,6 @@ class XMLParser ( Parser ):
         return localctx
 
 
-    class Agent_typeContext(ParserRuleContext):
-        __slots__ = 'parser'
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
-            super().__init__(parent, invokingState)
-            self.parser = parser
-
-        def AGENTTYPE(self):
-            return self.getToken(XMLParser.AGENTTYPE, 0)
-
-        def EQUALS(self):
-            return self.getToken(XMLParser.EQUALS, 0)
-
-        def STRING(self):
-            return self.getToken(XMLParser.STRING, 0)
-
-        def getRuleIndex(self):
-            return XMLParser.RULE_agent_type
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAgent_type" ):
-                return visitor.visitAgent_type(self)
-            else:
-                return visitor.visitChildren(self)
-
-
-
-
-    def agent_type(self):
-
-        localctx = XMLParser.Agent_typeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 48, self.RULE_agent_type)
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 509
-            self.match(XMLParser.AGENTTYPE)
-            self.state = 510
-            self.match(XMLParser.EQUALS)
-            self.state = 511
-            self.match(XMLParser.STRING)
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
-
-
-    class Committee_idContext(ParserRuleContext):
-        __slots__ = 'parser'
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
-            super().__init__(parent, invokingState)
-            self.parser = parser
-
-        def COMMITTEEID(self):
-            return self.getToken(XMLParser.COMMITTEEID, 0)
-
-        def EQUALS(self):
-            return self.getToken(XMLParser.EQUALS, 0)
-
-        def STRING(self):
-            return self.getToken(XMLParser.STRING, 0)
-
-        def getRuleIndex(self):
-            return XMLParser.RULE_committee_id
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCommittee_id" ):
-                return visitor.visitCommittee_id(self)
-            else:
-                return visitor.visitChildren(self)
-
-
-
-
-    def committee_id(self):
-
-        localctx = XMLParser.Committee_idContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 50, self.RULE_committee_id)
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 513
-            self.match(XMLParser.COMMITTEEID)
-            self.state = 514
-            self.match(XMLParser.EQUALS)
-            self.state = 515
-            self.match(XMLParser.STRING)
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
-
-
-    class Committee_descriptionContext(ParserRuleContext):
-        __slots__ = 'parser'
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
-            super().__init__(parent, invokingState)
-            self.parser = parser
-
-        def COMMITTEEDESCRIPTION(self):
-            return self.getToken(XMLParser.COMMITTEEDESCRIPTION, 0)
-
-        def EQUALS(self):
-            return self.getToken(XMLParser.EQUALS, 0)
-
-        def STRING(self):
-            return self.getToken(XMLParser.STRING, 0)
-
-        def getRuleIndex(self):
-            return XMLParser.RULE_committee_description
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCommittee_description" ):
-                return visitor.visitCommittee_description(self)
-            else:
-                return visitor.visitChildren(self)
-
-
-
-
-    def committee_description(self):
-
-        localctx = XMLParser.Committee_descriptionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 52, self.RULE_committee_description)
-        try:
-            self.enterOuterAlt(localctx, 1)
-            self.state = 517
-            self.match(XMLParser.COMMITTEEDESCRIPTION)
-            self.state = 518
-            self.match(XMLParser.EQUALS)
-            self.state = 519
-            self.match(XMLParser.STRING)
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
-
-
     class N_agent_minContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -2904,14 +2757,14 @@ class XMLParser ( Parser ):
     def n_agent_min(self):
 
         localctx = XMLParser.N_agent_minContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 54, self.RULE_n_agent_min)
+        self.enterRule(localctx, 48, self.RULE_n_agent_min)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 521
+            self.state = 509
             self.match(XMLParser.NAGENTMIN)
-            self.state = 522
+            self.state = 510
             self.match(XMLParser.EQUALS)
-            self.state = 523
+            self.state = 511
             self.match(XMLParser.STRING)
         except RecognitionException as re:
             localctx.exception = re
@@ -2953,11 +2806,158 @@ class XMLParser ( Parser ):
     def n_agent_max(self):
 
         localctx = XMLParser.N_agent_maxContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 56, self.RULE_n_agent_max)
+        self.enterRule(localctx, 50, self.RULE_n_agent_max)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 513
+            self.match(XMLParser.NAGENTMAX)
+            self.state = 514
+            self.match(XMLParser.EQUALS)
+            self.state = 515
+            self.match(XMLParser.STRING)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Agent_typeContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def AGENTTYPE(self):
+            return self.getToken(XMLParser.AGENTTYPE, 0)
+
+        def EQUALS(self):
+            return self.getToken(XMLParser.EQUALS, 0)
+
+        def STRING(self):
+            return self.getToken(XMLParser.STRING, 0)
+
+        def getRuleIndex(self):
+            return XMLParser.RULE_agent_type
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAgent_type" ):
+                return visitor.visitAgent_type(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def agent_type(self):
+
+        localctx = XMLParser.Agent_typeContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 52, self.RULE_agent_type)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 517
+            self.match(XMLParser.AGENTTYPE)
+            self.state = 518
+            self.match(XMLParser.EQUALS)
+            self.state = 519
+            self.match(XMLParser.STRING)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Committee_idContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def COMMITTEEID(self):
+            return self.getToken(XMLParser.COMMITTEEID, 0)
+
+        def EQUALS(self):
+            return self.getToken(XMLParser.EQUALS, 0)
+
+        def STRING(self):
+            return self.getToken(XMLParser.STRING, 0)
+
+        def getRuleIndex(self):
+            return XMLParser.RULE_committee_id
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCommittee_id" ):
+                return visitor.visitCommittee_id(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def committee_id(self):
+
+        localctx = XMLParser.Committee_idContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 54, self.RULE_committee_id)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 521
+            self.match(XMLParser.COMMITTEEID)
+            self.state = 522
+            self.match(XMLParser.EQUALS)
+            self.state = 523
+            self.match(XMLParser.STRING)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Committee_descriptionContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def COMMITTEEDESCRIPTION(self):
+            return self.getToken(XMLParser.COMMITTEEDESCRIPTION, 0)
+
+        def EQUALS(self):
+            return self.getToken(XMLParser.EQUALS, 0)
+
+        def STRING(self):
+            return self.getToken(XMLParser.STRING, 0)
+
+        def getRuleIndex(self):
+            return XMLParser.RULE_committee_description
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitCommittee_description" ):
+                return visitor.visitCommittee_description(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def committee_description(self):
+
+        localctx = XMLParser.Committee_descriptionContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 56, self.RULE_committee_description)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 525
-            self.match(XMLParser.NAGENTMAX)
+            self.match(XMLParser.COMMITTEEDESCRIPTION)
             self.state = 526
             self.match(XMLParser.EQUALS)
             self.state = 527

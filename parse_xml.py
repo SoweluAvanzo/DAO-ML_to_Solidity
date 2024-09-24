@@ -49,8 +49,10 @@ class DAO_ML_Visitor(XMLParserVisitor):
         role_id = ctx.role_id().STRING().getText().strip('"')
         role_name = ctx.role_name().STRING().getText().strip('"')
         role_assignment_method = ctx.role_assignment_method().STRING().getText().strip('"')
+        n_agent_min = ctx.n_agent_min().STRING().getText().strip('"') if ctx.n_agent_min() else None
+        n_agent_max = ctx.n_agent_max().STRING().getText().strip('"') if ctx.n_agent_max() else None
         agent_type = ctx.agent_type().STRING().getText().strip('"')
-        role = Role(role_id, role_name, role_assignment_method, agent_type)
+        role = Role(role_id, role_name, role_assignment_method, n_agent_min, n_agent_max, agent_type)
         self.roles[role_id] = role
         print(f'Role created with ID: {role_id}')
         return self.visitChildren(ctx)
@@ -58,10 +60,8 @@ class DAO_ML_Visitor(XMLParserVisitor):
     def visitCommittee(self, ctx):
         committee_id = ctx.committee_id().STRING().getText().strip('"')
         committee_description = ctx.committee_description().STRING().getText().strip('"')
-        n_agent_min = ctx.n_agent_min().STRING().getText().strip('"') if ctx.n_agent_min() else None
-        n_agent_max = ctx.n_agent_max().STRING().getText().strip('"') if ctx.n_agent_max() else None
         appointment_method = ctx.appointment_method().STRING().getText().strip('"')
-        committee = Committee(committee_id, committee_description, n_agent_min, n_agent_max, appointment_method)
+        committee = Committee(committee_id, committee_description, appointment_method)
         self.committees[committee_id] = committee
         print(f'Committee created with ID: {committee_id}')
         return self.visitChildren(ctx)
