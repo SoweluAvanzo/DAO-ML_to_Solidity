@@ -95,19 +95,19 @@ class DiagramManager:
                 content = relation[2]
                 if relation[0] == dc.RelationType.CONTROL:
                     the_controller_ID = content
-                    the_slaaaaaaaaaave_ID= fromID
+                    controlled_ID= fromID
 
-                    print(f'Control relation found: {the_controller_ID} -> {the_slaaaaaaaaaave_ID} \n')
-                    if the_slaaaaaaaaaave_ID in dao.roles:
-                        role = dao.roles[the_slaaaaaaaaaave_ID]
+                    print(f'Control relation found: {the_controller_ID} -> {controlled_ID} \n')
+                    if controlled_ID in dao.roles:
+                        role = dao.roles[controlled_ID]
                         print(f'Role found: {role.role_id} , controlled by {the_controller_ID} \n')
                         role.add_controller(the_controller_ID)
-                    elif the_slaaaaaaaaaave_ID in dao.committees:
-                        committee = dao.committees[the_slaaaaaaaaaave_ID]
+                    elif controlled_ID in dao.committees:
+                        committee = dao.committees[controlled_ID]
                         print(f'Committee found: {committee.committee_id} , controlled by {the_controller_ID} \n')
                         committee.add_controller(the_controller_ID) 
                     else:
-                        print(f"ERROR: the controller __{the_controller_ID}__ should control __{the_slaaaaaaaaaave_ID}__, but this last one has not been found")
+                        print(f"ERROR: the controller __{the_controller_ID}__ should control __{controlled_ID}__, but this last one has not been found")
                 elif relation[0] == dc.RelationType.ASSOCIATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
@@ -134,6 +134,26 @@ class DiagramManager:
                         elif content in dao.roles:
                             committee.add_aggregated(dao.roles[content])
                             print(f' Committee "{fromID}" aggregates into  {content}\n')
+                elif relation[0] == dc.RelationType.FEDERATION:
+                    if fromID in dao.roles:
+                        role = dao.roles[fromID]
+                        if content in dao.committees:
+                            #the source role is part of the target committee
+                            role.add_committee_membership(dao.committees[content])
+                            #the target committee has the source role as a member
+                            dao.committees[content].add_member_entity(role)
+                            print(f'Role {fromID} federates into: {content} \n')
+                        else:
+                            print(f'ERROR: wrong federation type: Role {fromID} -> {content} \n')
+                    elif fromID in dao.committees:
+                        committee = dao.committees[fromID]
+                        if content in dao.committees:
+                            #the source committee is part of the target committee
+                            committee.add_committee_membership(dao.committees[content])
+                            #the target committee has the source committee as a member
+                            dao.committees[content].add_member_entity(committee)
+                        else:
+                            print(f'ERROR: wrong federation type: Committee {fromID} -> {content} \n')
             dao.metadata.save_user_functionalities_group_size(dao.roles, dao.committees)
         
         print(f' in process raw instances DAO: {dao_id} is processed. \n DAO Conent: {dao} \n')            

@@ -131,6 +131,16 @@ class DAOVisitor2(XMLParserVisitor):
                 #    id = ctx.parentCtx.committee_id().STRING().getText().strip('"')
                 id = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(self.current_dao, RelationType.AGGREGATION, id, content)
+        if ctx.federates_into():
+            for federated in ctx.federates_into():
+                content = self.aggregate_texts(federated.content().chardata())
+                print("in federates_into: " + self.aggregate_texts(federated.content().chardata(), separator=", "))
+                #if hasattr(ctx.parentCtx, 'role_id') and callable(getattr(ctx.parentCtx, 'role_id')):
+                #    id = ctx.parentCtx.role_id().STRING().getText().strip('"')
+                #else:
+                #    id = ctx.parentCtx.committee_id().STRING().getText().strip('"')
+                id = self.__extract_ID(ctx.parentCtx)
+                self.diagramManager.addRelation(self.current_dao, RelationType.FEDERATION, id, content)
         return self.visitChildren(ctx)
         # if ctx.associated_to():
         #     for assoc in ctx.associated_to():

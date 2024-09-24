@@ -7,6 +7,7 @@ class RelationType(Enum):
     ASSOCIATION = 1
     CONTROL = 2
     AGGREGATION = 3
+    FEDERATION = 4
 
 #stores permission metadata
 class Permission:
@@ -30,6 +31,7 @@ class Role:
         self.permissions: list[Permission] = []
         self.controllers:list[str] = [] # just the ID
         self.aggregated:list[Role|Committee] =  []
+        self.federated_committees:list[str] = []
 
     def add_permission(self, permission: Permission):
         print(f'Adding permission {str(permission)} to role {self.role_id}')
@@ -40,6 +42,9 @@ class Role:
     
     def add_aggregated(self, aggregated):
         self.aggregated.append(aggregated)
+
+    def add_committee_membership(self, target_committee_id:str):
+        self.federated_committees.append(target_committee_id)
 
     def __str__(self):
         parts = [f'Role(role_id={self.role_id}, role_name={self.role_name}, role_assignment_method={self.role_assignment_method}, agent_type={self.agent_type}']
@@ -85,6 +90,8 @@ class Committee:
         self.permissions:list[Permission] = []
         self.controllers:list[str] = []
         self.aggregated:list[str] =  []
+        self.member_entities:list[str] = []
+        self.federated_committees:list[str] = []
 
     def add_permission(self, permission):
         print(f'Adding permission {str(permission)} to committee {self.committee_id}')
@@ -95,6 +102,12 @@ class Committee:
         
     def add_aggregated(self, aggregated_id:str):
         self.aggregated.append(aggregated_id)
+
+    def add_committee_membership(self, target_committee_id:str):
+        self.member_entities.append(target_committee_id)
+
+    def add_member_entity(self, entity_id:str):
+        self.federated_committees.append(entity_id)
 
     def __str__(self):
         parts=[f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, n_agent_min={self.n_agent_min}, n_agent_max={self.n_agent_max}, appointment_method={self.appointment_method}']
