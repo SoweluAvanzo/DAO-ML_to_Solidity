@@ -23,7 +23,7 @@ class Permission:
 
 #stores role information with control relations and associated permissions
 class Role:
-    def __init__(self, role_id, role_name, role_assignment_method, n_agent_min, n_agent_max,agent_type):
+    def __init__(self, role_id, role_name, role_assignment_method, n_agent_min, n_agent_max, agent_type):
         self.role_id = role_id
         self.role_name = role_name
         self.role_assignment_method = role_assignment_method
@@ -112,6 +112,7 @@ class Committee:
 
     def add_member_entity(self, entity_id:str):
         self.federated_committees.append(entity_id)
+    
 
     def __str__(self):
         parts=[f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, appointment_method={self.appointment_method}']

@@ -75,12 +75,13 @@ class CommitteeTranslator:
             'import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";',
             'import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";',
             'import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";',
-            'import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";'
+            'import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";',
+            'import "./interfaces/IPermissionManager.sol";'
         ]
         return imports
 
     def generate_contract_declaration(self, contract_name):
-        return f"contract {contract_name}Voting is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction " + "{"
+        return f"contract {contract_name}Voting is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, IPermissionManager " + "{"
 
     def generate_constructor(self, contract_name):
         return [

@@ -79,6 +79,27 @@ class DiagramManager:
         #     for loop in nx.simple_cycles(dao.dao_control_graph):
         #         print(f'Loop: {loop} \n') 
         
+    def get_aggregated_permissions(self, role_or_committee):
+        # if not role_or_committee.aggregated:
+        #     return
+        for aggregated in role_or_committee.aggregated:
+            self.get_aggregated_permissions(aggregated)
+            #the aggregator inherits permissions from the aggregated
+            for permission in aggregated.permissions:
+                if permission not in role_or_committee.permissions:
+                    source_id = role_or_committee.role_id if isinstance(role_or_committee, dc.Role) else role_or_committee.committee_id
+                    target_id = aggregated.role_id if isinstance(aggregated, dc.Role) else aggregated.committee_id
+                    print(f"added Permission:  {permission.permission_id} to {source_id}, which was aggregated from {target_id} \n")
+                    role_or_committee.add_permission(permission)
+            #the aggregator also inherits controllers from the aggregated
+            print(f'Aggregated: {aggregated} has list of controllers of controllers: {aggregated.controllers}\n')
+            for controller in aggregated.controllers:
+                print(f'Controller: {controller} in list of controllers of {aggregated}, that is: {aggregated.controllers}\n')
+                if controller not in role_or_committee.controllers:
+                    role_or_committee.add_controller(controller)
+                    #print(f"added Controller:  {controller} to {role_or_committee} from aggregator {aggregated}\n")
+                # else:
+                #     print(f"Controller:  {controller} already in list of controllers of {role_or_committee} \n")
 
     def processRawInstances(self):
         if not self.rowDataOnly:
@@ -155,6 +176,13 @@ class DiagramManager:
                         else:
                             print(f'ERROR: wrong federation type: Committee {fromID} -> {content} \n')
             dao.metadata.save_user_functionalities_group_size(dao.roles, dao.committees)
+            
+            # Assign aggregated permissions to roles and committees in DAO based on aggregation relations
+            for role in dao.roles.values():
+                self.get_aggregated_permissions(role)
+            for committee in dao.committees.values():
+                self.get_aggregated_permissions(committee)
+
         
         print(f' in process raw instances DAO: {dao_id} is processed. \n DAO Conent: {dao} \n')            
         self.createControlGraph()
@@ -208,6 +236,7 @@ class DiagramManager:
 
         # alla fine, ...
 
+    
 
     def __str__(self):
         result = ["DAOs:"]

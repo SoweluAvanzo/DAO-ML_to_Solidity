@@ -17,7 +17,7 @@
             <federates_into>CommunityCouncil</federates_into>
             <federates_into>EconomicCouncil</federates_into>
             <federates_into>TechnicalCouncil</federates_into>
-            <aggregates>GroupMember</aggregates>
+            <aggregates>GeneralAssembly</aggregates>
         </Role>
         <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" appointment_method="group currency ownership" decision_making_method="simple_majority_voting">
             <associated_to>activate_suspend_service_provision</associated_to>
