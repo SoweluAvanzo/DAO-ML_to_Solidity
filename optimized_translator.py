@@ -330,6 +330,7 @@ class OptimizedSolidityTranslator(Translator):
     def generate_permission_functions(self):
         lines = []
         for perm in self.context.dao.permissions:
+            
             function_name = self.preprocess_function_name(perm)
             permission_index = self.get_permission_index(perm)
             lines.append(f"""

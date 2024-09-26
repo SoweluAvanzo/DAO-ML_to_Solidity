@@ -11,11 +11,13 @@ class RelationType(Enum):
 
 #stores permission metadata
 class Permission:
-    def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None):
+    def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None, voting_right = False, proposal_right = False):
         self.permission_id = permission_id
         self.allowed_action = allowed_action
         self.permission_type = permission_type
         self.ref_gov_area = ref_gov_area
+        self.voting_right = voting_right
+        self.proposal_right = proposal_right
 
     def __str__(self):
         return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type}, ref_gov_area={self.ref_gov_area})'

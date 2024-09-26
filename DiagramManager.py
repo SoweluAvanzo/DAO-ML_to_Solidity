@@ -140,6 +140,7 @@ class DiagramManager:
                         if content in dao.permissions:
                             committee.add_permission(dao.permissions[content])
                             print(f'Permission {content} assigned to Committee {fromID}\n')
+                        
                 elif relation[0] == dc.RelationType.AGGREGATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
@@ -176,14 +177,29 @@ class DiagramManager:
                         else:
                             print(f'ERROR: wrong federation type: Committee {fromID} -> {content} \n')
             dao.metadata.save_user_functionalities_group_size(dao.roles, dao.committees)
-            
+            # Assign voting and proposal permissions to committees
+            for committee in dao.committees.values():
+                # Assign voting and proposal permissions to committees
+                voting_permission = self.create_governance_permission("Voting", committee)
+                proposal_permission = self.create_governance_permission("Proposal", committee)
+                dao.add_permission(voting_permission)
+                dao.add_permission(proposal_permission)
+                for role_or_committee in committee.member_entities:
+                    print(f'Role or Committee: {role_or_committee} \n')
+                    if isinstance(role_or_committee, dc.Role or isinstance(role_or_committee, dc.Committee)):
+                        if voting_permission not in role_or_committee.permissions:
+                            role_or_committee.add_permission(voting_permission)
+                            print(f'Permission {voting_permission.permission_id} assigned to {role_or_committee.role_id} \n')
+                        if proposal_permission not in role_or_committee.permissions:
+                            role_or_committee.add_permission(proposal_permission)
+                            print(f'Permission {proposal_permission.permission_id} assigned to {role_or_committee.role_id} \n')
+                
             # Assign aggregated permissions to roles and committees in DAO based on aggregation relations
             for role in dao.roles.values():
                 self.get_aggregated_permissions(role)
             for committee in dao.committees.values():
                 self.get_aggregated_permissions(committee)
 
-        
         print(f' in process raw instances DAO: {dao_id} is processed. \n DAO Conent: {dao} \n')            
         self.createControlGraph()
 
@@ -236,7 +252,16 @@ class DiagramManager:
 
         # alla fine, ...
 
-    
+    def create_governance_permission(self, type, committee):
+        permission_id = committee.committee_id + type +"Right"
+        allowed_action = committee.committee_description + " " + type + " Right"
+        if type == "Voting":
+            permission = dc.Permission(permission_id=permission_id, allowed_action= allowed_action, permission_type ="strategic", ref_gov_area = None, voting_right = True, proposal_right = False)
+        elif type == "Proposal":
+            permission = dc.Permission(permission_id=permission_id, allowed_action= allowed_action, permission_type ="strategic", ref_gov_area = None, voting_right = False, proposal_right = True)
+        return permission
+        
+
 
     def __str__(self):
         result = ["DAOs:"]
