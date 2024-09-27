@@ -34,7 +34,7 @@ role
     ;
 
 committee
-    : OPEN COMMITTEE committee_id misc* committee_description misc* appointment_method? misc* decision_making_method? misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
+    : OPEN COMMITTEE committee_id misc* committee_description misc* voting_condition? misc* proposal_condition? misc* decision_making_method? misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
     ;
 
 permission
@@ -88,7 +88,8 @@ agent_type : AGENTTYPE EQUALS STRING;
 // Committee attributes
 committee_id : COMMITTEEID EQUALS STRING ;
 committee_description : COMMITTEEDESCRIPTION EQUALS STRING ;
-appointment_method : APPOINTMENTMETHOD EQUALS STRING ;
+voting_condition : VOTINGCONDITION EQUALS STRING ;
+proposal_condition : PROPOSALCONDITION EQUALS STRING ;
 decision_making_method : DMMETHOD EQUALS STRING ;
 
 // Permission attributes

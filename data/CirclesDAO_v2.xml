@@ -19,17 +19,17 @@
             <federates_into>TechnicalCouncil</federates_into>
             <aggregates>GeneralAssembly</aggregates>
         </Role>
-        <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" appointment_method="group currency ownership" decision_making_method="simple_majority_voting">
+        <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" voting_condition="group currency ownership"  proposal_condition="group currency ownership" decision_making_method="simple_majority_voting">
             <associated_to>activate_suspend_service_provision</associated_to>
             <associated_to>evaluate_service_provision</associated_to>
             <is_controlled_by>TechnicalCouncil</is_controlled_by>
             <is_controlled_by>CommunityCouncil</is_controlled_by>
         </Committee>
-        <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" appointment_method="Perishable Share ownership threshold" decision_making_method="simple_majority_voting">
+        <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" voting_condition="group currency threshold"  proposal_condition="group currency threshold" decision_making_method="simple_majority_voting">
             <associated_to>add_remove_allowed_collateral_type</associated_to>
             <is_controlled_by>CommunityCouncil</is_controlled_by>
         </Committee>
-        <Committee committee_ID="CommunityCouncil" committee_description="Community Council" appointment_method="rotation" decision_making_method="simple_majority_voting">
+        <Committee committee_ID="CommunityCouncil" committee_description="Community Council" voting_condition="rotation"  proposal_condition="rotation" decision_making_method="simple_majority_voting">
             <associated_to>set_contribution_attestation</associated_to>
             <associated_to>set_membership_requirements</associated_to>
             <associated_to>include_exclude_group_members</associated_to>
@@ -37,7 +37,7 @@
 
 
         </Committee>
-        <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" appointment_method="election" decision_making_method="simple_majority_voting">
+        <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" voting_condition="election"  proposal_condition="election" decision_making_method="simple_majority_voting">
             <associated_to>upgrade_Group_Currency_smart_contracts</associated_to>
             <associated_to>member_data_management</associated_to>
             <associated_to>suspension_of_the_group_currency</associated_to>
@@ -66,4 +66,12 @@
         <Permission permission_ID="set_contribution_attestation" allowed_action="set contribution attestation" permission_type="structural" ref_gov_area = "TreasuryManagement"/>
         <Permission permission_ID="member_data_management" allowed_action="member data management" permission_type="structural" ref_gov_area = "GroupMembership"/>
     </DAO>
+     <DAO DAO_ID="GCDAO2" DAO_name="Group Currency DAO2" mission_statement="Managing tddhe governance of Group Currencies in the Circles UBI system." hierarchical_inheritance="0">
+        <Role role_ID="GroupMember" role_name="Group Member" role_assignment_method="depositing Circles tokens" agent_type="human">
+            <federates_into>GeneralAssembly</federates_into>
+            <associated_to>propose_service_provision</associated_to>
+            <associated_to>update_user_profile</associated_to>
+            <associated_to>funding_request_submission</associated_to>
+        </Role>
+        </DAO>
 </DAO-ML_diagram>

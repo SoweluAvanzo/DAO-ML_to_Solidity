@@ -7,16 +7,17 @@ pragma solidity ^0.8.0;
 import "./interfaces/IPermissionManager.sol";
 // TO INSERT: IMPORTS OF VOTING AND PROPOSAL CONDITIONS INTERFACES
 import "./interfaces/ICondition.sol";
-contract GCDAO is IPermissionManager {
+contract GCDAO is IPermissionManager, ICondition {
     mapping(address => uint32) internal roles;
 
     // TO INSERT: MAPPING OF COMMITTEES TO VOTING AND PROPOSALCONDITION CONTRACTS
-    mapping(uint32 => address) internal voting_conditions;
-    mapping(uint32 => address) internal proposal_conditions;
-    // TO INSERT: MAPPING OF COMMITTEES TO VOTING AND PROPOSALCONDITION CONTRACTS
+   
     mapping(uint32 => address) internal assignment_conditions;
+       // Mappings from role ID (uint32) to condition contracts (voting, proposal, assignment)
+    mapping(uint32 => ICondition) internal voting_conditions;
+    mapping(uint32 => ICondition) internal proposal_conditions;
 
-
+    bool committee_initialization_blocked = false;
 
     uint16[7] internal role_permissions;
     uint32 internal  GroupMember = 0; // ID : 0 , control bitmask: 0
@@ -49,34 +50,53 @@ contract GCDAO is IPermissionManager {
         require(role_permissions[uint16(roles[_executor] & 31)] & (uint16(1) << _permissionIndex) != 0, "User does not have this permission");
         _;
     }
-            
-    constructor( address _GeneralAssembly, address _EconomicCouncil, address _CommunityCouncil, address _TechnicalCouncil) {
-         _owner = msg.sender;
+    // TO INSERT: MODIFIED CONSTRUCTOR
+    // Constructor to assign initial roles, permissions, and condition contracts using dynamic arrays
+    constructor(
+        uint32[] memory roleIds,                      
+        address[] memory votingConditionAddresses,     
+        address[] memory proposalConditionAddresses,   //  array for proposal condition contract addresses
+        address[] memory assignmentConditionAddresses  //  array for assignment condition contract addresses
+    ) {
+        require(roleIds.length == votingConditionAddresses.length, "Role ID and voting condition count mismatch");
+        require(roleIds.length == proposalConditionAddresses.length, "Role ID and proposal condition count mismatch");
+        require(roleIds.length == assignmentConditionAddresses.length, "Role ID and assignment condition count mismatch");
+
+        _owner = msg.sender;
+
+        // Initial permissions for each role (bitmap encoded)
         role_permissions[GroupMember & 31] = 28;
-
         role_permissions[TreasuryManager & 31] = 163;
-
         role_permissions[ActiveMember & 31] = 3;
-
         role_permissions[GeneralAssembly & 31] = 3;
-
         role_permissions[EconomicCouncil & 31] = 64;
-
         role_permissions[CommunityCouncil & 31] = 12544;
-
         role_permissions[TechnicalCouncil & 31] = 19968;
 
-         roles[_GeneralAssembly] = GeneralAssembly; 
-
-         roles[_EconomicCouncil] = EconomicCouncil; 
-
-         roles[_CommunityCouncil] = CommunityCouncil; 
-
-         roles[_TechnicalCouncil] = TechnicalCouncil; 
-
+        // Set condition contracts for each role based on the passed dynamic arrays
+        for (uint256 i = 0; i < roleIds.length; i++) {
+            voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);
+            proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);
+            assignment_conditions[roleIds[i]] = ICondition(assignmentConditionAddresses[i]);
+        }
     }
+         //FOR EACH CONDITION CONTRACT, A SET OF ADDRESSES IS PASSED TO THE CONTRACT
+
+ //TO INSERT: Function to set voting condition smart contract for a specific committee
+  
+       function initializeCommittees( address _GeneralAssembly, address _EconomicCouncil, address _CommunityCouncil, address _TechnicalCouncil){
+        require(msg.sender == _owner && committee_initialization_blocked == false && _EconomicCouncil != address(0),  _GeneralAssembly != address(0),  _CommunityCouncil != address(0),  _TechnicalCouncil != address(0), "Invalid committee initialization");
+        roles[_GeneralAssembly] = GeneralAssembly;
+        roles[_EconomicCouncil] = EconomicCouncil;
+        roles[_CommunityCouncil] = CommunityCouncil;
+        roles[_TechnicalCouncil] = TechnicalCouncil;
+        bool committee_initialization_blocked = true;
+       }
+ // Assign roles to initial addresses
+        
 
         function assignRole(address _user, uint32 _role) external controlledBy(_role,msg.sender) {
+
             roles[_user] = _role;
              emit RoleAssigned(_user, _role);
         }
@@ -197,5 +217,44 @@ contract GCDAO is IPermissionManager {
         function member_data_management() external hasPermission(msg.sender, 14) {
             // TODO: Implement the function logic here
         }
-                
+        
+         // TOINSERT: Implement the can vote function logic here
+        function canVote(address user, uint16 permissionIndex) external view returns (bool) {
+        require(role_permissions[uint16(roles[user] & 31)] & (uint16(1) << permissionIndex) != 0, "User does not have this permission");
+        if (voting_conditions[roles[user]] == ICondition(address(0))){
+            return true;
+            }
+            return voting_conditions[roleId].evaluate(user);
+            }
+    }
+
+     // TOINSERT: Implement the can vote function logic here
+        function canPropose(address user, uint16 permissionIndex) external view returns (bool) {
+        require(role_permissions[uint16(roles[user] & 31)] & (uint16(1) << permissionIndex) != 0, "User does not have this permission");
+        if (proposal_conditions[roles[user]] == ICondition(address(0))){
+            return true;
+            }
+            return proposal_conditions[roleId].evaluate(user);
+            }
+
+
+//TO INSERT: Condition Implementation
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "./ICondition.sol";
+
+contract NameCondition is ICondition {
+    function evaluate(address user) external view override returns (bool) {
+        // Your voting logic goes here
+        return true; // Example return value
+    }
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+interface IPermissionManager {
+    function has_permission(address user, uint16 permissionIndex) external view returns (bool);
+    function canVote(address user, uint32 roleId, uint16 permissionIndex) external view returns (bool);
+    function canPropose(address user, uint32 roleId, uint16 permissionIndex) external view returns (bool);
+}
 }

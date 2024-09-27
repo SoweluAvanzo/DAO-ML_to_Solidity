@@ -1,19 +1,6 @@
 '''
 """
-This module contains the implementation of the DAO_ML_Visitor class, which is a visitor for parsing XML files and extracting information related to DAOs, roles, committees, permissions, and relations.
-The DAO_ML_Visitor class inherits from the XMLParserVisitor class and overrides its visit methods to handle specific XML elements.
-The class has the following attributes:
-- daos: a dictionary storing DAO objects, with DAO IDs as keys and DAO objects as values.
-- roles: a dictionary storing Role objects, with role IDs as keys and Role objects as values.
-- committees: a dictionary storing Committee objects, with committee IDs as keys and Committee objects as values.
-- permissions: a dictionary storing Permission objects, with permission IDs as keys and Permission objects as values.
-- control_graph: a directed graph (networkx.DiGraph) representing the control relations between roles and committees.
-- aggregations: a defaultdict(list) storing the aggregation relations between roles/committees and other entities.
-- associations: a defaultdict(list) storing the association relations between roles/committees and other entities.
-- control_relations: a defaultdict(list) storing the control relations between roles/committees and other entities.
-The DAO_ML_Visitor class provides methods for visiting different XML elements and extracting relevant information. It also performs assignments of permissions, controllers, and aggregated entities to roles, committees, and DAOs based on the extracted relations.
-Additionally, the class generates a control graph based on the control relations and assigns it to the corresponding DAO object. It also utilizes a SolidityTranslator object to generate Solidity code based on the extracted information.
-To use this class, create an instance of DAO_ML_Visitor and call its visit method, passing the root XML element as the argument.
+!!!!OLD MODULE: DEPRECATED! GO TO VISITOR2!!!!
 '''
 import networkx as nx
 from collections import defaultdict

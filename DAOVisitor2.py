@@ -63,9 +63,10 @@ class DAOVisitor2(XMLParserVisitor):
         committee_description = ctx.committee_description().STRING().getText().strip('"')
         # n_agent_min = ctx.n_agent_min().STRING().getText().strip('"') if ctx.n_agent_min() else None
         # n_agent_max = ctx.n_agent_max().STRING().getText().strip('"') if ctx.n_agent_max() else None
-        appointment_method = ctx.appointment_method().STRING().getText().strip('"') if ctx.appointment_method() else None
+        voting_condition = ctx.voting_condition().STRING().getText().strip('"') if ctx.voting_condition() else None
+        proposal_condition = ctx.proposal_condition().STRING().getText().strip('"') if ctx.proposal_condition() else None
         decision_making_method = ctx.decision_making_method().STRING().getText().strip('"') if ctx.decision_making_method() else None
-        committee = Committee(committee_id, committee_description, appointment_method, decision_making_method)
+        committee = Committee(committee_id, committee_description, voting_condition, proposal_condition , decision_making_method)
         #self.committees[committee_id] = committee
         print(f'Committee created with ID: {committee_id}')
         print(f'Committee DMM: {decision_making_method}')

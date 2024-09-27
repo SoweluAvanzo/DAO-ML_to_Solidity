@@ -44,7 +44,9 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(self.generate_state_variables())
         lines.append(self.generate_modifier_control_relation())
         lines.append(self.generate_has_permission_modifier())
-        lines.append(self.generate_constructor())
+        #lines.append(self.generate_constructor())
+        lines.append(self.generate_constructor_v2())
+        lines.append(self.generate_committee_initialization_function())
         lines.append(self.generate_functions())
         lines.append(self.generate_permission_functions())  
         lines.append(self.generate_closure())
@@ -93,7 +95,8 @@ class OptimizedSolidityTranslator(Translator):
     def generate_contract_declaration(self):
         lines = []
         lines.append("import \"./interfaces/IPermissionManager.sol\";")
-        lines.append( f"contract {self.context.dao.dao_id} is IPermissionManager {'{'}")
+        lines.append(f"import \"./interfaces/ICondition.sol\";")
+        lines.append( f"contract {self.context.dao.dao_id} is IPermissionManager, ICondition {'{'}")
         return "\n".join(lines)
     
     def get_control_bitflags(self, role_or_committee, r_o_c_ID, group_size, functionalities_ids):
@@ -149,8 +152,11 @@ class OptimizedSolidityTranslator(Translator):
         id_var_type = self.get_variable_type()
         
         lines = []
+        lines.append(f"    bool {visibility} committee_initialization_blocked;")
         lines.append(f"    mapping(address => {id_var_type}) {visibility} roles;")
-
+        lines.append(f"    mapping({id_var_type} => ICondition) {visibility} voting_conditions;")
+        lines.append(f"    mapping({id_var_type} => ICondition) {visibility} proposal_conditions;")
+        lines.append(f"    mapping({id_var_type} => ICondition) {visibility} assignment_conditions;")
         # Now, define the way a "role_permission" must work; in particular how
         # its data is accessed: if we are still "optimizing" (i.e., the
         # "self.group_size" is NOT "None", i.e. its value is a UserFunctionalitiesGroupSize
@@ -203,11 +209,36 @@ class OptimizedSolidityTranslator(Translator):
 
 
 
+    def generate_constructor_v2(self):
+        id_var_type = self.get_variable_type()
+        lines = []
+        lines.append("    constructor(")
+        lines.append(f"{id_var_type}[] memory roleIds, ")    
+        lines.append("address[] memory votingConditionAddresses, ")
+        lines.append("address[] memory proposalConditionAddresses, ")
+        lines.append("address[] memory assignmentConditionAddresses")
+        lines.append(") {")
+        if self.context.daoOwner:
+            lines.append("         _owner = msg.sender;")
+        lines.append(self.generate_role_permission_mapping())
+        lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
+        lines.append("     voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);")
+        lines.append("     proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);")
+        lines.append("     assignment_conditions[roleIds[i]] = ICondition(assignmentConditionAddresses[i]);")
+        lines.append("      }")
+        lines.append("}")
+        return "\n".join(lines)
+        
+
+
     def generate_constructor(self):
         committee_list_param = [f"address _{x}" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
         lines = []
         lines.append(f"    constructor( {committee_address_list}) {'{'}")
+        lines.append(" require(roleIds.length == votingConditionAddresses.length, \"Role ID and voting condition count mismatch\");")
+        lines.append(" require(roleIds.length == proposalConditionAddresses.length, \"Role ID and proposal condition count mismatch\");")
+        lines.append(" require(roleIds.length == assignmentConditionAddresses.length, \"Role ID and assignment condition count mismatch\"); \n")
         if self.context.daoOwner:
             lines.append("         _owner = msg.sender;")
         # for role in self.context.dao.roles.values():
@@ -234,6 +265,24 @@ class OptimizedSolidityTranslator(Translator):
         _;
     }}
             """
+    
+
+    def generate_committee_initialization_function(self):
+        committee_list_param = [f"address _{x}" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ]
+        committee_address_list = ', '.join(committee_list_param)
+        committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ])
+        return f""" 
+        function initializeCommittees({committee_address_list}){{
+        require(msg.sender == _owner && committee_initialization_blocked == false && {committee_requires}, "Invalid committee initialization");
+        roles[_GeneralAssembly] = GeneralAssembly;
+        roles[_EconomicCouncil] = EconomicCouncil;
+        roles[_CommunityCouncil] = CommunityCouncil;
+        roles[_TechnicalCouncil] = TechnicalCouncil;
+        bool committee_initialization_blocked = true;
+
+       }}
+
+       """
 #TODO: Sono arrivato qui: implementare le funzioni per assegnare e revocare i permessi correttamente
     def generate_functions(self):
         id_var_type = self.get_variable_type()
@@ -242,6 +291,7 @@ class OptimizedSolidityTranslator(Translator):
         eventual_addressing_manipulation = f" & {self.id_mask}" if is_role_access_optimized else ""
 
         return f"""
+        
         function assignRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
             roles[_user] = _role;
              emit RoleAssigned(_user, _role);
@@ -329,15 +379,43 @@ class OptimizedSolidityTranslator(Translator):
     
     def generate_permission_functions(self):
         lines = []
-        for perm in self.context.dao.permissions:
-            
-            function_name = self.preprocess_function_name(perm)
-            permission_index = self.get_permission_index(perm)
+        voting_function = False
+        proposal_function = False
+        for perm in self.context.dao.permissions.values():
+            if perm.voting_right:
+                voting_function = True
+            if perm.proposal_right:
+                proposal_function = True
+            if perm.voting_right or perm.proposal_right:
+                continue
+            function_name = self.preprocess_function_name(perm.permission_id)
+            permission_index = self.get_permission_index(perm.permission_id)
             lines.append(f"""
         function {function_name}() external hasPermission(msg.sender, {permission_index}) {{
             // TODO: Implement the function logic here
         }}
                 """)
+        if voting_function:
+            lines.append(f"""
+                         
+            function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {{
+                require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
+                if (voting_conditions[roles[user]] == ICondition(address(0))){{
+                return true;
+                }}
+                return voting_conditions[roleId].evaluate(user);
+                }}""")
+
+        if proposal_function:
+            lines.append(f"""
+            function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {{
+                require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
+                if (proposal_conditions[roles[user]] == ICondition(address(0))){{
+                return true;
+                }}
+                return proposal_conditions[roleId].evaluate(user);
+                }}""")
+            
         return "\n".join(lines)
 
     # def get_control_mask(self, role_or_committee):

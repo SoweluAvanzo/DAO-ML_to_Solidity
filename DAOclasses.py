@@ -85,12 +85,13 @@ class Role:
 #stores committee information with control relations and permissions
 class Committee:
     #removed n_agent_min, n_agent_max
-    def __init__(self, committee_id, committee_description, appointment_method, decision_making_method):
+    def __init__(self, committee_id, committee_description, voting_condition, proposal_condition, decision_making_method):
         self.committee_id = committee_id
         self.committee_description = committee_description
         # self.n_agent_min = n_agent_min
         # self.n_agent_max = n_agent_max
-        self.appointment_method = appointment_method
+        self.voting_condition = voting_condition
+        self.proposal_condition = proposal_condition
         self.decision_making_method = decision_making_method
 
         self.permissions:list[Permission] = []
@@ -117,7 +118,7 @@ class Committee:
     
 
     def __str__(self):
-        parts=[f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, appointment_method={self.appointment_method}']
+        parts=[f'Committee(committee_id={self.committee_id}, committee_description={self.committee_description}, voting_condition={self.voting_condition}, proposal_condition={self.proposal_condition}, decision_making_method={self.decision_making_method}']
         is_not_first = False
         parts.append(", permissions=[")
         for p in self.permissions:
@@ -245,7 +246,11 @@ class DAO:
         self.permissions: dict[str, Permission] = {}
         self.dao_control_graph: ControlGraph
         self.metadata = DAOMetadata()
-        
+        self.assignment_conditions: dict[Role, str] = {}
+        self.voting_conditions: dict[Committee, str]  = {}
+        self.proposal_conditions: dict[Committee, str]  = {}
+        self.decision_making_methods: dict[Committee, str]  = {}
+        self.conditions = []
     
     def add_role(self, role):
         self.roles[role.role_id] = role

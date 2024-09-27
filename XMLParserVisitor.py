@@ -154,8 +154,13 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by XMLParser#appointment_method.
-    def visitAppointment_method(self, ctx:XMLParser.Appointment_methodContext):
+    # Visit a parse tree produced by XMLParser#voting_condition.
+    def visitVoting_condition(self, ctx:XMLParser.Voting_conditionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#proposal_condition.
+    def visitProposal_condition(self, ctx:XMLParser.Proposal_conditionContext):
         return self.visitChildren(ctx)
 
 

@@ -199,6 +199,8 @@ class DiagramManager:
                 self.get_aggregated_permissions(role)
             for committee in dao.committees.values():
                 self.get_aggregated_permissions(committee)
+            #generate conditions for the DAO
+            self.generate_conditions(dao)
 
         print(f' in process raw instances DAO: {dao_id} is processed. \n DAO Conent: {dao} \n')            
         self.createControlGraph()
@@ -260,7 +262,29 @@ class DiagramManager:
         elif type == "Proposal":
             permission = dc.Permission(permission_id=permission_id, allowed_action= allowed_action, permission_type ="strategic", ref_gov_area = None, voting_right = False, proposal_right = True)
         return permission
+    
+    def generate_conditions(self, dao):
+        #storing both the list of the conditions and the respective relations with the roles and committees (how conditions are used in the DAO)
+        conditions = []
+        for role in dao.roles.values():
+            if role.role_assignment_method != None:
+                dao.assignment_conditions[role]= role.role_assignment_method
+                if role.role_assignment_method not in conditions:
+                    conditions.append(role.role_assignment_method)
+
+        for committee in dao.committees.values():
+            if committee.voting_condition != None:
+                dao.voting_conditions[committee]= committee.voting_condition
+                if committee.voting_condition not in conditions:
+                    conditions.append(committee.voting_condition)
+            if committee.voting_condition != None:
+                dao.proposal_conditions[committee]= committee.proposal_condition
+                if committee.proposal_condition not in conditions:
+                    conditions.append(committee.proposal_condition)
+        dao.conditions = conditions
+        print(f'Conditions generated for DAO {dao.dao_id} : {conditions} \n')
         
+       
 
 
     def __str__(self):
