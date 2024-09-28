@@ -61,10 +61,20 @@ class OptimizedSolidityTranslator(Translator):
         lines.append("pragma solidity ^0.8.0;")
         lines.append("interface IPermissionManager {")
         lines.append(f"    function has_permission(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
+        lines.append(f"    function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
+        lines.append(f"    function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
         lines.append("}")
-
         return TranslatedSmartContract(lines, "IPermissionManager", folder="interfaces")
     
+    def generate_ICondition_interface(self):
+        lines = []
+        lines.append("// SPDX-License-Identifier: MIT")
+        lines.append("pragma solidity ^0.8.0;")
+        lines.append("interface ICondition {")
+        lines.append("    function evaluate(address user) external view returns (bool);")
+        lines.append("}")
+        return TranslatedSmartContract(lines, "ICondition", folder="interfaces")
+
     def translate(self) -> list[TranslatedSmartContract]:
             all_smart_contracts: list[TranslatedSmartContract] = []
 
@@ -74,6 +84,7 @@ class OptimizedSolidityTranslator(Translator):
                 translated_committee = ct.translateCommittee(c) 
                 all_smart_contracts.append(translated_committee)
                 all_smart_contracts.append(self.generate_IPermissionManager_interface())
+                all_smart_contracts.append(self.generate_ICondition_interface())
             # TODO: governance area
 
             # in the end, the DAO itself
@@ -96,7 +107,7 @@ class OptimizedSolidityTranslator(Translator):
         lines = []
         lines.append("import \"./interfaces/IPermissionManager.sol\";")
         lines.append(f"import \"./interfaces/ICondition.sol\";")
-        lines.append( f"contract {self.context.dao.dao_id} is IPermissionManager, ICondition {'{'}")
+        lines.append( f"contract {self.context.dao.dao_id} is IPermissionManager {'{'}")
         return "\n".join(lines)
     
     def get_control_bitflags(self, role_or_committee, r_o_c_ID, group_size, functionalities_ids):
@@ -267,23 +278,22 @@ class OptimizedSolidityTranslator(Translator):
             """
     
 
-    def generate_committee_initialization_function(self):
+    def generate_committee_initialization_function(self, visibility = "external"):
         committee_list_param = [f"address _{x}" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
         committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ])
         return f""" 
-        function initializeCommittees({committee_address_list}){{
+        function initializeCommittees({committee_address_list}) {visibility}{{
         require(msg.sender == _owner && committee_initialization_blocked == false && {committee_requires}, "Invalid committee initialization");
         roles[_GeneralAssembly] = GeneralAssembly;
         roles[_EconomicCouncil] = EconomicCouncil;
         roles[_CommunityCouncil] = CommunityCouncil;
         roles[_TechnicalCouncil] = TechnicalCouncil;
-        bool committee_initialization_blocked = true;
+        committee_initialization_blocked = true;
 
        }}
 
        """
-#TODO: Sono arrivato qui: implementare le funzioni per assegnare e revocare i permessi correttamente
     def generate_functions(self):
         id_var_type = self.get_variable_type()
         perm_var_type = self.perm_var_type
@@ -403,7 +413,7 @@ class OptimizedSolidityTranslator(Translator):
                 if (voting_conditions[roles[user]] == ICondition(address(0))){{
                 return true;
                 }}
-                return voting_conditions[roleId].evaluate(user);
+                return voting_conditions[roles[user]].evaluate(user);
                 }}""")
 
         if proposal_function:
@@ -413,7 +423,7 @@ class OptimizedSolidityTranslator(Translator):
                 if (proposal_conditions[roles[user]] == ICondition(address(0))){{
                 return true;
                 }}
-                return proposal_conditions[roleId].evaluate(user);
+                return proposal_conditions[roles[user]].evaluate(user);
                 }}""")
             
         return "\n".join(lines)
