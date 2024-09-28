@@ -82,56 +82,87 @@ class CommitteeTranslator:
 
     def generate_contract_declaration(self, contract_name):
         return f"contract {contract_name}Voting is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, IPermissionManager " + "{"
-
+    
+    def generate_IPermissionManager_reference(self):
+        return f"IPermissionManager public permissionManager;"
+    
     def generate_constructor(self, contract_name):
-        return [
-            f"    constructor(IVotes _token)",
-            f"        Governor(\"{contract_name}Voting\")",
-            "        GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)",
-            "        GovernorVotes(_token)",
-            "        GovernorVotesQuorumFraction(0)",
-            "    {}"
-        ]
+        return f"""
+        constructor(IVotes _token, address _permissionManager)
+        Governor(\"{contract_name}Voting\")
+        GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
+        GovernorVotes(_token)
+        GovernorVotesQuorumFraction(0)
+        {{
+            permissionManager = IPermissionManager(_permissionManager); 
+        }}
+            """
+    
 
-    def generate_overrides(self) -> list[str]:
-        overrides = [
-            "    function votingDelay()",
-            "        public",
-            "        view",
-            "        override(Governor, GovernorSettings)",
-            "        returns (uint256)",
-            "    {",
-            "        return super.votingDelay();",
-            "    }",
-            "",
-            "    function votingPeriod()",
-            "        public",
-            "        view",
-            "        override(Governor, GovernorSettings)",
-            "        returns (uint256)",
-            "    {",
-            "        return super.votingPeriod();",
-            "    }",
-            "",
-            "    function quorum(uint256 blockNumber)",
-            "        public",
-            "        view",
-            "        override(Governor, GovernorVotesQuorumFraction)",
-            "        returns (uint256)",
-            "    {",
-            "        return super.quorum(blockNumber);",
-            "    }",
-            "",
-            "    function proposalThreshold()",
-            "        public",
-            "        view",
-            "        override(Governor, GovernorSettings)",
-            "        returns (uint256)",
-            "    {",
-            "        return super.proposalThreshold();",
-            "    }"
-        ]
-        return overrides
+    def generate_overrides(self, voting_permission_index, proposal_permission_index):
+           return f""" 
+           // Override voting logic to include permission check before voting
+            function castVote(uint256 proposalId, uint8 support)
+                public
+                override
+                returns (uint256)
+            {{
+            // Check if the msg.sender has permission to vote before allowing them to cast a vote
+            require(permissionManager.canVote(msg.sender, {voting_permission_index}), "PermissionManager: User cannot vote");
+            
+            return super.castVote(proposalId, support);
+            }}
+
+            // Override proposal logic to include permission check before proposing
+            function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
+                public
+                override
+                returns (uint256)
+            {{
+            require(permissionManager.canPropose(msg.sender, {proposal_permission_index}), "User cannot propose");
+            
+            return super.propose(targets, values, calldatas, description);
+            }}
+
+            // Override Governor functions with the inherited implementations
+            function votingDelay()
+                public
+                view
+                override(Governor, GovernorSettings)
+                returns (uint256)
+            {{
+            return super.votingDelay();
+            }}
+
+            function votingPeriod()
+                public
+                view
+                override(Governor, GovernorSettings)
+                returns (uint256)
+            {{
+                return super.votingPeriod();
+            }}
+
+            function quorum(uint256 blockNumber)
+                public
+                view
+                override(Governor, GovernorVotesQuorumFraction)
+                returns (uint256)
+            {{
+                return super.quorum(blockNumber);
+            }}
+
+            function proposalThreshold()
+                public
+                view
+                override(Governor, GovernorSettings)
+                returns (uint256)
+            {{
+                return super.proposalThreshold();
+            }}
+        }}
+        """
+        
 
     def generate_closure(self):
         return "}"
@@ -139,17 +170,20 @@ class CommitteeTranslator:
 
     
 
-    def translateCommittee(self,committee: Committee) -> TranslatedSmartContract:
+    def translateCommittee(self,committee: Committee, voting_permission_index, proposal_permission_index) -> TranslatedSmartContract:
         self.committee = committee
         contract_name = committee.committee_id + "Voting"
+        
+
         lines:list[str] = []
         committee_delcaration_comment = f"// @title {contract_name} in DAO {self.context.dao.dao_id}, using the voting protocol: {committee.decision_making_method}"
         lines.extend(self.generate_smart_contract_header(committee_delcaration_comment))
         lines.extend(self.generate_import_statements())
         lines.append(self.generate_contract_declaration(contract_name))
-        lines.extend(self.generate_constructor(contract_name))
-        lines.extend(self.generate_overrides())
-        lines.extend(self.generate_closure())
+        lines.append(self.generate_IPermissionManager_reference())
+        lines.append(self.generate_constructor(contract_name))
+        lines.append(self.generate_overrides(voting_permission_index, proposal_permission_index))
+        lines.append(self.generate_closure())
         # Join the lines to form the final contract
        
         name = committee.committee_id

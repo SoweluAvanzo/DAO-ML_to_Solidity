@@ -81,12 +81,15 @@ class OptimizedSolidityTranslator(Translator):
             # at first, translate all Committees
             ct = CommitteeTranslator(self.context)
             for c in self.context.dao.committees.values():
-                translated_committee = ct.translateCommittee(c) 
+                voting_permission_key = c.committee_id + "VotingRight"
+                proposal_permission_key = c.committee_id + "ProposalRight"
+                voting_permission_index = self.permission_to_index[voting_permission_key]
+                proposal_permission_index = self.permission_to_index[proposal_permission_key]
+                translated_committee = ct.translateCommittee(c, proposal_permission_index , voting_permission_index) 
                 all_smart_contracts.append(translated_committee)
-                all_smart_contracts.append(self.generate_IPermissionManager_interface())
-                all_smart_contracts.append(self.generate_ICondition_interface())
-            # TODO: governance area
 
+            all_smart_contracts.append(self.generate_IPermissionManager_interface())
+            all_smart_contracts.append(self.generate_ICondition_interface())
             # in the end, the DAO itself
             all_smart_contracts.append(self.translateDao())
             
@@ -410,20 +413,20 @@ class OptimizedSolidityTranslator(Translator):
                          
             function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {{
                 require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
-                if (voting_conditions[roles[user]] == ICondition(address(0))){{
+                if (voting_conditions[roles[msg.sender]] == ICondition(address(0))){{
                 return true;
                 }}
-                return voting_conditions[roles[user]].evaluate(user);
+                return voting_conditions[roles[msg.sender]].evaluate(user);
                 }}""")
 
         if proposal_function:
             lines.append(f"""
             function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {{
                 require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
-                if (proposal_conditions[roles[user]] == ICondition(address(0))){{
+                if (proposal_conditions[roles[msg.sender]] == ICondition(address(0))){{
                 return true;
                 }}
-                return proposal_conditions[roles[user]].evaluate(user);
+                return proposal_conditions[roles[msg.sender]].evaluate(user);
                 }}""")
             
         return "\n".join(lines)
