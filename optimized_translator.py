@@ -2,6 +2,8 @@ import os
 import networkx as nx
 from DAOclasses import*
 from translator import TranslatedSmartContract, CommitteeTranslator, TranslationContext, Translator
+from jinja2 import Template
+import utils as u
 
 class OptimizedSolidityTranslator(Translator):
     def __init__(self, dao):
@@ -87,13 +89,19 @@ class OptimizedSolidityTranslator(Translator):
                 proposal_permission_index = self.permission_to_index[proposal_permission_key]
                 translated_committee = ct.translateCommittee(c, proposal_permission_index , voting_permission_index) 
                 all_smart_contracts.append(translated_committee)
-
             all_smart_contracts.append(self.generate_IPermissionManager_interface())
             all_smart_contracts.append(self.generate_ICondition_interface())
+            for condition in self.context.dao.conditions:
+                if condition is not None:
+                    c= ConditionTranslator(self.context)
+                    condition_sc = c.generate_condition_from_template("Templates/", condition_name= u.camel_case(condition), condition_logic="//TODO: Implement the condition smart contract logic here", return_value = "true", extension=".sol")
+                    all_smart_contracts.append(condition_sc)
             # in the end, the DAO itself
             all_smart_contracts.append(self.translateDao())
             
             return all_smart_contracts
+    
+
 
     def generate_header(self):
         lines = []
@@ -205,8 +213,8 @@ class OptimizedSolidityTranslator(Translator):
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[committee.committee_id] | mask_shifted_for_id_bits
             lines.append(f"    {id_var_type} {visibility} {constant} {committee.committee_id} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
-        if self.context.daoOwner:
-            lines.append("    address _owner;")
+        # if self.context.daoOwner:
+        #     lines.append("    address _owner;")
         #generate events
         lines.append(self.generate_events())
         return "\n".join(lines)
@@ -232,9 +240,10 @@ class OptimizedSolidityTranslator(Translator):
         lines.append("address[] memory proposalConditionAddresses, ")
         lines.append("address[] memory assignmentConditionAddresses")
         lines.append(") {")
-        if self.context.daoOwner:
-            lines.append("         _owner = msg.sender;")
+            
         lines.append(self.generate_role_permission_mapping())
+        if self.context.daoOwner:
+            lines.append(f"roles[msg.sender] = {self.context.dao.dao_id}Owner;")
         lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
         lines.append("     voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);")
         lines.append("     proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);")
@@ -253,8 +262,6 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(" require(roleIds.length == votingConditionAddresses.length, \"Role ID and voting condition count mismatch\");")
         lines.append(" require(roleIds.length == proposalConditionAddresses.length, \"Role ID and proposal condition count mismatch\");")
         lines.append(" require(roleIds.length == assignmentConditionAddresses.length, \"Role ID and assignment condition count mismatch\"); \n")
-        if self.context.daoOwner:
-            lines.append("         _owner = msg.sender;")
         # for role in self.context.dao.roles.values():
         #     control_mask = self.get_control_mask(role)
         #     lines.append(f"        controlRelations[{role.role_id}] = {control_mask};")
@@ -264,6 +271,8 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(self.generate_role_permission_mapping())
         for committee in self.context.dao.committees.values():
             lines.append(f"         roles[_{committee.committee_id}] = {committee.committee_id}; \n" )
+        if self.context.daoOwner:
+            lines.append(f"        roles[msg.sender] = {self.context.dao.dao_id}Owner;")
         lines.append("    }")
         return "\n".join(lines)
 
@@ -287,7 +296,7 @@ class OptimizedSolidityTranslator(Translator):
         committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ])
         return f""" 
         function initializeCommittees({committee_address_list}) {visibility}{{
-        require(msg.sender == _owner && committee_initialization_blocked == false && {committee_requires}, "Invalid committee initialization");
+        require(roles[msg.sender] == {self.context.dao.dao_id}Owner && committee_initialization_blocked == false && {committee_requires}, "Invalid committee initialization");
         roles[_GeneralAssembly] = GeneralAssembly;
         roles[_EconomicCouncil] = EconomicCouncil;
         roles[_CommunityCouncil] = CommunityCouncil;
@@ -449,3 +458,30 @@ class OptimizedSolidityTranslator(Translator):
     def generate_closure(self):
         return "}"
 
+class ConditionTranslator:
+    def __init__(self, context: TranslationContext):
+        self.context = context
+        
+    def generate_condition_from_template(self, template_path: str, condition_name: str, condition_logic, return_value, extension=".sol") -> TranslatedSmartContract:
+    # Define the full path to the template file
+        output_folder = "conditions"
+        file_name_and_path = template_path + "ConditionImplementation" + extension + ".jinja"
+        # Initialize an empty list to store each rendered line
+        rendered_lines = []
+        # Open the template file and read it line by line
+        with open(file_name_and_path, 'r', encoding='utf-8') as f:
+            # For each line in the template, render it individually
+            for line in f:
+                # Create a Jinja2 template object for each line
+                template = Template(line)
+                # Render the line with any dynamic content (e.g., Solidity version)
+                rendered_line = template.render(solidity_version=self.context.solidity_version,condition_name=u.camel_case(condition_name), condition_logic=condition_logic,return_value=return_value )
+                # rendered_line = template.render(condition_name=condition_name)
+                # rendered_line = template.render(condition_logic=condition_logic)
+                # rendered_line = template.render(return_value=return_value)
+                # Append the rendered line to the list of rendered lines
+                rendered_lines.append(rendered_line)
+        # Return a TranslatedSmartContract object with the list of rendered lines
+        return TranslatedSmartContract(rendered_lines, u.camel_case(condition_name), folder=output_folder)
+        
+    

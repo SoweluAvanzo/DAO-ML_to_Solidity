@@ -2,7 +2,7 @@ import networkx as nx
 from DAOclasses import*
 from translator import CommitteeTranslatorDiamond
 from optimized_translator import *
-from jinja2 import Template
+
 
 
 class OptimizedDiamondTranslator(OptimizedSolidityTranslator):
@@ -120,26 +120,6 @@ class OptimizedDiamondTranslator(OptimizedSolidityTranslator):
             return TranslatedSmartContract(lines, f"{self.context.dao.dao_id}{gov_area_name}Facet", folder=folder)
 
 
-    def generate_file_from_template(self, template_path: str, name: str, output_folder: str) -> TranslatedSmartContract:
-        # Define the full path to the template file
-        file_name_and_path = template_path + name + ".sol.jinja"
-        
-        # Initialize an empty list to store each rendered line
-        rendered_lines = []
-
-        # Open the template file and read it line by line
-        with open(file_name_and_path, 'r', encoding='utf-8') as f:
-            # For each line in the template, render it individually
-            for line in f:
-                # Create a Jinja2 template object for each line
-                template = Template(line)
-                # Render the line with any dynamic content (e.g., Solidity version)
-                rendered_line = template.render(solidity_version=self.context.solidity_version)
-                # Append the rendered line to the list of rendered lines
-                rendered_lines.append(rendered_line)
-        
-        # Return a TranslatedSmartContract object with the list of rendered lines
-        return TranslatedSmartContract(rendered_lines, name, folder=output_folder)
     
     def generate_diamond_standard_contracts(self):
         all_contracts = []

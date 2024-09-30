@@ -4,6 +4,7 @@ from optimized_translator import OptimizedSolidityTranslator
 '''
 
 from DAOclasses import DAO, Committee, GraphType, Permission
+from jinja2 import Template
 
 class TranslatedSmartContract:
     def __init__(self, lines_of_code, name, folder = None):
@@ -19,6 +20,28 @@ class TranslatedSmartContract:
 class Translator:
     def translate(self) -> list[TranslatedSmartContract]:
         pass
+
+    def generate_file_from_template(self, template_path: str, name: str, output_folder: str, extension=".sol") -> TranslatedSmartContract:
+        # Define the full path to the template file
+        
+        file_name_and_path = template_path + name + extension + ".jinja"
+        
+        # Initialize an empty list to store each rendered line
+        rendered_lines = []
+
+        # Open the template file and read it line by line
+        with open(file_name_and_path, 'r', encoding='utf-8') as f:
+            # For each line in the template, render it individually
+            for line in f:
+                # Create a Jinja2 template object for each line
+                template = Template(line)
+                # Render the line with any dynamic content (e.g., Solidity version)
+                rendered_line = template.render(solidity_version=self.context.solidity_version)
+                # Append the rendered line to the list of rendered lines
+                rendered_lines.append(rendered_line)
+        if extension == ".sol":
+        # Return a TranslatedSmartContract object with the list of rendered lines
+            return TranslatedSmartContract(rendered_lines, name, folder=output_folder)
 
 '''
 class SolidityTranslator_OLD(Translator):
@@ -160,7 +183,7 @@ class CommitteeTranslator:
             {{
                 return super.proposalThreshold();
             }}
-        }}
+    
         """
         
 
@@ -189,7 +212,7 @@ class CommitteeTranslator:
         name = committee.committee_id
         return TranslatedSmartContract(lines, name)
     
-
+    
 
 
 class CommitteeTranslatorDiamond(CommitteeTranslator):
@@ -211,6 +234,9 @@ class CommitteeTranslatorDiamond(CommitteeTranslator):
         folder = "facets"
         return TranslatedSmartContract(lines, contract_name, folder=folder)
     
+
+
+
     # def generate_library_declaration(self, lib_type, comment = ""):
     #     lines:list[str] = []
     #     lines.append(comment)
@@ -237,3 +263,4 @@ class CommitteeTranslatorDiamond(CommitteeTranslator):
         # name = committee.committee_id
         # folder = "libraries"
         # return TranslatedSmartContract(lines, name, folder=folder)
+

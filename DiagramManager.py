@@ -201,9 +201,17 @@ class DiagramManager:
                 self.get_aggregated_permissions(committee)
             #generate conditions for the DAO
             self.generate_conditions(dao)
-
+            #generate owner role
+            self.generateOwnerRole(dao)
         print(f' in process raw instances DAO: {dao_id} is processed. \n DAO Conent: {dao} \n')            
         self.createControlGraph()
+        
+    def generateOwnerRole(self, dao):
+        #create owner role
+        owner_role = dc.Role(role_id = dao.dao_id + "Owner", role_name= dao.dao_id + " Owner", role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
+        for permission in dao.permissions.values():
+            owner_role.add_permission(permission)
+        dao.add_role(owner_role)
 
             # Assign controllers to roles and committees in DAO based on control relations
             # for role in self.roles.values():
