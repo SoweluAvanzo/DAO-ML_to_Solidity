@@ -54,6 +54,8 @@ REF_GOV_AREA : 'ref_gov_area';
 ALLOWEDACTION : 'allowed_action';
 AGENTTYPE: 'agent_type';
 PERMISSIONTYPE : 'permission_type';
+FEDERATIONLEVEL : 'federation_level';
+AGGREGATIONLEVEL : 'aggregation_level';
 
 CLOSE         : '>'  -> popMode;
 SPECIAL_CLOSE : '?>' -> popMode; // close <?xml...?>

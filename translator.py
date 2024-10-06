@@ -122,7 +122,7 @@ class CommitteeTranslator:
             """
     
 
-    def generate_overrides(self, voting_permission_index, proposal_permission_index):
+    def generate_overrides(self, voting_permission_index=None, proposal_permission_index=None):
            return f""" 
            // Override voting logic to include permission check before voting
             function castVote(uint256 proposalId, uint8 support)
@@ -193,7 +193,7 @@ class CommitteeTranslator:
 
     
 
-    def translateCommittee(self,committee: Committee, voting_permission_index, proposal_permission_index) -> TranslatedSmartContract:
+    def translateCommittee(self,committee: Committee, voting_permission_index=None, proposal_permission_index=None) -> TranslatedSmartContract:
         self.committee = committee
         contract_name = committee.committee_id + "Voting"
         

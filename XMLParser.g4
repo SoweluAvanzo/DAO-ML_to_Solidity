@@ -30,11 +30,11 @@ dao
     ;
 
 role
-    : OPEN ROLE misc* role_id misc* role_name misc* role_assignment_method misc* n_agent_min? misc* n_agent_max? misc* agent_type misc* CLOSE relations OPEN SLASH ROLE CLOSE
+    : OPEN ROLE misc* role_id misc* role_name misc* role_assignment_method misc* n_agent_min? misc* n_agent_max? misc* agent_type misc* aggregation_level misc* federation_level misc* CLOSE relations OPEN SLASH ROLE CLOSE
     ;
 
 committee
-    : OPEN COMMITTEE committee_id misc* committee_description misc* voting_condition? misc* proposal_condition? misc* decision_making_method? misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
+    : OPEN COMMITTEE committee_id misc* committee_description misc* voting_condition? misc* proposal_condition? misc* decision_making_method? misc* aggregation_level misc* federation_level misc* CLOSE relations OPEN SLASH COMMITTEE CLOSE
     ;
 
 permission
@@ -91,6 +91,8 @@ committee_description : COMMITTEEDESCRIPTION EQUALS STRING ;
 voting_condition : VOTINGCONDITION EQUALS STRING ;
 proposal_condition : PROPOSALCONDITION EQUALS STRING ;
 decision_making_method : DMMETHOD EQUALS STRING ;
+aggregation_level : AGGREGATIONLEVEL EQUALS STRING;
+federation_level : FEDERATIONLEVEL EQUALS STRING;
 
 // Permission attributes
 permission_id : PERMISSIONID EQUALS STRING ;

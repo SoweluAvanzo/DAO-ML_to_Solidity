@@ -169,6 +169,16 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#aggregation_level.
+    def visitAggregation_level(self, ctx:XMLParser.Aggregation_levelContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#federation_level.
+    def visitFederation_level(self, ctx:XMLParser.Federation_levelContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#permission_id.
     def visitPermission_id(self, ctx:XMLParser.Permission_idContext):
         return self.visitChildren(ctx)

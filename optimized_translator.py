@@ -4,6 +4,12 @@ from DAOclasses import*
 from translator import TranslatedSmartContract, CommitteeTranslator, TranslationContext, Translator
 from jinja2 import Template
 import utils as u
+from enum import Enum
+
+class RoleInConditionCheckType(Enum):
+    RETURN = 1
+    REQUIRE = 2
+    EXPRESSION = 3
 
 class OptimizedSolidityTranslator(Translator):
     def __init__(self, dao):
@@ -315,8 +321,10 @@ class OptimizedSolidityTranslator(Translator):
         return f"""
         
         function assignRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
+            require(_user != address(0) , "Invalid user address" );
+            {self.generate_user_role_condition_evaluation("assignment_conditions", "_user", RoleInConditionCheckType.REQUIRE)}
             roles[_user] = _role;
-             emit RoleAssigned(_user, _role);
+            emit RoleAssigned(_user, _role);
         }}
 
         function revokeRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
@@ -398,7 +406,23 @@ class OptimizedSolidityTranslator(Translator):
                 lines.append(f"        role_permissions[{role_to_index_fn(role)}] = {bitflag};\n")
         return "\n".join(lines)
     
-    
+    def generate_user_role_condition_evaluation(self, condition_mapping_name, user_variable_name, roleInConditionCheckType: RoleInConditionCheckType = RoleInConditionCheckType.RETURN):
+        condition_fetching = lambda is_generating_variable: f"{'ICondition _condition =' if is_generating_variable else ''} {condition_mapping_name}[roles[msg.sender]] {';' if is_generating_variable else ''}"
+        expression_check = lambda is_previously_fetched: f"({'_condition' if is_previously_fetched else condition_fetching(False)} == ICondition(address(0))) || {'_condition' if is_previously_fetched else condition_fetching(False)}.evaluate({user_variable_name})"
+        if roleInConditionCheckType == RoleInConditionCheckType.RETURN:
+            return f"""
+                {condition_fetching(True)}
+                return {expression_check(True)};
+            """
+        elif roleInConditionCheckType == RoleInConditionCheckType.REQUIRE:
+            return f"""
+                {condition_fetching(True)}
+                require({expression_check(True)}, "User does not meet the required conditions");
+            """
+        elif roleInConditionCheckType == RoleInConditionCheckType.EXPRESSION:
+            return f"{expression_check(False)}"
+        raise Exception(f"Invalid RoleInConditionCheckType: {roleInConditionCheckType}")
+
     def generate_permission_functions(self):
         lines = []
         voting_function = False
@@ -417,26 +441,20 @@ class OptimizedSolidityTranslator(Translator):
             // TODO: Implement the function logic here
         }}
                 """)
+            
         if voting_function:
             lines.append(f"""
-                         
-            function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {{
+            function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {'{'}
                 require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
-                if (voting_conditions[roles[msg.sender]] == ICondition(address(0))){{
-                return true;
-                }}
-                return voting_conditions[roles[msg.sender]].evaluate(user);
-                }}""")
+                {self.generate_user_role_condition_evaluation("voting_conditions", "user")}
+            {'}'}""")
 
         if proposal_function:
             lines.append(f"""
-            function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {{
+            function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {'{'}
                 require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
-                if (proposal_conditions[roles[msg.sender]] == ICondition(address(0))){{
-                return true;
-                }}
-                return proposal_conditions[roles[msg.sender]].evaluate(user);
-                }}""")
+                {self.generate_user_role_condition_evaluation("proposal_conditions", "user")}
+            {'}'}""")
             
         return "\n".join(lines)
 
