@@ -271,22 +271,22 @@ class DiagramManager:
             permission = dc.Permission(permission_id=permission_id, allowed_action= allowed_action, permission_type ="strategic", ref_gov_area = None, voting_right = False, proposal_right = True)
         return permission
     
-    def generate_conditions(self, dao):
+    def generate_conditions(self, dao: dc.DAO):
         #storing both the list of the conditions and the respective relations with the roles and committees (how conditions are used in the DAO)
         conditions = []
         for role in dao.roles.values():
             if role.role_assignment_method != None:
-                dao.assignment_conditions[role]= role.role_assignment_method
+                dao.assignment_conditions[role.role_id]= role.role_assignment_method
                 if role.role_assignment_method not in conditions:
                     conditions.append(role.role_assignment_method)
 
         for committee in dao.committees.values():
             if committee.voting_condition != None:
-                dao.voting_conditions[committee]= committee.voting_condition
+                dao.voting_conditions[committee.committee_id]= committee.voting_condition
                 if committee.voting_condition not in conditions:
                     conditions.append(committee.voting_condition)
             if committee.voting_condition != None:
-                dao.proposal_conditions[committee]= committee.proposal_condition
+                dao.proposal_conditions[committee.committee_id]= committee.proposal_condition
                 if committee.proposal_condition not in conditions:
                     conditions.append(committee.proposal_condition)
         dao.conditions = conditions

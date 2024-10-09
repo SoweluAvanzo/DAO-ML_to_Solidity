@@ -170,3 +170,4 @@ cython_debug/
 *.txt
 translated/
 translated/*
+out

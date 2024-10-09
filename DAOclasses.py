@@ -9,9 +9,16 @@ class RelationType(Enum):
     AGGREGATION = 3
     FEDERATION = 4
 
+class BaseEntity:
+    def __init__(self, id):
+        self.id = id
+    def get_id(self):
+        return self.id
+
 #stores permission metadata
-class Permission:
+class Permission: #(BaseEntity):
     def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None, voting_right = False, proposal_right = False):
+        #super.__init__(self, permission_id)
         self.permission_id = permission_id
         self.allowed_action = allowed_action
         self.permission_type = permission_type
@@ -21,7 +28,17 @@ class Permission:
 
     def __str__(self):
         return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type}, ref_gov_area={self.ref_gov_area})'
-    
+
+    def toJSON(self):
+        return {
+            "permission_id": self.permission_id,
+            "allowed_action": self.allowed_action,
+            "permission_type": self.permission_type,
+            "ref_gov_area": self.ref_gov_area,
+            "voting_right": self.voting_right,
+            "proposal_right": self.proposal_right,
+        }
+
 
 #stores role information with control relations and associated permissions
 class Role:
@@ -36,7 +53,10 @@ class Role:
         self.permissions: list[Permission] = []
         self.controllers:list[str] = [] # just the ID
         self.aggregated:list[Role|Committee] =  []
-        self.federated_committees:list[str] = []
+        self.federated_committees:list[Committee] = []
+
+    def get_id(self):
+        return self.role_id
 
     def add_permission(self, permission: Permission):
         print(f'Adding permission {str(permission)} to role {self.role_id}')
@@ -48,8 +68,8 @@ class Role:
     def add_aggregated(self, aggregated):
         self.aggregated.append(aggregated)
 
-    def add_committee_membership(self, target_committee_id:str):
-        self.federated_committees.append(target_committee_id)
+    def add_committee_membership(self, target_committee:any):
+        self.federated_committees.append(target_committee)
 
     def __str__(self):
         parts = [f'Role(role_id={self.role_id}, role_name={self.role_name}, role_assignment_method={self.role_assignment_method}, n_agent_min={self.n_agent_min}, n_agent_max={self.n_agent_max} agent_type={self.agent_type}']
@@ -82,6 +102,20 @@ class Role:
         parts.append("]")
         return "".join(parts)
 
+    def toJSON(self):
+        return { \
+            "role_id":self.role_id, \
+            "role_name":self.role_name, \
+            "role_assignment_method":self.role_assignment_method, \
+            "n_agent_min":self.n_agent_min, \
+            "n_agent_max":self.n_agent_max, \
+            "agent_type":self.agent_type, \
+            "permissions":[ p.permission_id for p in self.permissions], \
+            "controllers":self.controllers, \
+            "aggregated": [ agg.get_id() for agg in self.aggregated ], \
+            "federated_committees":[c.committee_id for c in self.federated_committees] \
+        }
+
 #stores committee information with control relations and permissions
 class Committee:
     #removed n_agent_min, n_agent_max
@@ -96,9 +130,12 @@ class Committee:
 
         self.permissions:list[Permission] = []
         self.controllers:list[str] = []
-        self.aggregated:list[str] =  []
-        self.member_entities:list[str] = []
-        self.federated_committees:list[str] = []
+        self.aggregated:list[Role|Committee] =  []
+        self.member_entities:list[Committee] = []
+        self.federated_committees:list[Committee|Role] = []
+
+    def get_id(self):
+        return self.committee_id
 
     def add_permission(self, permission):
         print(f'Adding permission {str(permission)} to committee {self.committee_id}')
@@ -107,14 +144,13 @@ class Committee:
     def add_controller(self, controller_id:str):
         self.controllers.append(controller_id)
         
-    def add_aggregated(self, aggregated_id:str):
-        self.aggregated.append(aggregated_id)
+    def add_aggregated(self, aggregated):
+        self.aggregated.append(aggregated)
 
-    def add_committee_membership(self, target_committee_id:str):
-        self.member_entities.append(target_committee_id)
-
-    def add_member_entity(self, entity_id:str):
-        self.federated_committees.append(entity_id)
+    def add_committee_membership(self, target_committee):
+        self.member_entities.append(target_committee)
+    def add_member_entity(self, entity:any):
+        self.federated_committees.append(entity)
     
 
     def __str__(self):
@@ -147,6 +183,20 @@ class Committee:
                 is_not_first = True
         parts.append("]")
         return "".join(parts)
+
+    def toJSON(self):
+        return { \
+            "committee_id":self.committee_id, \
+            "committee_description":self.committee_description, \
+            "voting_condition":self.voting_condition, \
+            "proposal_condition":self.proposal_condition, \
+            "decision_making_method":self.decision_making_method, \
+            "permissions":[ p.permission_id for p in self.permissions], \
+            "controllers":self.controllers, \
+            "aggregated": [agg.get_id() for agg in self.aggregated], \
+            "member_entities":[c.get_id() for c in self.member_entities], \
+            "federated_committees":[c.get_id() for c in self.federated_committees] \
+        }
         
 #graph structures
 
@@ -162,6 +212,7 @@ class ControlGraph:
         self.graph_type: GraphType = None #is calculated before the transitive closure is applied in case of hierarchical inheritance
         self.is_cyclic = False #hypotesis
         self.create_control_graph()
+    
 
     def create_control_graph(self):
         self.add_new_default_graph()
@@ -209,6 +260,7 @@ class ControlGraph:
     def is_list(self):
         return all(self.control_graph.out_degree(n) <= 1 for n in self.control_graph.nodes)
     
+    
 class UserFunctionalitiesGroupSize(Enum):
     SMALL = (32,5)
     MEDIUM = (64,6)
@@ -234,6 +286,12 @@ class DAOMetadata:
     def save_user_functionalities_group_size(self, roles, committees):
         self.size_user_functionalities_group = len(roles) + len(committees)
         self.user_functionalities_group_size = UserFunctionalitiesGroupSize.from_size(self.size_user_functionalities_group)
+    
+    def toJSON(self):
+        return {
+            "user_functionalities_group_size": self.user_functionalities_group_size,
+            "size_user_functionalities_group": self.size_user_functionalities_group
+        }
 
 class DAO:
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
@@ -246,10 +304,10 @@ class DAO:
         self.permissions: dict[str, Permission] = {}
         self.dao_control_graph: ControlGraph
         self.metadata = DAOMetadata()
-        self.assignment_conditions: dict[Role, str] = {}
-        self.voting_conditions: dict[Committee, str]  = {}
-        self.proposal_conditions: dict[Committee, str]  = {}
-        self.decision_making_methods: dict[Committee, str]  = {}
+        self.assignment_conditions: dict[str, str] = {} # Role
+        self.voting_conditions: dict[str, str]  = {} # Committee
+        self.proposal_conditions: dict[str, str]  = {} # Committee
+        self.decision_making_methods: dict[str, str]  = {} # Committee
         self.conditions = []
     
     def add_role(self, role):
@@ -282,6 +340,42 @@ class DAO:
             result.append("\t\t" + str(permission))
         return "\n".join(result)
 
+    def toJSON(self):
+        dao_json = {
+            "dao_id": self.dao_id,
+            "dao_name": self.dao_name,
+            "mission_statement": self.mission_statement,
+            "hierarchical_inheritance": self.hierarchical_inheritance,
+            "roles": {n: self.roles[n].toJSON() for n in self.roles},
+            "committees": {n: self.committees[n].toJSON() for n in self.committees},
+            "permissions": {n: self.permissions[n].toJSON() for n in self.permissions},
+            "dao_control_graph": None, # self.dao_control_graph -> ControlGraph
+            # "metadata": self.metadata.toJSON(),
+            "assignment_conditions": {r: self.assignment_conditions[r] for r in self.assignment_conditions},
+            "voting_conditions": {n: self.voting_conditions[n] for n in self.voting_conditions} ,
+            "proposal_conditions": {n: self.proposal_conditions[n] for n in self.proposal_conditions} ,
+            "decision_making_methods": {n: self.decision_making_methods[n] for n in self.decision_making_methods} ,
+            "conditions": self.conditions
+        }
 
+        import json
+        print( "dao_id ----> " + json.dumps(dao_json["dao_id"]))
+        print( "dao_name ----> " + json.dumps(dao_json["dao_name"]))
+        print( "mission_statement ----> " + json.dumps(dao_json["mission_statement"]))
+        print( "hierarchical_inheritance ----> " + json.dumps(dao_json["hierarchical_inheritance"]))
+        print("ROLES MALEDETTI")
+        print(dao_json["roles"])
+        print( "roles ----> " + json.dumps(dao_json["roles"]))
+        print( "committees ----> " + json.dumps(dao_json["committees"]))
+        print( "permissions ----> " + json.dumps(dao_json["permissions"]))
+        print( "dao_control_graph ----> " + json.dumps(dao_json["dao_control_graph"]))
+        # print( "metadata ----> " + json.dumps(dao_json["metadata"]))
+        print( "assignment_conditions ----> " + json.dumps(dao_json["assignment_conditions"]))
+        print( "voting_conditions ----> " + json.dumps(dao_json["voting_conditions"]))
+        print( "proposal_conditions ----> " + json.dumps(dao_json["proposal_conditions"]))
+        print( "decision_making_methods ----> " + json.dumps(dao_json["decision_making_methods"]))
+        print( "conditions ----> " + json.dumps(dao_json["conditions"]))
+
+        return dao_json
 
 
