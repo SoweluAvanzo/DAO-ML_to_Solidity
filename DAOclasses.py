@@ -357,25 +357,6 @@ class DAO:
             "decision_making_methods": {n: self.decision_making_methods[n] for n in self.decision_making_methods} ,
             "conditions": self.conditions
         }
-
-        import json
-        print( "dao_id ----> " + json.dumps(dao_json["dao_id"]))
-        print( "dao_name ----> " + json.dumps(dao_json["dao_name"]))
-        print( "mission_statement ----> " + json.dumps(dao_json["mission_statement"]))
-        print( "hierarchical_inheritance ----> " + json.dumps(dao_json["hierarchical_inheritance"]))
-        print("ROLES MALEDETTI")
-        print(dao_json["roles"])
-        print( "roles ----> " + json.dumps(dao_json["roles"]))
-        print( "committees ----> " + json.dumps(dao_json["committees"]))
-        print( "permissions ----> " + json.dumps(dao_json["permissions"]))
-        print( "dao_control_graph ----> " + json.dumps(dao_json["dao_control_graph"]))
-        # print( "metadata ----> " + json.dumps(dao_json["metadata"]))
-        print( "assignment_conditions ----> " + json.dumps(dao_json["assignment_conditions"]))
-        print( "voting_conditions ----> " + json.dumps(dao_json["voting_conditions"]))
-        print( "proposal_conditions ----> " + json.dumps(dao_json["proposal_conditions"]))
-        print( "decision_making_methods ----> " + json.dumps(dao_json["decision_making_methods"]))
-        print( "conditions ----> " + json.dumps(dao_json["conditions"]))
-
         return dao_json
 
 
