@@ -148,9 +148,14 @@ class Committee:
         self.aggregated.append(aggregated)
 
     def add_committee_membership(self, target_committee):
-        self.member_entities.append(target_committee)
+        self.federated_committees.append(target_committee)
+        print(f'Adding committee {target_committee.get_id()} to committee {self.committee_id}')
+        #storing the relation that indicates that the given committee federates into a target committee
+        
+
     def add_member_entity(self, entity:any):
-        self.federated_committees.append(entity)
+        self.member_entities.append(entity)
+        print(f'Adding member entity {entity.get_id()} to committee {self.committee_id}')
     
 
     def __str__(self):
