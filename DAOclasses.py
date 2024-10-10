@@ -217,9 +217,11 @@ class ControlGraph:
     def create_control_graph(self):
         self.add_new_default_graph()
         for role in self.dao.roles.values():
+            #self.control_graph.add_node(role.role_id, color="blue", size=10)
             for controller in role.controllers:
                 self.control_graph.add_edge(role.role_id,controller)
         for committee in self.dao.committees.values():
+            #self.control_graph.add_node(committee.committee_id, color="red", size=25)
             for controller in committee.controllers:
                 self.control_graph.add_edge(committee.committee_id,controller)
             print(f'Control graph generated for DAO {self.dao.dao_id} \nPrinting edges and nodes \n')

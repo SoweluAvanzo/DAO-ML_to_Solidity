@@ -27,7 +27,6 @@ contract GCDAO is IPermissionManager, ICondition {
     uint32 internal  EconomicCouncil = 3076; // ID : 4 , control bitmask: 1100000
     uint32 internal  CommunityCouncil = 2053; // ID : 5 , control bitmask: 1000000
     uint32 internal  TechnicalCouncil = 2054; // ID : 6 , control bitmask: 1000000
-    address _owner;
  //Events
     event RoleRevoked(address indexed user, uint32 indexed role);
     event RoleAssigned(address indexed user, uint32 indexed role);
@@ -62,7 +61,7 @@ contract GCDAO is IPermissionManager, ICondition {
         require(roleIds.length == proposalConditionAddresses.length, "Role ID and proposal condition count mismatch");
         require(roleIds.length == assignmentConditionAddresses.length, "Role ID and assignment condition count mismatch");
 
-        _owner = msg.sender;
+       
 
         // Initial permissions for each role (bitmap encoded)
         role_permissions[GroupMember & 31] = 28;
@@ -72,6 +71,7 @@ contract GCDAO is IPermissionManager, ICondition {
         role_permissions[EconomicCouncil & 31] = 64;
         role_permissions[CommunityCouncil & 31] = 12544;
         role_permissions[TechnicalCouncil & 31] = 19968;
+        roles[msg.sender] = GCDAOOwner;
 
         // Set condition contracts for each role based on the passed dynamic arrays
         for (uint256 i = 0; i < roleIds.length; i++) {
@@ -246,7 +246,7 @@ import "./ICondition.sol";
 
 contract NameCondition is ICondition {
     function evaluate(address user) external view override returns (bool) {
-        // Your voting logic goes here
+        // TODO: define conditional logic here
         return true; // Example return value
     }
 
