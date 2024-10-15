@@ -5,6 +5,8 @@ from optimized_translator import OptimizedSolidityTranslator
 
 from DAOclasses import DAO, Committee, GraphType, Permission
 from jinja2 import Template
+import os
+import utils as u
 
 class TranslatedSmartContract:
     def __init__(self, lines_of_code, name, folder = None):
@@ -86,10 +88,62 @@ class CommitteeTranslator:
         return lines
         
         
-        
-        
+    def get_voting_protocol_list(self):
+        directory_path = './Templates/voting_protocols'
+
+        # Get a list of all files and directories
+        items = os.listdir(directory_path)
+        for item in items:
+            # Check if the item is a file
+            if os.path.isfile(item):
+
+                # Print the item name
+                print(item)
+        return items
+        #generate_voting_protocol_from_template(decision_making_method, state_var_declarations, dao_name, imports, constructor_parameters, inherited_contracts,  constructor_actions, vote_requirement, proposal_requirement, template_path, name= contract_name, output_folder="", extension=".sol"))
+    def generate_voting_protocol_from_template(self, committee_name, decision_making_method_name, 
+                                           state_var_declarations, dao_name, imports, 
+                                           constructor_parameters, inherited_contracts, 
+                                           constructor_actions, vote_requirement, 
+                                           proposal_requirement, template_path: str, 
+                                           name: str, output_folder: str, extension=".sol") -> list[str]:
+            # Define the full path to the template file
+            file_name_and_path = template_path + decision_making_method_name + extension + ".jinja"
+            
+            # Initialize an empty list to store the rendered result
+            rendered_lines = []
+            
+            # Open the template file and read it all at once
+            with open(file_name_and_path, 'r', encoding='utf-8') as f:
+                template_content = f.read()
+            
+            # Create a Jinja2 template object for the whole content
+            template = Template(template_content)
+            
+            # Render the template with all dynamic variables
+            rendered_content = template.render(
+                contract_name=u.camel_case(committee_name),
+                solidity_version=self.context.solidity_version,
+                state_var_declarations=state_var_declarations,
+                dao_name=dao_name,
+                imports=imports,
+                constructor_parameters=constructor_parameters,
+                inherited_contracts=inherited_contracts,
+                constructor_actions=constructor_actions,
+                vote_requirement=vote_requirement,
+                proposal_requirement=proposal_requirement
+            )
+            
+            # Append the rendered content to the list as individual lines
+            rendered_lines = rendered_content.splitlines()  # Split the rendered content by lines
+            
+            # Return a TranslatedSmartContract object with the list of rendered lines
+            return rendered_lines
+
+
     def generate_contract_declaration(self, contract_name):
         return f"contract {contract_name} " + "{"
+    
     
 
     def generate_import_statements(self) -> list[str]:
@@ -193,27 +247,49 @@ class CommitteeTranslator:
 
     
 
-    def translateCommittee(self,committee: Committee, voting_permission_index=None, proposal_permission_index=None) -> TranslatedSmartContract:
+    def translateCommittee(self,committee: Committee, voting_permission_index=None, proposal_permission_index=None, decision_making_method=None) -> TranslatedSmartContract:
         self.committee = committee
-        contract_name = committee.committee_id + "Voting"
-        
-
+        contract_name = committee.committee_id 
+        decision_making_method = committee.decision_making_method
         lines:list[str] = []
-        committee_delcaration_comment = f"// @title {contract_name} in DAO {self.context.dao.dao_id}, using the voting protocol: {committee.decision_making_method}"
-        lines.extend(self.generate_smart_contract_header(committee_delcaration_comment))
-        lines.extend(self.generate_import_statements())
-        lines.append(self.generate_contract_declaration(contract_name))
-        lines.append(self.generate_IPermissionManager_reference())
-        lines.append(self.generate_constructor(contract_name))
-        lines.append(self.generate_overrides(voting_permission_index, proposal_permission_index))
-        lines.append(self.generate_closure())
-        # Join the lines to form the final contract
-       
+        #committee_delcaration_comment = f"// @title {contract_name} in DAO {self.context.dao.dao_id}, using the voting protocol: {committee.decision_making_method}"
+        #generate the voting protocol contract from a template
+        template_path = "Templates/voting_protocols/"
+        vote_requirement = f'require(permissionManager.canVote(msg.sender, {voting_permission_index}), "PermissionManager: User cannot vote");'
+        proposal_requirement = f'require(permissionManager.canPropose(msg.sender, {proposal_permission_index}), "User cannot propose");'
+        state_var_declarations = "IPermissionManager public permissionManager;"
+        constructor_actions= "permissionManager = IPermissionManager(_permissionManager); "
+        inherited_contracts=", IPermissionManager"
         name = committee.committee_id
+        constructor_parameters = ", address _permissionManager"
+        imports=self.generate_import_statements()
+        dao_name= self.context.dao.dao_id
+        template_name = decision_making_method + ".sol.jinja"
+        if template_name in self.get_voting_protocol_list():
+            lines.extend(self.generate_voting_protocol_from_template(committee.committee_id, decision_making_method, state_var_declarations, dao_name, imports, constructor_parameters, inherited_contracts,  constructor_actions, vote_requirement, proposal_requirement, template_path, name= contract_name, output_folder="", extension=".sol"))
+        else:
+            print(f"Voting protocol {committee.decision_making_method} not found in folder {template_path}")
+            pass
+
+        # lines.extend(self.generate_smart_contract_header(committee_delcaration_comment))
+        # lines.extend(self.generate_import_statements())
+        # lines.append(self.generate_contract_declaration(contract_name))
+        # lines.append(self.generate_IPermissionManager_reference())
+        # lines.append(self.generate_constructor(contract_name))
+        # lines.append(self.generate_overrides(voting_permission_index, proposal_permission_index))
+        # lines.append(self.generate_closure())
+        # Join the lines to form the final contract
+        #voting protocol translation: 
         return TranslatedSmartContract(lines, name)
     
     
 
+class VotingProtocolTranslator:
+    def __init__(self, context: TranslationContext):
+        self.context = context
+
+    def generate_voting_protocol_from_template(self, voting_protocol_name):
+        pass
 
 class CommitteeTranslatorDiamond(CommitteeTranslator):
     def __init__(self, context: TranslationContext):
