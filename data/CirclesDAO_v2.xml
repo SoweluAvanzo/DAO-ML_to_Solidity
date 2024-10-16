@@ -17,7 +17,7 @@
                 <federates_into>CommunityCouncil</federates_into>
                 <federates_into>TechnicalCouncil</federates_into>
             </Role>
-            <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" voting_condition="group currency ownership"  proposal_condition="group currency ownership" decision_making_method="simple_majority_voting"  aggregation_level="0" federation_level="1">
+            <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" voting_condition="group currency ownership"  proposal_condition="group currency ownership" decision_making_method="ciccio"  aggregation_level="0" federation_level="1">
                 <associated_to>activate_suspend_service_provision</associated_to>
                 <associated_to>evaluate_service_provision</associated_to>
                 <is_controlled_by>TechnicalCouncil</is_controlled_by>
@@ -35,7 +35,7 @@
 
 
             </Committee>
-            <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" voting_condition="election"  proposal_condition="election" decision_making_method="simple_majority_voting"  aggregation_level="0" federation_level="1">
+            <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" voting_condition="election"  proposal_condition="election" decision_making_method="optimistic_governance"  aggregation_level="0" federation_level="1">
                 <associated_to>upgrade_Group_Currency_smart_contracts</associated_to>
                 <associated_to>member_data_management</associated_to>
                 <associated_to>suspension_of_the_group_currency</associated_to>

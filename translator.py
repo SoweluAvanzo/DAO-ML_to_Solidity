@@ -101,14 +101,18 @@ class CommitteeTranslator:
                 print(item)
         return items
         #generate_voting_protocol_from_template(decision_making_method, state_var_declarations, dao_name, imports, constructor_parameters, inherited_contracts,  constructor_actions, vote_requirement, proposal_requirement, template_path, name= contract_name, output_folder="", extension=".sol"))
-    def generate_voting_protocol_from_template(self, committee_name, decision_making_method_name, 
-                                           state_var_declarations, dao_name, imports, 
-                                           constructor_parameters, inherited_contracts, 
-                                           constructor_actions, vote_requirement, 
-                                           proposal_requirement, template_path: str, 
-                                           name: str, output_folder: str, extension=".sol") -> list[str]:
+    
+    def generate_voting_protocol_from_template(self, committee_name, decision_making_method_name ="", 
+                                           state_var_declarations = " ", dao_name =" ", imports = " ", 
+                                           constructor_parameters=" ", inherited_contracts= " ", 
+                                           constructor_actions =" ", vote_requirement= " ", 
+                                           proposal_requirement =" ", template_path : str="Templates/voting_protocols/", 
+                                           name: str= "", output_folder: str ="", extension=".sol", custom=False) -> list[str]:
             # Define the full path to the template file
-            file_name_and_path = template_path + decision_making_method_name + extension + ".jinja"
+            if custom == False:
+                file_name_and_path = template_path + decision_making_method_name + extension + ".jinja"
+            else:
+                file_name_and_path = template_path + "custom_decision_making_template" + extension + ".jinja"
             
             # Initialize an empty list to store the rendered result
             rendered_lines = []
@@ -122,8 +126,8 @@ class CommitteeTranslator:
             
             # Render the template with all dynamic variables
             rendered_content = template.render(
-                contract_name=u.camel_case(committee_name),
-                solidity_version=self.context.solidity_version,
+                contract_name=u.camel_case(committee_name), 
+                solidity_version=self.context.solidity_version,Voting_protocol_name = decision_making_method_name,
                 state_var_declarations=state_var_declarations,
                 dao_name=dao_name,
                 imports=imports,
@@ -134,7 +138,6 @@ class CommitteeTranslator:
                 proposal_requirement=proposal_requirement
             )
             
-            # Append the rendered content to the list as individual lines
             rendered_lines = rendered_content.splitlines()  # Split the rendered content by lines
             
             # Return a TranslatedSmartContract object with the list of rendered lines
@@ -157,95 +160,93 @@ class CommitteeTranslator:
         ]
         return imports
 
-    def generate_contract_declaration(self, contract_name):
-        return f"contract {contract_name}Voting is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, IPermissionManager " + "{"
+    # def generate_contract_declaration(self, contract_name):
+    #     return f"contract {contract_name}Voting is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, IPermissionManager " + "{"
     
-    def generate_IPermissionManager_reference(self):
-        return f"IPermissionManager public permissionManager;"
+    # def generate_IPermissionManager_reference(self):
+    #     return f"IPermissionManager public permissionManager;"
     
-    def generate_constructor(self, contract_name):
-        return f"""
-        constructor(IVotes _token, address _permissionManager)
-        Governor(\"{contract_name}Voting\")
-        GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
-        GovernorVotes(_token)
-        GovernorVotesQuorumFraction(0)
-        {{
-            permissionManager = IPermissionManager(_permissionManager); 
-        }}
-            """
+    # def generate_constructor(self, contract_name):
+    #     return f"""
+    #     constructor(IVotes _token, address _permissionManager)
+    #     Governor(\"{contract_name}Voting\")
+    #     GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
+    #     GovernorVotes(_token)
+    #     GovernorVotesQuorumFraction(0)
+    #     {{
+    #         permissionManager = IPermissionManager(_permissionManager); 
+    #     }}
+    #         """
     
 
-    def generate_overrides(self, voting_permission_index=None, proposal_permission_index=None):
-           return f""" 
-           // Override voting logic to include permission check before voting
-            function castVote(uint256 proposalId, uint8 support)
-                public
-                override
-                returns (uint256)
-            {{
-            // Check if the msg.sender has permission to vote before allowing them to cast a vote
-            require(permissionManager.canVote(msg.sender, {voting_permission_index}), "PermissionManager: User cannot vote");
+    # def generate_overrides(self, voting_permission_index=None, proposal_permission_index=None):
+    #        return f""" 
+    #        // Override voting logic to include permission check before voting
+    #         function castVote(uint256 proposalId, uint8 support)
+    #             public
+    #             override
+    #             returns (uint256)
+    #         {{
+    #         // Check if the msg.sender has permission to vote before allowing them to cast a vote
+    #         require(permissionManager.canVote(msg.sender, {voting_permission_index}), "PermissionManager: User cannot vote");
             
-            return super.castVote(proposalId, support);
-            }}
+    #         return super.castVote(proposalId, support);
+    #         }}
 
-            // Override proposal logic to include permission check before proposing
-            function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
-                public
-                override
-                returns (uint256)
-            {{
-            require(permissionManager.canPropose(msg.sender, {proposal_permission_index}), "User cannot propose");
+    #         // Override proposal logic to include permission check before proposing
+    #         function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
+    #             public
+    #             override
+    #             returns (uint256)
+    #         {{
+    #         require(permissionManager.canPropose(msg.sender, {proposal_permission_index}), "User cannot propose");
             
-            return super.propose(targets, values, calldatas, description);
-            }}
+    #         return super.propose(targets, values, calldatas, description);
+    #         }}
 
-            // Override Governor functions with the inherited implementations
-            function votingDelay()
-                public
-                view
-                override(Governor, GovernorSettings)
-                returns (uint256)
-            {{
-            return super.votingDelay();
-            }}
+    #         // Override Governor functions with the inherited implementations
+    #         function votingDelay()
+    #             public
+    #             view
+    #             override(Governor, GovernorSettings)
+    #             returns (uint256)
+    #         {{
+    #         return super.votingDelay();
+    #         }}
 
-            function votingPeriod()
-                public
-                view
-                override(Governor, GovernorSettings)
-                returns (uint256)
-            {{
-                return super.votingPeriod();
-            }}
+    #         function votingPeriod()
+    #             public
+    #             view
+    #             override(Governor, GovernorSettings)
+    #             returns (uint256)
+    #         {{
+    #             return super.votingPeriod();
+    #         }}
 
-            function quorum(uint256 blockNumber)
-                public
-                view
-                override(Governor, GovernorVotesQuorumFraction)
-                returns (uint256)
-            {{
-                return super.quorum(blockNumber);
-            }}
+    #         function quorum(uint256 blockNumber)
+    #             public
+    #             view
+    #             override(Governor, GovernorVotesQuorumFraction)
+    #             returns (uint256)
+    #         {{
+    #             return super.quorum(blockNumber);
+    #         }}
 
-            function proposalThreshold()
-                public
-                view
-                override(Governor, GovernorSettings)
-                returns (uint256)
-            {{
-                return super.proposalThreshold();
-            }}
+    #         function proposalThreshold()
+    #             public
+    #             view
+    #             override(Governor, GovernorSettings)
+    #             returns (uint256)
+    #         {{
+    #             return super.proposalThreshold();
+    #         }}
     
-        """
+    #     """
         
 
-    def generate_closure(self):
-        return "}"
+    # def generate_closure(self):
+    #     return "}"
 
-
-    
 
     def translateCommittee(self,committee: Committee, voting_permission_index=None, proposal_permission_index=None, decision_making_method=None) -> TranslatedSmartContract:
         self.committee = committee
@@ -266,11 +267,10 @@ class CommitteeTranslator:
         dao_name= self.context.dao.dao_id
         template_name = decision_making_method + ".sol.jinja"
         if template_name in self.get_voting_protocol_list():
-            lines.extend(self.generate_voting_protocol_from_template(committee.committee_id, decision_making_method, state_var_declarations, dao_name, imports, constructor_parameters, inherited_contracts,  constructor_actions, vote_requirement, proposal_requirement, template_path, name= contract_name, output_folder="", extension=".sol"))
+            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_id, decision_making_method_name=decision_making_method, state_var_declarations= state_var_declarations,dao_name= dao_name,imports= imports, constructor_parameters= constructor_parameters, inherited_contracts=inherited_contracts, constructor_actions= constructor_actions,vote_requirement= vote_requirement, proposal_requirement=proposal_requirement, template_path=template_path, name= contract_name, output_folder="", extension=".sol"))
         else:
             print(f"Voting protocol {committee.decision_making_method} not found in folder {template_path}")
-            pass
-
+            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_id, decision_making_method_name="custsom_decision_making_template",dao_name= dao_name, template_path=template_path, name= contract_name, custom=True))
         # lines.extend(self.generate_smart_contract_header(committee_delcaration_comment))
         # lines.extend(self.generate_import_statements())
         # lines.append(self.generate_contract_declaration(contract_name))
@@ -282,14 +282,6 @@ class CommitteeTranslator:
         #voting protocol translation: 
         return TranslatedSmartContract(lines, name)
     
-    
-
-class VotingProtocolTranslator:
-    def __init__(self, context: TranslationContext):
-        self.context = context
-
-    def generate_voting_protocol_from_template(self, voting_protocol_name):
-        pass
 
 class CommitteeTranslatorDiamond(CommitteeTranslator):
     def __init__(self, context: TranslationContext):
