@@ -102,7 +102,7 @@ class CommitteeTranslator:
         return items
         #generate_voting_protocol_from_template(decision_making_method, state_var_declarations, dao_name, imports, constructor_parameters, inherited_contracts,  constructor_actions, vote_requirement, proposal_requirement, template_path, name= contract_name, output_folder="", extension=".sol"))
     
-    def generate_voting_protocol_from_template(self, committee_name, decision_making_method_name ="", 
+    def generate_voting_protocol_from_template(self, committee_name, decision_making_method_name, 
                                            state_var_declarations = " ", dao_name =" ", imports = " ", 
                                            constructor_parameters=" ", inherited_contracts= " ", 
                                            constructor_actions =" ", vote_requirement= " ", 
@@ -127,7 +127,7 @@ class CommitteeTranslator:
             # Render the template with all dynamic variables
             rendered_content = template.render(
                 contract_name=u.camel_case(committee_name), 
-                solidity_version=self.context.solidity_version,Voting_protocol_name = decision_making_method_name,
+                solidity_version=self.context.solidity_version,decision_making_method_name = decision_making_method_name,
                 state_var_declarations=state_var_declarations,
                 dao_name=dao_name,
                 imports=imports,
@@ -137,10 +137,7 @@ class CommitteeTranslator:
                 vote_requirement=vote_requirement,
                 proposal_requirement=proposal_requirement
             )
-            
-            rendered_lines = rendered_content.splitlines()  # Split the rendered content by lines
-            
-            # Return a TranslatedSmartContract object with the list of rendered lines
+            rendered_lines = rendered_content.splitlines() 
             return rendered_lines
 
 

@@ -1,21 +1,4 @@
-'''
 
-This module contains the SolidityTranslator class which is responsible for translating the logical representation of a DAO into Solidity code.
-
-The SolidityTranslator class has the following methods:
-- translate(): Translates the DAO object into Solidity code.
-- generate_header(): Generates the header of the Solidity code.
-- generate_contract_declaration(): Generates the contract declaration of the Solidity code.
-- generate_body(): Generates the body of the Solidity code.
-- generate_constructor(): Generates the constructor of the Solidity code.
-- generate_functions(): Generates the functions of the Solidity code.
-- generate_access_control(role_ids): Generates the access control code for the given role IDs.
-- check_permissions(permission): Checks the permissions required for a given permission object.
-- generate_function(permission): Generates the code for a function based on the given permission object.
-- generate_closure(): Generates the closure of the Solidity code.
-- save_to_file(): Saves the translated Solidity smart contract code to a .sol file.
-Note: This module requires the DAOclasses module.
-'''
 
 import networkx as nx
 from DAOclasses import DAO, Committee, GraphType, Permission
