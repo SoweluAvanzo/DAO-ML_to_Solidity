@@ -1,20 +1,30 @@
 // SPDX-License-Identifier: MIT
-pragma solidity {{solidity_version}};
-// @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
+pragma solidity ^0.8.0;
+// @title Communitycouncil in GCDAO, using the quadratic_voting protocol
 
-{% for import in imports %}
-{{ import }}
-{% endfor %}
 
-contract {{contract_name}} is Governor, GovernorVotes, GovernorSettings{{inherited_contracts}} {
-     {{state_var_declarations}}
+import "@openzeppelin/contracts/governance/Governor.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+
+import "./interfaces/IPermissionManager.sol";
+
+
+contract Communitycouncil is Governor, GovernorVotes, GovernorSettings, IPermissionManager {
+     IPermissionManager public permissionManager;
 
     constructor(IVotes _token)
-        Governor("{{contract_name}}")
+        Governor("Communitycouncil")
         GovernorVotes(_token)
         GovernorSettings(1 /* voting delay */, 45818 /* voting period */, 0) 
     {
-         {{constructor_actions}}
+         permissionManager = IPermissionManager(_permissionManager); 
     }
 
     function getVotes(address account, uint256 blockNumber) public view override returns ( uint256) {
@@ -40,7 +50,7 @@ contract {{contract_name}} is Governor, GovernorVotes, GovernorSettings{{inherit
         override
         returns (uint256)
     {
-        {{proposal_requirement}}
+        require(permissionManager.canPropose(msg.sender, None), "User cannot propose");
 
         return super.propose(targets, values, calldatas, description);
     }
@@ -50,7 +60,7 @@ function castVote(uint256 proposalId, uint8 support)
         override
         returns (uint256)
     {
-        {{vote_requirement}}
+        require(permissionManager.canVote(msg.sender, None), "PermissionManager: User cannot vote");
         return super.castVote(proposalId, support);
     }
  // Override proposal threshold to integrate quadratic cost (if needed)

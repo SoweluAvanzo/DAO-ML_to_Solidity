@@ -54,7 +54,7 @@ class Role:
         self.controllers:list[str] = [] # just the ID
         self.aggregated:list[Role|Committee] =  []
         self.federated_committees:list[Committee] = []
-
+        
     def get_id(self):
         return self.role_id
 
@@ -316,6 +316,10 @@ class DAO:
         self.proposal_conditions: dict[str, str]  = {} # Committee
         self.decision_making_methods: dict[str, str]  = {} # Committee
         self.conditions = []
+        self.role_and_committee_voting_right_dict = {}
+        self.role_and_committee_proposal_right_dict = {}
+        
+
     
     def add_role(self, role):
         self.roles[role.role_id] = role

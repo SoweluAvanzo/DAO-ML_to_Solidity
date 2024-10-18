@@ -93,7 +93,7 @@ class OptimizedSolidityTranslator(Translator):
                 proposal_permission_key = c.committee_id + "ProposalRight"
                 voting_permission_index = self.permission_to_index[voting_permission_key]
                 proposal_permission_index = self.permission_to_index[proposal_permission_key]
-                translated_committee = ct.translateCommittee(c, proposal_permission_index , voting_permission_index) 
+                translated_committee = ct.translateCommittee(c, proposal_permission_index , voting_permission_index, optimized=True) 
                 all_smart_contracts.append(translated_committee)
             all_smart_contracts.append(self.generate_IPermissionManager_interface())
             all_smart_contracts.append(self.generate_ICondition_interface())

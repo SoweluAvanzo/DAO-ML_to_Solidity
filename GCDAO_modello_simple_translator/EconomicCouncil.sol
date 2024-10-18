@@ -1,16 +1,26 @@
 // SPDX-License-Identifier: MIT
-pragma solidity {{solidity_version}};
+pragma solidity ^0.8.0;
 
-// @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
+// @title Economiccouncil in GCDAO, using the lazy_consensus protocol
 
-{% for import in imports %}
-{{ import }}
-{% endfor %}
 
-contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction{{inherited_contracts}} {
+import "@openzeppelin/contracts/governance/Governor.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+
+import "./interfaces/IPermissionManager.sol";
+
+
+contract Economiccouncil is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, IPermissionManager {
 
     // State variables
-    {{state_var_declarations}}
+    IPermissionManager public permissionManager;
 
     struct Proposal {
         bool challenged;
@@ -24,15 +34,15 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple
     mapping(uint256 => Proposal) public proposals; // Tracking the status of each proposal
     mapping(uint256 => mapping(address => uint256)) public stakers; // Tracking stakers for each proposal
 
-    constructor(IVotes _token{{constructor_parameters}}, uint256 _challengePeriod, uint256 _requiredStake)
-        Governor("{{contract_name}}")
+    constructor(IVotes _token, address _permissionManager, uint256 _challengePeriod, uint256 _requiredStake)
+        Governor("Economiccouncil")
         GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(0)
     {
         challengePeriod = _challengePeriod; // Set the challenge period duration
         requiredStake = _requiredStake; // Set the minimum stake required
-        {{constructor_actions}}
+        permissionManager = IPermissionManager(_permissionManager); 
     }
 
     // Propose a new governance action
@@ -99,7 +109,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple
     {
         Proposal storage proposal = proposals[proposalId];
         require(proposal.challenged, "Cannot vote on an unchallenged proposal");
-        {{vote_requirement}}
+        require(permissionManager.canVote(msg.sender, None), "PermissionManager: User cannot vote");
         return super.castVote(proposalId, support);
     }
 

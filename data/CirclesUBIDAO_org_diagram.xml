@@ -27,7 +27,7 @@
             <is_controlled_by>TechnicalCouncil</is_controlled_by>
             <is_controlled_by>CommunityCouncil</is_controlled_by>
         </Committee>
-        <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" voting_condition="Perishable Share ownership threshold" decision_making_method="simple_majority_voting">
+        <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" voting_condition="Perishable Share ownership threshold" decision_making_method="quadratic_voting">
             <associated_to>add_remove_allowed_collateral_type</associated_to>
             <associated_to>TreasuryManagement</associated_to>
             <is_controlled_by>CommunityCouncil</is_controlled_by>

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity {{solidity_version}};
 
-// @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}}
+// @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
 
 {% for import in imports %}
 {{ import }}
 {% endfor %}
-contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction{{inherited_contracts}} {
+contract {{contract_name}}{{inherited_contracts}} {
     
     // TODO: implement custom {{decision_making_method_name}} logic here
 
