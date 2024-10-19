@@ -67,7 +67,7 @@ class SolidityTranslator_OLD(Translator):
 '''
 
 class TranslationContext:
-    def __init__(self, dao: DAO, role_declaration_policy = "index", solidity_version= "^0.8.0", daoOwner = True):
+    def __init__(self, dao: DAO, role_declaration_policy = "topological_order", solidity_version= "^0.8.0", daoOwner = True):
         self.dao = dao
         self.role_declaration_policy = role_declaration_policy
         self.solidity_version = solidity_version

@@ -32,7 +32,7 @@
             <associated_to>TreasuryManagement</associated_to>
             <is_controlled_by>CommunityCouncil</is_controlled_by>
         </Committee>
-        <Committee committee_ID="CommunityCouncil" committee_description="Community Council" proposal_condition="rotation" decision_making_method="simple_majority_voting">
+        <Committee committee_ID="CommunityCouncil" committee_description="Community Council" proposal_condition="rotation" decision_making_method="optimistic">
             <associated_to>Attestations</associated_to>
             <associated_to>set_contribution_attestation</associated_to>
             <associated_to>set_membership_requirements</associated_to>

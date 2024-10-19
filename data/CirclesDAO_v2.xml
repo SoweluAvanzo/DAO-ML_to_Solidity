@@ -20,8 +20,8 @@
             <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" voting_condition="group currency ownership"  proposal_condition="group currency ownership" decision_making_method="simple_majority"  aggregation_level="0" federation_level="1">
                 <associated_to>activate_suspend_service_provision</associated_to>
                 <associated_to>evaluate_service_provision</associated_to>
-                <is_controlled_by>TechnicalCouncil</is_controlled_by>
-                <is_controlled_by>CommunityCouncil</is_controlled_by>
+                <is_controlled_by>EconomicCouncil</is_controlled_by>
+                <is_controlled_by>TreasuryManager</is_controlled_by>
             </Committee>
             <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" voting_condition="group currency threshold"  proposal_condition="group currency threshold" decision_making_method="lazy_consensus"  aggregation_level="0" federation_level="1">
                 <associated_to>add_remove_allowed_collateral_type</associated_to>
@@ -40,7 +40,6 @@
                 <associated_to>member_data_management</associated_to>
                 <associated_to>suspension_of_the_group_currency</associated_to>
                 <associated_to>upgrade_DAO_smart_contracts</associated_to>
-                <is_controlled_by>TechnicalCouncil</is_controlled_by>
             </Committee>
             <GovernanceArea gov_area_ID="ServiceProvision" gov_area_description="Service Provision" implementation="hybrid"/>
             <GovernanceArea gov_area_ID="GroupMembership" gov_area_description="Group Membership" implementation="on-chain"/>
