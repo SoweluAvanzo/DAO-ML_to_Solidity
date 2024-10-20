@@ -284,7 +284,7 @@ class UserFunctionalitiesGroupSize(Enum):
             return UserFunctionalitiesGroupSize.EXTRA_LARGE
         else:
             return None
-        
+
 class DAOMetadata:
     def __init__(self):
         self.user_functionalities_group_size = None
