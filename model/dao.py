@@ -54,7 +54,7 @@ class DAO(base_entity.BaseEntity):
             f'\thierarchical_inheritance={self.hierarchical_inheritance}'
         ]
         #for dao in self.daos.values():
-        #    parts.append(str(dao))
+        #    pasrts.append(str(dao))
         parts.append("\nRoles:")
         for role in self.roles.values():
             parts.append("\n\t" + str(role))
