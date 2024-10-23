@@ -1,5 +1,4 @@
-
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as etree # ET
 from lxml import etree
 import xmlschema
 
@@ -97,34 +96,96 @@ class ConstraintValidator():
                             )
 
     # def validate_dao_references(self,diagram):
-    # # Parse the XML file
-    # tree = etree.parse(diagram_file)
-        # Collect all the ID references (relations) inside the DAO element
-        # # Iterate over all DAOs in the diagram
-        # for dao in diagram.xpath('//DAO'):
-        #     # Get all the ID references for the current DAO element
-        #     associated_to_refs = dao.xpath('.//associated_to/text()')
-        #     is_controlled_by_refs = dao.xpath('.//is_controlled_by/text()')
-        #     federates_into_refs = dao.xpath('.//federates_into/text()')
+    #     # Parse the XML file
+    #     tree = etree.parse(diagram)
+    #         #Collect all the ID references (relations) inside the DAO element
+    #         # Iterate over all DAOs in the diagram
+    #         for dao in diagram.xpath('//DAO'):
+    #             # Get all the ID references for the current DAO element
+    #             associated_to_refs = dao.xpath('.//associated_to/text()')
+    #             is_controlled_by_refs = dao.xpath('.//is_controlled_by/text()')
+    #             federates_into_refs = dao.xpath('.//federates_into/text()')
 
-        #     # Combine all references into one list
-        #     all_id_refs = set(associated_to_refs + is_controlled_by_refs + federates_into_refs)
+    #             # Combine all references into one list
+    #             all_id_refs = set(associated_to_refs + is_controlled_by_refs + federates_into_refs)
 
-        #     # Collect all valid IDs from DAO descendants (Role, Committee, GovernanceArea, Permission)
-        #     valid_role_ids = dao.xpath('.//Role/@role_ID')
-        #     valid_committee_ids = dao.xpath('.//Committee/@committee_ID')
-        #     valid_gov_area_ids = dao.xpath('.//GovernanceArea/@gov_area_ID')
-        #     valid_permission_ids = dao.xpath('.//Permission/@permission_ID')
+    #             # Collect all valid IDs from DAO descendants (Role, Committee, GovernanceArea, Permission)
+    #             valid_role_ids = dao.xpath('.//Role/@role_ID')
+    #             valid_committee_ids = dao.xpath('.//Committee/@committee_ID')
+    #             valid_gov_area_ids = dao.xpath('.//GovernanceArea/@gov_area_ID')
+    #             valid_permission_ids = dao.xpath('.//Permission/@permission_ID')
 
-        #     valid_ids = set(valid_role_ids + valid_committee_ids + valid_gov_area_ids + valid_permission_ids)
+    #             valid_ids = set(valid_role_ids + valid_committee_ids + valid_gov_area_ids + valid_permission_ids)
 
-        #     invalid_refs = [ref for ref in all_id_refs if ref not in valid_ids]
+    #             invalid_refs = [ref for ref in all_id_refs if ref not in valid_ids]
 
-        #     if invalid_refs:
-            #     raise Exception(f"Invalid ID references found: {invalid_refs}")
-        #     else:
-            #     print("All ID references are valid.")
-                # return True    
+    #             if invalid_refs:
+    #                 raise Exception(f"Invalid ID references found: {invalid_refs}")
+    #             else:
+    #                 print("All ID references are valid.")
+    #                 return True    
+
+    def check_relations_in_same_DAO(self, diagram, early_return = True):
+        possible_targets_by_dao_id: map[str, map[str, set]] = {} # { dao_id: TARGETS } ;; TARGETS-> { elem_id: set_of_targetsID }
+
+        all_descendants_name = [ \
+            "federates_into", \
+            "aggregates", \
+            "associated_to", \
+            "is_controlled_by" \
+        ]
+        all_descendants_name_list = " | ".join([f"./{dn}/text()" for dn in all_descendants_name])
+
+        empty_set = set([])
+
+        # at first, gather all relations (with their respective targets)
+        for dao in diagram.xpath('//DAO'):
+            possible_targets = {} # of current dao
+            dao_id = dao.get("DAO_ID")
+            possible_targets_by_dao_id[dao_id] = possible_targets
+
+            for elem in dao.xpath("./Role | ./Committee"):
+                # Check the type of the element (Role or Committee) and set the correct ID attribute
+                elem_id = ""
+                if elem.tag == "Role":
+                    elem_id = elem.get("role_ID")
+                elif elem.tag == "Committee":
+                    elem_id = elem.get("committee_ID")
+                else:
+                    continue  # Skip if it's neither Role nor Committee
+                # scan through all possible descendants: federates, aggregates, associated and is_controlled_by ...
+                possible_targets[elem_id] = set([target for target in elem.xpath(all_descendants_name_list)])
+            
+            for elem in dao.xpath("./Permission"):
+                elem_id = elem.get('permission_ID')
+                target = elem.get('ref_gov_area')
+                possible_targets[elem_id] = set([target]) # each permission has only one single target/reletaion
+
+            #also, add each "GovernanceArea" in order to allow Permission to fully target them
+            for elem in dao.xpath("./GovernanceArea"):
+                elem_id = elem.get('gov_area_ID')
+                possible_targets[elem_id] = empty_set # empty set
+
+        # then, check if each target exists somewhere AND exists ONLY in its respective DAO
+        all_violations = []
+        for dao_id in possible_targets_by_dao_id:
+            elements_in_dao = possible_targets_by_dao_id[dao_id]
+            for element_id in elements_in_dao: # for each element inside a Dao
+                element = elements_in_dao[element_id] # TODO: CHECK IF IT's A SET
+                for target_id in element: # for each possible target of current element -> start the check
+                    # check against every other DAO
+                    for other_dao_id in possible_targets_by_dao_id:
+                        if other_dao_id != dao_id : # obviously, exclude current dao
+                            other_dao = possible_targets_by_dao_id[other_dao_id]
+                            if target_id in other_dao:
+                                print(f"ERROR: found target {target_id} (originally from DAO __{dao_id}__) pointing insinde DAO --{other_dao_id}--")
+                                if early_return:
+                                    return False #ERROR
+                                all_violations.append({"elementID_with_external_target": element_id, "incriminated_targetID": target_id, "daoID_of_element": dao_id, "other_daoID": other_dao_id})
+        print(f"all_violations: {all_violations}")
+        # TODO: make a use of "all_violations", like printing or visualizing
+        return len(all_violations) == 0
+
 
     def validate_dao_ml_diagram(self):
         diagram_file = self.xmlname
@@ -139,6 +200,7 @@ class ConstraintValidator():
         #conditions.append(self.validate_dao_references(diagram))
         conditions.append(self.check_relation_graphs(diagram,"aggregation_level", "aggregates"))
         conditions.append(self.check_relation_graphs(diagram,"federation_level", "federates_into"))
+        conditions.append(self.check_relations_in_same_DAO(diagram, early_return=False))
         for condition in conditions:
             if condition != True:
                 print(f"error at condition {conditions.index(condition)}")
