@@ -184,7 +184,7 @@ class ConstraintValidator():
                                 all_violations.append({"elementID_with_external_target": element_id, "incriminated_targetID": target_id, "daoID_of_element": dao_id, "other_daoID": other_dao_id})
         print(f"all_violations: {all_violations}")
         # TODO: make a use of "all_violations", like printing or visualizing
-        return len(all_violations) == 0
+        return len(all_violations) == 0 # if no violations, then return True
 
 
     def validate_dao_ml_diagram(self):
@@ -197,7 +197,6 @@ class ConstraintValidator():
         conditions.append(self.compare_subsets(diagram,"IDs of elements that roles aggregate into", '//Role/aggregates/text()',"Roles' IDs", '//Role/@role_ID'))    
         conditions.append(self.compare_subsets(diagram,"IDs of elements that committees aggregate into", '//Committee/aggregates/text()',"Committee' IDs", '//Committee/@committee_ID'))
         conditions.append(self.compare_subsets(diagram,"IDs of control relations", '//Role/is_controlled_by/text()|//Committee/is_controlled_by/text()',"Role or Committee IDs", '//Role/@role_ID|//Committee/@committee_ID'))  
-        #conditions.append(self.validate_dao_references(diagram))
         conditions.append(self.check_relation_graphs(diagram,"aggregation_level", "aggregates"))
         conditions.append(self.check_relation_graphs(diagram,"federation_level", "federates_into"))
         conditions.append(self.check_relations_in_same_DAO(diagram, early_return=False))
