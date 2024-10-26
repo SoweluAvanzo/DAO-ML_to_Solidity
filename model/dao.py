@@ -4,7 +4,6 @@ import  model.committee as committee
 import  model.role as role
 import  model.control_graph_generic as control_graph_generic
 import  model.enums.user_functionalities_group_size as user_functionalities_group_size
-
 class DAOMetadata:
     def __init__(self):
         self.user_functionalities_group_size = None
