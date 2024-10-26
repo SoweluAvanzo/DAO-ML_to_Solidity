@@ -34,7 +34,7 @@ class Role(base_entity.BaseEntity):
         is_not_first = False
         parts.append(f", permissions<{len(self.permissions)}>=[")
         for p in self.permissions:
-            parts.append(p.permission_id)
+            parts.append(p.id)
             if is_not_first:
                 parts.append(", ")
             else:
@@ -70,8 +70,8 @@ class Role(base_entity.BaseEntity):
         obj["n_agent_min"] = self.n_agent_min
         obj["n_agent_max"] = self.n_agent_max
         obj["agent_type"] = self.agent_type
-        obj["permissions"] = [ p.permission_id for p in self.permissions]
+        obj["permissions"] = [ p.id for p in self.permissions]
         obj["controllers"] = self.controllers
         obj["aggregated"] =  [ agg.get_id() for agg in self.aggregated ]
-        obj["federated_committees"] = [c.committee_id for c in self.federated_committees] 
+        obj["federated_committees"] = [c.id for c in self.federated_committees] 
         return obj

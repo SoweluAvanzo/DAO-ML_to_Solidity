@@ -28,7 +28,7 @@ class DAO(base_entity.BaseEntity):
         self.roles: dict[str, role.Role] = {}
         self.committees: dict[str, committee.Committee] = {}
         self.permissions: dict[str, permission.Permission] = {}
-        self.dao_control_graph: control_graph_generic.ControlGraphGeneric
+        self.dao_control_graph: control_graph_generic.ControlGraphGeneric = None
         self.metadata = DAOMetadata()
         self.assignment_conditions: dict[str, str] = {} # Role
         self.voting_conditions: dict[str, str]  = {} # Committee
@@ -57,13 +57,13 @@ class DAO(base_entity.BaseEntity):
         #    parts.append(str(dao))
         parts.append("\nRoles:")
         for role in self.roles.values():
-            parts.append("\t\t" + str(role))
+            parts.append("\n\t" + str(role))
         parts.append("\nCommittees:")
-        for committee in self.committees:
-            parts.append("\t\t" + str(committee))
+        for committee in self.committees.values():
+            parts.append("\n\t" + str(committee))
         parts.append("\nPermissions:")
-        for permission in self.permissions:
-            parts.append("\t\t" + str(permission))
+        for permission in self.permissions.values():
+            parts.append("\n\t" + str(permission))
         additional_parts = "".join(parts)
         parts = None
         return super().__str__(additional_parts)

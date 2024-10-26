@@ -1,9 +1,11 @@
 import networkx as nx
 
-from ..model.control_graph_generic import ControlGraphGeneric
-from ..model.enums.graph_type import GraphType
+# from ..model.control_graph_generic import ControlGraphGeneric
+# from ..model.enums.graph_type import GraphType
+import model.control_graph_generic as control_graph_generic #ControlGraphGeneric
+import model.enums.graph_type as graph_type #GraphType
 
-class ControlGraphBase(ControlGraphGeneric):
+class ControlGraphBase(control_graph_generic.ControlGraphGeneric):
     '''
     First, simple implementation of the control graph (controlling Role, Committee
     and the ability to perform operations onto one another).
@@ -11,7 +13,7 @@ class ControlGraphBase(ControlGraphGeneric):
     def __init__(self, dao):
         super().__init__(dao)
         self.control_graph: nx.DiGraph = None
-        self.graph_type: GraphType = None #is calculated before the transitive closure is applied in case of hierarchical inheritance
+        self.graph_type: graph_type.GraphType = None #is calculated before the transitive closure is applied in case of hierarchical inheritance
         self.is_cyclic = False #hypotesis
         self.create_control_graph()
 
@@ -52,12 +54,12 @@ class ControlGraphBase(ControlGraphGeneric):
         if nx.is_directed_acyclic_graph(self.control_graph):
             if self.is_list():
                 print("the graph is a list and doesn't contain cycles")
-                return GraphType.LIST #the graph is a list and doesn't contain cycles
+                return graph_type.GraphType.LIST #the graph is a list and doesn't contain cycles
             else:
-                return GraphType.DAG #the graph is a DAG, but not a list
+                return graph_type.GraphType.DAG #the graph is a DAG, but not a list
         else:
             self.is_cyclic = True
-            return GraphType.GRAPH #the graph contains cycles
+            return graph_type.GraphType.GRAPH #the graph contains cycles
 
     def is_list(self):
         return all(self.control_graph.out_degree(n) <= 1 for n in self.control_graph.nodes)

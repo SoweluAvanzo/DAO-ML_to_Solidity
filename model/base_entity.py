@@ -16,7 +16,7 @@ class BaseEntity:
         string_builder = StringIO()
 
         string_builder.write(self.__class__.__name__)
-        string_builder.write('()')
+        string_builder.write('(')
         string_builder.write('id=')
         string_builder.write(f"{self.id}")
 

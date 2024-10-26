@@ -20,7 +20,7 @@ class Committee(base_entity.BaseEntity):
         self.member_entities:list[Committee] = []
         self.federated_committees:list[Committee|role.Role] = []
 
-    def add_permission(self, permission):
+    def add_permission(self, permission: permission.Permission):
         print(f'Adding permission {str(permission)} to committee {self.id}')
         self.permissions.append(permission)
 
@@ -36,7 +36,7 @@ class Committee(base_entity.BaseEntity):
         #storing the relation that indicates that the given committee federates into a target committee
         
 
-    def add_member_entity(self, entity:any):
+    def add_member_entity(self, entity:base_entity.BaseEntity):
         self.member_entities.append(entity)
         print(f'Adding member entity {entity.get_id()} to committee {self.id}')
     
