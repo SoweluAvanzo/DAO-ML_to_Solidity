@@ -1,13 +1,9 @@
-from .base_entity import BaseEntity
-#from .permission import Permission
-#from .role import Role
-
-#import base_entity 
-import permission 
-import role 
+import model.base_entity as base_entity
+import model.permission as permission
+import model.role as role
 
 #stores committee information with control relations and permissions
-class Committee(BaseEntity):
+class Committee(base_entity.BaseEntity):
     #removed n_agent_min, n_agent_max
     def __init__(self, id, committee_description, voting_condition, proposal_condition, decision_making_method):
         super().__init__(id)

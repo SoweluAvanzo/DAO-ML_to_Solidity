@@ -1,4 +1,5 @@
-import dao as DAO
+import model.dao as DAO
+
 class ControlGraphGeneric:
     def __init__(self, dao):
         self.dao: DAO.DAO = dao

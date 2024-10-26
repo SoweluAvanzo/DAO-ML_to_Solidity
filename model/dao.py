@@ -1,13 +1,9 @@
-from .base_entity import BaseEntity
-#from .permission import Permission
-#from .committee import Committee
-#from .role import Role 
-import permission
-import committee
-import role
-from .control_graph_generic import ControlGraphGeneric
-from .enums.user_functionalities_group_size import UserFunctionalitiesGroupSize
-
+import  model.base_entity as base_entity
+import  model.permission as permission
+import  model.committee as committee
+import  model.role as role
+import  model.control_graph_generic as control_graph_generic
+import  model.enums.user_functionalities_group_size as user_functionalities_group_size
 class DAOMetadata:
     def __init__(self):
         self.user_functionalities_group_size = None
@@ -15,7 +11,7 @@ class DAOMetadata:
 
     def save_user_functionalities_group_size(self, roles, committees):
         self.size_user_functionalities_group = len(roles) + len(committees)
-        self.user_functionalities_group_size = UserFunctionalitiesGroupSize.from_size(self.size_user_functionalities_group)
+        self.user_functionalities_group_size = user_functionalities_group_size.UserFunctionalitiesGroupSize.from_size(self.size_user_functionalities_group)
     
     def toJSON(self):
         return {
@@ -23,7 +19,7 @@ class DAOMetadata:
             "size_user_functionalities_group": self.size_user_functionalities_group
         }
 
-class DAO(BaseEntity):
+class DAO(base_entity.BaseEntity):
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
         super().__init__(dao_id)
         self.dao_name = dao_name
@@ -32,7 +28,7 @@ class DAO(BaseEntity):
         self.roles: dict[str, role.Role] = {}
         self.committees: dict[str, committee.Committee] = {}
         self.permissions: dict[str, permission.Permission] = {}
-        self.dao_control_graph: ControlGraphGeneric
+        self.dao_control_graph: control_graph_generic.ControlGraphGeneric
         self.metadata = DAOMetadata()
         self.assignment_conditions: dict[str, str] = {} # Role
         self.voting_conditions: dict[str, str]  = {} # Committee

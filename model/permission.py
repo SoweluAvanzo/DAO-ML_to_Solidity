@@ -1,6 +1,6 @@
-from .base_entity import BaseEntity
+import  model.base_entity as base_entity
 
-class Permission(BaseEntity):
+class Permission(base_entity.BaseEntity):
     def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None, voting_right = False, proposal_right = False):
         super().__init__(permission_id)
         self.allowed_action = allowed_action
