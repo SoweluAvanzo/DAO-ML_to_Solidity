@@ -96,12 +96,13 @@ class OptimizedSolidityTranslator(Translator):
                 translated_committee = ct.translateCommittee(c, proposal_permission_index , voting_permission_index, optimized=True) 
                 all_smart_contracts.append(translated_committee)
             all_smart_contracts.append(self.generate_IPermissionManager_interface())
-            all_smart_contracts.append(self.generate_ICondition_interface())
-            for condition in self.context.dao.conditions:
-                if condition is not None:
-                    c= ConditionTranslator(self.context)
-                    condition_sc = c.generate_condition_from_template("Templates/", condition_name= u.camel_case(condition), condition_logic="//TODO: Implement the condition smart contract logic here", return_value = "true", extension=".sol")
-                    all_smart_contracts.append(condition_sc)
+            if self.context.dao.conditions != []:
+                all_smart_contracts.append(self.generate_ICondition_interface()) 
+                for condition in self.context.dao.conditions:
+                    if condition is not None:
+                        c= ConditionTranslator(self.context)
+                        condition_sc = c.generate_condition_from_template("Templates/", condition_name= u.camel_case(condition), condition_logic="//TODO: Implement the condition smart contract logic here", return_value = "true", extension=".sol")
+                        all_smart_contracts.append(condition_sc)
             # in the end, the DAO itself
             all_smart_contracts.append(self.translateDao())
             
@@ -123,7 +124,8 @@ class OptimizedSolidityTranslator(Translator):
     def generate_contract_declaration(self):
         lines = []
         lines.append("import \"./interfaces/IPermissionManager.sol\";")
-        lines.append(f"import \"./interfaces/ICondition.sol\";")
+        if self.context.dao.conditions != []:
+            lines.append(f"import \"./interfaces/ICondition.sol\";")
         lines.append( f"contract {self.context.dao.dao_id} is IPermissionManager {'{'}")
         return "\n".join(lines)
     
@@ -182,9 +184,12 @@ class OptimizedSolidityTranslator(Translator):
         lines = []
         lines.append(f"    bool {visibility} committee_initialization_blocked;")
         lines.append(f"    mapping(address => {id_var_type}) {visibility} roles;")
-        lines.append(f"    mapping({id_var_type} => ICondition) {visibility} voting_conditions;")
-        lines.append(f"    mapping({id_var_type} => ICondition) {visibility} proposal_conditions;")
-        lines.append(f"    mapping({id_var_type} => ICondition) {visibility} assignment_conditions;")
+        if self.context.dao.voting_conditions != {}:
+            lines.append(f"    mapping({id_var_type} => ICondition) {visibility} voting_conditions;")
+        if self.context.dao.proposal_conditions != {}:
+            lines.append(f"    mapping({id_var_type} => ICondition) {visibility} proposal_conditions;")
+        if self.context.dao.assignment_conditions != {}:        
+            lines.append(f"    mapping({id_var_type} => ICondition) {visibility} assignment_conditions;")
         # Now, define the way a "role_permission" must work; in particular how
         # its data is accessed: if we are still "optimizing" (i.e., the
         # "self.group_size" is NOT "None", i.e. its value is a UserFunctionalitiesGroupSize
@@ -241,20 +246,28 @@ class OptimizedSolidityTranslator(Translator):
         id_var_type = self.get_variable_type()
         lines = []
         lines.append("    constructor(")
-        lines.append(f"{id_var_type}[] memory roleIds, ")    
-        lines.append("address[] memory votingConditionAddresses, ")
-        lines.append("address[] memory proposalConditionAddresses, ")
-        lines.append("address[] memory assignmentConditionAddresses")
+        if self.context.dao.conditions != []:
+            lines.append(f"{id_var_type}[] memory roleIds, ")
+        if self.context.dao.voting_conditions != {}:        
+            lines.append("address[] memory votingConditionAddresses, ")
+        if self.context.dao.proposal_conditions != {}:
+            lines.append("address[] memory proposalConditionAddresses, ")
+        if self.context.dao.assignment_conditions != {}:
+            lines.append("address[] memory assignmentConditionAddresses")
         lines.append(") {")
             
         lines.append(self.generate_role_permission_mapping())
         if self.context.daoOwner:
             lines.append(f"roles[msg.sender] = {self.context.dao.dao_id}Owner;")
-        lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
-        lines.append("     voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);")
-        lines.append("     proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);")
-        lines.append("     assignment_conditions[roleIds[i]] = ICondition(assignmentConditionAddresses[i]);")
-        lines.append("      }")
+        if self.context.dao.conditions != []:
+            lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
+        if self.context.dao.voting_conditions != {}:
+            lines.append("     voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);")
+        if self.context.dao.proposal_conditions != {}:
+            lines.append("     proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);")
+        if self.context.dao.assignment_conditions != {}:
+            lines.append("     assignment_conditions[roleIds[i]] = ICondition(assignmentConditionAddresses[i]);")
+            lines.append("      }")
         lines.append("}")
         return "\n".join(lines)
         
@@ -322,7 +335,7 @@ class OptimizedSolidityTranslator(Translator):
         
         function assignRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
             require(_user != address(0) , "Invalid user address" );
-            {self.generate_user_role_condition_evaluation("assignment_conditions", "_user", RoleInConditionCheckType.REQUIRE)}
+            {self.generate_user_role_condition_evaluation("assignment_conditions", "_user", RoleInConditionCheckType.REQUIRE) if self.context.dao.assignment_conditions != {} else ""}
             roles[_user] = _role;
             emit RoleAssigned(_user, _role);
         }}
@@ -446,14 +459,14 @@ class OptimizedSolidityTranslator(Translator):
             lines.append(f"""
             function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {'{'}
                 require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
-                {self.generate_user_role_condition_evaluation("voting_conditions", "user")}
+                {self.generate_user_role_condition_evaluation("voting_conditions", "user") if self.context.dao.voting_conditions != {} else "return true;"}
             {'}'}""")
 
         if proposal_function:
             lines.append(f"""
             function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool) {'{'}
                 require(role_permissions[{self.perm_var_type}(roles[user] & 31)] & ({self.perm_var_type}(1) << permissionIndex) != 0, "User does not have this permission");
-                {self.generate_user_role_condition_evaluation("proposal_conditions", "user")}
+                {self.generate_user_role_condition_evaluation("proposal_conditions", "user") if self.context.dao.proposal_conditions != {} else "return true;"}
             {'}'}""")
             
         return "\n".join(lines)
