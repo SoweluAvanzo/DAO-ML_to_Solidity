@@ -47,7 +47,7 @@ class DAOVisitor2(XMLParserVisitor):
     def visitRole(self, ctx):
         role_id = ctx.role_id().STRING().getText().strip('"')
         role_name = ctx.role_name().STRING().getText().strip('"')
-        role_assignment_method = ctx.role_assignment_method().STRING().getText().strip('"')
+        role_assignment_method = ctx.role_assignment_method().STRING().getText().strip('"') if ctx.role_assignment_method() else None
         n_agent_min = ctx.n_agent_min().STRING().getText().strip('"') if ctx.n_agent_min() else None
         n_agent_max = ctx.n_agent_max().STRING().getText().strip('"') if ctx.n_agent_max() else None
         agent_type = ctx.agent_type().STRING().getText().strip('"')
