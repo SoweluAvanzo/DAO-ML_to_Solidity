@@ -266,7 +266,7 @@ class CommitteeTranslator:
         if template_name in self.get_voting_protocol_list():
             lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_id, decision_making_method_name=decision_making_method, state_var_declarations= state_var_declarations,dao_name= dao_name,imports= imports, constructor_parameters= constructor_parameters, inherited_contracts=inherited_contracts, constructor_actions= constructor_actions,vote_requirement= vote_requirement, proposal_requirement=proposal_requirement, template_path=template_path, name= contract_name, output_folder="", extension=".sol"))
         else:
-            print(f"Voting protocol {committee.decision_making_method} not found in folder {template_path}")
+            #print(f"Voting protocol {committee.decision_making_method} not found in folder {template_path}")
             lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_id, decision_making_method_name=committee.decision_making_method,dao_name= dao_name, template_path=template_path, name= contract_name, custom=True))
         # lines.extend(self.generate_smart_contract_header(committee_delcaration_comment))
         # lines.extend(self.generate_import_statements())
