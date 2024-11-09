@@ -55,7 +55,7 @@ class DAOVisitor2(XMLParserVisitor):
 
         self.diagramManager.addRole(self.current_dao, role)
         #self.roles[role_id] = role
-        print(f'Role created with ID: {role_id}')
+        #print(f'Role created with ID: {role_id}')
         return self.visitChildren(ctx)
 
     def visitCommittee(self, ctx):
@@ -68,8 +68,8 @@ class DAOVisitor2(XMLParserVisitor):
         decision_making_method = ctx.decision_making_method().STRING().getText().strip('"') if ctx.decision_making_method() else None
         committee = Committee(committee_id, committee_description, voting_condition, proposal_condition , decision_making_method)
         #self.committees[committee_id] = committee
-        print(f'Committee created with ID: {committee_id}')
-        print(f'Committee DMM: {decision_making_method}')
+        #print(f'Committee created with ID: {committee_id}')
+        #print(f'Committee DMM: {decision_making_method}')
         self.diagramManager.addCommittee(self.current_dao, committee)
         return self.visitChildren(ctx)
 
@@ -82,7 +82,7 @@ class DAOVisitor2(XMLParserVisitor):
         self.diagramManager.addPermission(self.current_dao, permission)
         #self.permissions[permission_id] = permission
         #self.current_dao.add_permission(permission)
-        print(f'Permission created with ID: {permission_id}')
+        #print(f'Permission created with ID: {permission_id}')
         return self.visitChildren(ctx)
 
     def __extract_ID(self, node) -> str:
@@ -107,7 +107,7 @@ class DAOVisitor2(XMLParserVisitor):
         if ctx.associated_to():
             for assoc in ctx.associated_to():
                 content = self.aggregate_texts(assoc.content().chardata())
-                print("in associated_to: " + self.aggregate_texts(assoc.content().chardata(), separator=", "))
+                #print("in associated_to: " + self.aggregate_texts(assoc.content().chardata(), separator=", "))
                 #if hasattr(ctx.parentCtx, 'role_id') and callable(getattr(ctx.parentCtx, 'role_id')):
                 #    id = ctx.parentCtx.role_id().STRING().getText().strip('"')
                 #else:
@@ -117,7 +117,7 @@ class DAOVisitor2(XMLParserVisitor):
         if ctx.controlled_by():
             for control in ctx.controlled_by():
                 content = self.aggregate_texts(control.content().chardata())
-                print("in controlled_by: " + self.aggregate_texts(control.content().chardata(), separator=", "))
+                #print("in controlled_by: " + self.aggregate_texts(control.content().chardata(), separator=", "))
                 #if hasattr(ctx.parentCtx, 'role_id') and callable(getattr(ctx.parentCtx, 'role_id')):
                 #    id = ctx.parentCtx.role_id().STRING().getText().strip('"')
                 #else:
@@ -127,7 +127,7 @@ class DAOVisitor2(XMLParserVisitor):
         if ctx.aggregates():
             for aggregated in ctx.aggregates():
                 content = self.aggregate_texts(aggregated.content().chardata())
-                print("in aggregates: " + self.aggregate_texts(aggregated.content().chardata(), separator=", "))
+                #print("in aggregates: " + self.aggregate_texts(aggregated.content().chardata(), separator=", "))
                 #if hasattr(ctx.parentCtx, 'role_id') and callable(getattr(ctx.parentCtx, 'role_id')):
                 #    id = ctx.parentCtx.role_id().STRING().getText().strip('"')
                 #else:
@@ -137,7 +137,7 @@ class DAOVisitor2(XMLParserVisitor):
         if ctx.federates_into():
             for federated in ctx.federates_into():
                 content = self.aggregate_texts(federated.content().chardata())
-                print("in federates_into: " + self.aggregate_texts(federated.content().chardata(), separator=", "))
+                #print("in federates_into: " + self.aggregate_texts(federated.content().chardata(), separator=", "))
                 #if hasattr(ctx.parentCtx, 'role_id') and callable(getattr(ctx.parentCtx, 'role_id')):
                 #    id = ctx.parentCtx.role_id().STRING().getText().strip('"')
                 #else:
@@ -227,14 +227,7 @@ class DAOVisitor2(XMLParserVisitor):
     def get_translation_summary(self):
         return str(self)
 
-    # def get_control_graph(self):
-    #     return self.control_graph
     
-    
-
-
-
-
 def traverse(tree, rule_names, indent=0):
     if tree.getText() == "<EOF>":
         return
@@ -244,23 +237,3 @@ def traverse(tree, rule_names, indent=0):
         print("{0}{1}".format("\t" * indent, rule_names[tree.getRuleIndex()]))
         for child in tree.children:
             traverse(child, rule_names, indent + 1)
-'''
-def main(argv):
-    input_stream = FileStream(argv[1])
-    lexer = XMLLexer(input_stream)
-    stream = CommonTokenStream(lexer)
-    parser = XMLParser(stream)
-    tree = parser.document()
-
-    visitor = DAOVisitor2()
-    traverse(tree, parser.ruleNames, 0)
-    visitor.visit(tree)
-
-    print("\n -----PRINTING VISITOR CONTENT----")
-    print(visitor)
-    print("\n -----PRINTING VISITOR CONTENT----")
-
-
-if __name__ == '__main__':
-    main(sys.argv)
-'''

@@ -33,7 +33,7 @@ class ConstraintValidator():
         id_list1 = diagram.xpath(query1)
         id_list2 = diagram.xpath(query2)
         if self.split_and_add_to_list(id_list1).issubset(self.split_and_add_to_list(id_list2)):
-            print(f"the set of {name1} \n {self.split_and_add_to_list(id_list1)} is a subset of {name2}:\n {self.split_and_add_to_list(id_list2)}\n")
+            #print(f"the set of {name1} \n {self.split_and_add_to_list(id_list1)} is a subset of {name2}:\n {self.split_and_add_to_list(id_list2)}\n")
             return True
         else:
             raise Exception(f"invalid relation:{self.split_and_add_to_list(id_list1)} is not a subset of {self.split_and_add_to_list(id_list2)}\n")
@@ -53,7 +53,7 @@ class ConstraintValidator():
             level = elem.get(rel_attribute)
 
             if level is None:
-                print(f"{elem.tag} with id {elem_id} does not have a level for {rel_name}")
+                #print(f"{elem.tag} with id {elem_id} does not have a level for {rel_name}")
                 continue
 
             level = int(level)
@@ -65,7 +65,7 @@ class ConstraintValidator():
                     # Find the related element based on the relation ID (either role_ID or committee_ID)
                     relator_elems = diagram.xpath(f'//*[@role_ID="{relator_id}"] | //*[@committee_ID="{relator_id}"]')
                     if not relator_elems:
-                        print(f"No element found with id {relator_id}")
+                        #print(f"No element found with id {relator_id}")
                         continue
 
                     relator_elem = relator_elems[0]
@@ -74,19 +74,19 @@ class ConstraintValidator():
                     relator_level = relator_elem.get(rel_attribute)
 
                     if relator_level is None:
-                        print(f"Relator with id {relator_id} does not have a {rel_attribute}")
+                        #print(f"Relator with id {relator_id} does not have a {rel_attribute}")
                         continue
 
                     relator_level = int(relator_level)
 
                     # Logging information for debugging
-                    print(f"Checking {elem.tag} with id {elem_id}")
-                    print(f"{elem.tag} {rel_name} level: {level}")
-                    print(f"Relator id: {relator_id}, Relator level: {relator_level}")
+                    #print(f"Checking {elem.tag} with id {elem_id}")
+                    #print(f"{elem.tag} {rel_name} level: {level}")
+                    #print(f"Relator id: {relator_id}, Relator level: {relator_level}")
 
                     # Check the relation constraint (current element's level should be less than relator's level)
                     if level < relator_level:
-                        print(f"{rel_name} relation is valid\n")
+                        #print(f"{rel_name} relation is valid\n")
                         return True
                     else:
                         print(f"{rel_name} relation violation\n")
@@ -94,36 +94,6 @@ class ConstraintValidator():
                             f"{elem.tag} with id {elem_id} has a {rel_name} relation with a {relator_elem.tag} "
                             f"with id {relator_id} that has a higher or equal {rel_attribute} \n"
                             )
-
-    # def validate_dao_references(self,diagram):
-    #     # Parse the XML file
-    #     tree = etree.parse(diagram)
-    #         #Collect all the ID references (relations) inside the DAO element
-    #         # Iterate over all DAOs in the diagram
-    #         for dao in diagram.xpath('//DAO'):
-    #             # Get all the ID references for the current DAO element
-    #             associated_to_refs = dao.xpath('.//associated_to/text()')
-    #             is_controlled_by_refs = dao.xpath('.//is_controlled_by/text()')
-    #             federates_into_refs = dao.xpath('.//federates_into/text()')
-
-    #             # Combine all references into one list
-    #             all_id_refs = set(associated_to_refs + is_controlled_by_refs + federates_into_refs)
-
-    #             # Collect all valid IDs from DAO descendants (Role, Committee, GovernanceArea, Permission)
-    #             valid_role_ids = dao.xpath('.//Role/@role_ID')
-    #             valid_committee_ids = dao.xpath('.//Committee/@committee_ID')
-    #             valid_gov_area_ids = dao.xpath('.//GovernanceArea/@gov_area_ID')
-    #             valid_permission_ids = dao.xpath('.//Permission/@permission_ID')
-
-    #             valid_ids = set(valid_role_ids + valid_committee_ids + valid_gov_area_ids + valid_permission_ids)
-
-    #             invalid_refs = [ref for ref in all_id_refs if ref not in valid_ids]
-
-    #             if invalid_refs:
-    #                 raise Exception(f"Invalid ID references found: {invalid_refs}")
-    #             else:
-    #                 print("All ID references are valid.")
-    #                 return True    
 
     def check_relations_in_same_DAO(self, diagram, early_return = True):
         possible_targets_by_dao_id: map[str, map[str, set]] = {} # { dao_id: TARGETS } ;; TARGETS-> { elem_id: set_of_targetsID }
@@ -182,7 +152,7 @@ class ConstraintValidator():
                                 if early_return:
                                     return False #ERROR
                                 all_violations.append({"elementID_with_external_target": element_id, "incriminated_targetID": target_id, "daoID_of_element": dao_id, "other_daoID": other_dao_id})
-        print(f"all_violations: {all_violations}")
+        #print(f"all_violations: {all_violations}")
         # TODO: make a use of "all_violations", like printing or visualizing
         return len(all_violations) == 0 # if no violations, then return True
 

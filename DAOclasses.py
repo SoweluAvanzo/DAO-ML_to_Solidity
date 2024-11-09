@@ -59,7 +59,7 @@ class Role:
         return self.role_id
 
     def add_permission(self, permission: Permission):
-        print(f'Adding permission {str(permission)} to role {self.role_id}')
+        #print(f'Adding permission {str(permission)} to role {self.role_id}')
         self.permissions.append(permission)
 
     def add_controller(self, controller_id:str):
@@ -138,7 +138,7 @@ class Committee:
         return self.committee_id
 
     def add_permission(self, permission):
-        print(f'Adding permission {str(permission)} to committee {self.committee_id}')
+        #print(f'Adding permission {str(permission)} to committee {self.committee_id}')
         self.permissions.append(permission)
 
     def add_controller(self, controller_id:str):
@@ -149,13 +149,13 @@ class Committee:
 
     def add_committee_membership(self, target_committee):
         self.federated_committees.append(target_committee)
-        print(f'Adding committee {target_committee.get_id()} to committee {self.committee_id}')
+        #print(f'Adding committee {target_committee.get_id()} to committee {self.committee_id}')
         #storing the relation that indicates that the given committee federates into a target committee
         
 
     def add_member_entity(self, entity:any):
         self.member_entities.append(entity)
-        print(f'Adding member entity {entity.get_id()} to committee {self.committee_id}')
+        #print(f'Adding member entity {entity.get_id()} to committee {self.committee_id}')
     
 
     def __str__(self):
@@ -229,20 +229,20 @@ class ControlGraph:
             #self.control_graph.add_node(committee.committee_id, color="red", size=25)
             for controller in committee.controllers:
                 self.control_graph.add_edge(committee.committee_id,controller)
-            print(f'Control graph generated for DAO {self.dao.dao_id} \nPrinting edges and nodes \n')
+            #print(f'Control graph generated for DAO {self.dao.dao_id} \nPrinting edges and nodes \n')
             #assignment of control graph to DAO object
             # print edges
-            for node in self.control_graph.nodes:
-                print(f'Node: {node} \n')
-            for edge in self.control_graph.edges:
-                print(f'Edge: {edge} \n')
-            print("now simple cycles!")
+            # for node in self.control_graph.nodes:
+            #     print(f'Node: {node} \n')
+            # for edge in self.control_graph.edges:
+            #     print(f'Edge: {edge} \n')
+            # print("now simple cycles!")
             #print paths
-            for loop in nx.simple_cycles(self.control_graph):
-                print(f'Loop: {loop} \n') 
-        print("now recalculate properties")
+        #     for loop in nx.simple_cycles(self.control_graph):
+        #         print(f'Loop: {loop} \n') 
+        # print("now recalculate properties")
         self.recalculate_graph_properties()
-        print(f'Control graph updated and calculated properties. The graph type is {self.graph_type}, and it is {self.is_cyclic} that the graph is cyclic \nPrinting edges and nodes \n')
+        # print(f'Control graph updated and calculated properties. The graph type is {self.graph_type}, and it is {self.is_cyclic} that the graph is cyclic \nPrinting edges and nodes \n')
 
     def add_new_default_graph(self):
         self.control_graph = nx.DiGraph()
@@ -256,7 +256,7 @@ class ControlGraph:
     def get_graph_type(self):
         if nx.is_directed_acyclic_graph(self.control_graph):
             if self.is_list():
-                print("the graph is a list and doesn't contain cycles")
+                print("the control graph is a list and doesn't contain cycles")
                 return GraphType.LIST #the graph is a list and doesn't contain cycles
             else:
                 return GraphType.DAG #the graph is a DAG, but not a list

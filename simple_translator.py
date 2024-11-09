@@ -158,7 +158,7 @@ class SimpleSolidityTranslator(Translator):
         if self.context.role_declaration_policy == "index":
             i=1
             for role in self.context.dao.roles.values():
-                print(f"\ngeneerating the code for role: {role.role_id}")
+                #print(f"\ngeneerating the code for role: {role.role_id}")
                 lines.append(f"    uint {role.role_id} = {i};")
                 i+=1
             lines.append(f"// committee declarations")
@@ -167,7 +167,7 @@ class SimpleSolidityTranslator(Translator):
                 lines.append(f"    uint {committtee.committee_id} = {i};")
                 #new committee permission indices insertion, which is used in the generation of the committee for handling the membership logic.
                 self.committee_permission_indices[committtee.committee_id] = i
-                print(f"\n committee assigned permission index: {i} for committee: {committtee.committee_id}")
+                #print(f"\n committee assigned permission index: {i} for committee: {committtee.committee_id}")
                 i+=1
             # if self.context.daoOwner == True:
             #         lines.append(f"    uint public {self.context.dao.dao_id}Owner = {i};")
@@ -187,39 +187,39 @@ class SimpleSolidityTranslator(Translator):
         elif self.context.role_declaration_policy == "topological_ordering":
             G = self.context.dao.dao_control_graph
             try:
-                print(f"G.control_graph type is {G.graph_type}")
+                #print(f"G.control_graph type is {G.graph_type}")
                 if G.graph_type == GraphType.LIST:
                     
                     print(f"\n The control graph is a list")
                     topological_order = list(nx.topological_sort(G.control_graph))
-                    print(f"\n The topological order is {topological_order}")
-                    print(f"\nits enumerate is {enumerate(topological_order)}")
+                    #print(f"\n The topological order is {topological_order}")
+                    #print(f"\nits enumerate is {enumerate(topological_order)}")
                     indexes = {}
                     indexes["NonMember"] = 0
                     x = 1
                     for role in self.context.dao.roles.values():
                         if role.role_id not in topological_order:
                             indexes[role.role_id] = x
-                            print(f"\n role: {role.role_id} is not in the graph, so it is assigned the index {x}")
+                            #print(f"\n role: {role.role_id} is not in the graph, so it is assigned the index {x}")
                             x+=1
                     for committee in self.context.dao.committees.values():
                         if committee.committee_id not in topological_order:
                             indexes[committee.committee_id] = x
                             x+=1
-                            print(f"\n committee: {committee.committee_id} is not in the graph, so it is assigned the index {x}")
+                            #print(f"\n committee: {committee.committee_id} is not in the graph, so it is assigned the index {x}")
                     
                     top_indexes = {node: i+x for i, node in enumerate(topological_order)}
                     indexes.update(top_indexes)
-                    print(f"\n The indexes are {indexes}")
+                    #print(f"\n The indexes are {indexes}")
                     lines.append(f"// role declarations")
                     for role in self.context.dao.roles.values():
                         lines.append(f"    uint public {role.role_id} = {indexes[role.role_id]};")
-                        print(f"\n role assigned permission index: {role.role_id} for role: {role.role_id}")
+                        #print(f"\n role assigned permission index: {role.role_id} for role: {role.role_id}")
                     lines.append(f"// committee declarations")
                     for committee in self.context.dao.committees.values():
                         lines.append(f"    uint public {committee.committee_id} = {indexes[committee.committee_id]};")
                         self.committee_permission_indices[committee.committee_id] = indexes[committee.committee_id]
-                        print(f"\n committee assigned permission index: {committee.committee_id} for committee: {committee.committee_id}")
+                        #print(f"\n committee assigned permission index: {committee.committee_id} for committee: {committee.committee_id}")
                     # if self.context.daoOwner == True:
                     #     lines.append(f"    uint public {self.context.dao.dao_id}Owner = {len(indexes)};")
                 else: 
@@ -228,9 +228,8 @@ class SimpleSolidityTranslator(Translator):
                     raise ValueError("Topological ordering of roles is only applicable to control graphs with list structure. Switching to index-based role declaration policy for general graph.")
                     
             except Exception as e:
-                print(f"\n The control graph is {G.control_graph}, it has the following structure: {G.control_graph.nodes}, edges: {G.control_graph.edges}")
+               # print(f"\n The control graph is {G.control_graph}, it has the following structure: {G.control_graph.nodes}, edges: {G.control_graph.edges}")
                 print(f"An error occurred: {e}")
-                print(f"Switching to index-based role declaration policy for general graph.")
                 #self.translate()
 
         lines.append("    mapping(uint => mapping(uint => uint8)) public committeeMemberships;")
@@ -325,7 +324,7 @@ class SimpleSolidityTranslator(Translator):
             ]:
             for permissions_holder in permissions_holders_collection: # Role/Committee
                 holder_id = permissions_holder.committee_id if type(permissions_holder) == Committee else permissions_holder.role_id # NOTE: dopo il refactoring, questa riga sara' soltanto "permissions_holder.id"
-                print(f"collecting permissions for {type(permissions_holder)} with ID {holder_id}")
+                #print(f"collecting permissions for {type(permissions_holder)} with ID {holder_id}")
                 for permission in permissions_holder.permissions:
                     if permission.voting_right == False and permission.proposal_right == False:
                         if isinstance(permission, Permission):  # Check if permission is an instance of Permission class
@@ -343,7 +342,7 @@ class SimpleSolidityTranslator(Translator):
         for perm_invokers_data in permission_invokers_by_p_ID.values():
             permission = perm_invokers_data[0]
             invokers_id = perm_invokers_data[1]
-            print(f"permission with ID: << {permission.permission_id} >> has this invokers: [ { ', '.join(invokers_id) } ]\n")
+            #print(f"permission with ID: << {permission.permission_id} >> has this invokers: [ { ', '.join(invokers_id) } ]\n")
             lines.extend(self.generate_function(permission, invokers_id))
         
         return lines
@@ -422,12 +421,12 @@ class SimpleSolidityTranslator(Translator):
             for perm in role.permissions:
                 if perm.allowed_action == permission.allowed_action:
                     role_ids.append(role.role_id)
-                    print(f"FOR FUNCTION {permission.permission_id}, ROLE {role.role_id} is REQUIRED")
+                    #print(f"FOR FUNCTION {permission.permission_id}, ROLE {role.role_id} is REQUIRED")
         for committee in self.context.dao.committees.values():
             for perm in committee.permissions:
                 if perm.allowed_action == permission.allowed_action:
                     role_ids.append(committee.committee_id)
-                    print(f"FOR FUNCTION {permission.permission_id}, COMMITTEE {committee.committee_id} is REQUIRED")
+                    #print(f"FOR FUNCTION {permission.permission_id}, COMMITTEE {committee.committee_id} is REQUIRED")
         return role_ids
 
     def generate_closure(self):

@@ -142,8 +142,8 @@ class OptimizedSolidityTranslator(Translator):
                 role_or_committee.controllers
             if is_transitive and self.context.dao.dao_control_graph.control_graph.has_edge(r_o_c_ID, r_o_c_ID):
                 all_controllers.append(r_o_c_ID)
-            print("for role? " + r_o_c_ID + " we have these controllers:")
-            print(all_controllers)
+            #print("for role? " + r_o_c_ID + " we have these controllers:")
+            #print(all_controllers)
             for controller in all_controllers:
                 index = functionalities_ids[controller]
                 mask |= (1 << index) 
