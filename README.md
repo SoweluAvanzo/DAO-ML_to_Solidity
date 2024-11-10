@@ -21,7 +21,11 @@ The DAO-ML to Solidity translator transforms XML files conforming to the DAO-ML 
 - **`[translation_logic]`**: (Optional) Specifies the Solidity schema (`simple` or `optimized`). Defaults to `simple` if not provided.
   
 ### Directory Structure
-- **`./translated/`**: Directory for storing translated Solidity files. Each DAO is contained in a separate folder, which also includes the following set of contracts: a Permission Manager contract, one contract per each committee defined, which implements the voting logic for that specific sub-community of DAO members, condition smart contracts, which store the role assignment, voting and proposal conditions along with the respective interface files.
+- **`./translated/`**: Directory for storing translated Solidity files. Each DAO is contained in a separate folder, named after the DAO_ID attribute specified, which includes the following set of contracts:
+   - a **Permission Manager** contract, handling the assignment of roles to agents, the respective permissions assigned to each role or committee of the DAO;
+   - one contract per each **committee** defined, which implements the voting logic for that specific sub-community of DAO members;
+   - additional **condition** smart contracts, when defined by the user, which check further conditions for role assignment, voting and making proposals;
+   - **interface** files that facilitate the interaction between the Permission Manager of the DAO and other contracts.
 - **`./out/json/daos/`**: Directory for storing JSON files with DAO properties.
 ## Translator Architecture
 We provide below a class diagram representing the architecture of the translator, including the main classes and modules and their relations.
@@ -29,7 +33,7 @@ We provide below a class diagram representing the architecture of the translator
 ![immagine](https://github.com/user-attachments/assets/3a60fc72-eb75-4fa3-a91f-b5041b7725a3)
 
 ## Data Model
-We provide below a class diagram displaying the key classes of a language-independent model of a DAO specified using DAO-ML. These are contained in the DAOClasses.py module.
+We provide below a class diagram displaying the key classes of a language-independent model of a DAO specified using DAO-ML. This model expands the module in the diagram above, dsiplaying the translator architecture. Its implementation can be found in the DAOClasses.py file.
 
 ![immagine](https://github.com/user-attachments/assets/36f18139-71a0-44f7-8e69-d8fcd74912d9)
 
