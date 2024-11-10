@@ -21,7 +21,7 @@ The DAO-ML to Solidity translator transforms XML files conforming to the DAO-ML 
 - **`[translation_logic]`**: (Optional) Specifies the Solidity schema (`simple` or `optimized`). Defaults to `simple` if not provided.
   
 ### Directory Structure
-- **`./translated/`**: Directory for storing translated Solidity files.
+- **`./translated/`**: Directory for storing translated Solidity files. Each DAO is contained in a separate folder, which also includes the following set of contracts: a Permission Manager contract, one contract per each committee defined, which implements the voting logic for that specific sub-community of DAO members, condition smart contracts, which store the role assignment, voting and proposal conditions along with the respective interface files.
 - **`./out/json/daos/`**: Directory for storing JSON files with DAO properties.
 ## Translator Architecture
 We provide below a class diagram representing the architecture of the translator, including the main classes and modules and their relations.
