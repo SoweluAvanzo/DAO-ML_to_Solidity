@@ -33,9 +33,7 @@ def save_json(daos, folder_path=None):
         filename = f"{folder}/dao_{dao.dao_name}.json"
         with open(filename, "w") as f:
             json.dump(dao.toJSON(), f)
-    print("Success", "DAO properties have been saved to JSON files")
-
-
+    #print("Success", "DAO properties have been saved to JSON files")
 
 
 class TranslationData:
@@ -125,15 +123,45 @@ def translate(xml_file, translation_logic):
     except Exception as e:
         traceback.print_exception(e)
         print("Error", f"An error occurred: {e}")
-        
+
+def print_json(xml_file):
+    folder = "./out/json"
+    check_and_make_folder(folder)
+
+    if not xml_file:
+        print("Error", "Please enter the XML file name.")
+        return None
+
+    try:
+        condition_validator = ConstraintValidator(xml_file, "data/XSD_DAO_ML.xsd")
+        condition_validator.validate_dao_ml_diagram()
+        input_stream = FileStream(xml_file)
+        lexer = XMLLexer(input_stream)
+        stream = CommonTokenStream(lexer)
+        parser = XMLParser(stream)
+        tree = parser.document()
+        visitor = DAOVisitor2()
+        diagram_manager = DiagramManager()        
+        visitor.parseDiagramTree(tree, diagram_manager)
+        save_json(diagram_manager.daoByID)
+        print("Success", "DAO properties have been saved to JSON files")
+    except Exception as e:
+        traceback.print_exception(e)
+        print("Error", f"An error occurred: {e}")
+              
 def main(argv):
     
-    if len(argv) < 2:
-        print("Error", "Please enter the XML file name.")
+    if len(argv) < 3:
+        print("Error", "Please enter the function you wish to call (translate, to_json) followed by XML file name. You can also select the translation logic (simple or optimized)")
         return
-    xml_file = argv[1]
-    translation_logic= argv[2] if len(argv) > 2 else "Simple"
-    translate(xml_file, translation_logic)
-    
+    xml_file = argv[2]
+    if argv[1]=="translate":
+        translation_logic= argv[3] if len(argv) > 3 else "simple"
+        translate(xml_file, translation_logic)
+    elif argv[1]=="to_json":
+        print_json(xml_file)
+    else:
+        print("Error", "Invalid function name. Please, enter translate followed by the xml file path, or to_json followed by the XML file path. to execute the desired action")
+        
 if __name__ == '__main__':
     main(sys.argv)
