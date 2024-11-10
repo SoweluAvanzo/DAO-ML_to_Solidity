@@ -14,9 +14,13 @@ This tool translates XML files conforming to the DAO-ML schema into Solidity sma
 
 ## CLI Commands Overview
 ### Command Structure
-```bash
-python translator_cli.py <function> <xml_file_path> [translation_logic]
-```
-    -**<function>**: The action to execute (translate or to_json).
-    -**<xml_file_path>**: Path to the input XML file.
-    -**[translation_logic]**: (Optional) Specifies the Solidity schema (simple or optimized). Defaults to simple if not provided.
+
+**`python translator_cli.py <function> <xml_file_path> [translation_logic]`**
+
+- **`<function>`**: The action to execute (`translate` or `to_json`).
+- **`<xml_file_path>`**: Path to the input XML file.
+- **`[translation_logic]`**: (Optional) Specifies the Solidity schema (`simple` or `optimized`). Defaults to `simple` if not provided.
+  
+### Directory Structure
+- **`./translated/`**: Directory for storing translated Solidity files.
+- **`./out/json/daos/`**: Directory for storing JSON files with DAO properties.
