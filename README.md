@@ -23,3 +23,14 @@ The DAO-ML to Solidity translator transforms XML files conforming to the DAO-ML 
 ### Directory Structure
 - **`./translated/`**: Directory for storing translated Solidity files.
 - **`./out/json/daos/`**: Directory for storing JSON files with DAO properties.
+## Translator Architecture
+We provide below a class diagram representing the architecture of the translator, including the main classes and modules and their relations.
+
+![immagine](https://github.com/user-attachments/assets/3a60fc72-eb75-4fa3-a91f-b5041b7725a3)
+
+## Data Model
+We provide below a class diagram displaying the key classes of a language-independent model of a DAO specified using DAO-ML. These are contained in the DAOClasses.py module.
+
+![immagine](https://github.com/user-attachments/assets/36f18139-71a0-44f7-8e69-d8fcd74912d9)
+
+
