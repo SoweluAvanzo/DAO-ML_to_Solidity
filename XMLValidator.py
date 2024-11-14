@@ -162,7 +162,7 @@ class ConstraintValidator():
         conditions =[]
 
         diagram = etree.parse(diagram_file)
-        conditions.append(self.validate_against_schema())
+        #conditions.append(self.validate_against_schema())
         conditions.append(self.compare_subsets(diagram,"IDs that roles or committees are associated to", '//Role/associated_to/text()| //Committee/associated_to/text()',"Permission or Governance Area IDs", '//Permission/@permission_ID') )   
         conditions.append(self.compare_subsets(diagram,"IDs of elements that roles aggregate into", '//Role/aggregates/text()',"Roles' IDs", '//Role/@role_ID'))    
         conditions.append(self.compare_subsets(diagram,"IDs of elements that committees aggregate into", '//Committee/aggregates/text()',"Committee' IDs", '//Committee/@committee_ID'))

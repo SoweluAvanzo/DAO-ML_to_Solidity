@@ -94,6 +94,16 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#comments_and_stuff.
+    def visitComments_and_stuff(self, ctx:XMLParser.Comments_and_stuffContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#set_of_attributes.
+    def visitSet_of_attributes(self, ctx:XMLParser.Set_of_attributesContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#dao_id.
     def visitDao_id(self, ctx:XMLParser.Dao_idContext):
         return self.visitChildren(ctx)
