@@ -23,7 +23,7 @@
                 <is_controlled_by>EconomicCouncil</is_controlled_by>
                 <is_controlled_by>TreasuryManager</is_controlled_by>
             </Committee>
-            <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" decision_making_method="lazy_consensus"  aggregation_level="0" federation_level="1">
+            <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" decision_making_method="lazy_consensus"  aggregation_level="0" federation_level="1" >
                 <associated_to>add_remove_allowed_collateral_type</associated_to>
                 <is_controlled_by>CommunityCouncil</is_controlled_by>
             </Committee>

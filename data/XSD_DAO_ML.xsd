@@ -41,6 +41,7 @@
 </xs:attribute>
 <xs:attribute name="aggregation_level" type="xs:int" use="required"/>
 <xs:attribute name="federation_level" type="xs:int" use="required"/>
+<xs:anyAttribute namespace="##any" processContents="lax"/>
 </xs:complexType>
 </xs:element>
 <!-- Committee Element -->
@@ -59,6 +60,7 @@
 <xs:attribute name="decision_making_method" type="xs:string" use="optional"/>
 <xs:attribute name="aggregation_level" type="xs:int"/>
 <xs:attribute name="federation_level" type="xs:int"/>
+<xs:anyAttribute namespace="##any" processContents="lax"/>
 </xs:complexType>
 </xs:element>
   <!-- GovernanceArea Element -->
@@ -75,6 +77,7 @@
 </xs:restriction>
 </xs:simpleType>
 </xs:attribute>
+<xs:anyAttribute namespace="##any" processContents="lax"/>
 </xs:complexType>
 </xs:element>
 <!-- Permission Element -->
@@ -92,6 +95,7 @@
 </xs:simpleType>
 </xs:attribute>
 <xs:attribute name="ref_gov_area" type="xs:IDREF" use="optional" />
+<xs:anyAttribute namespace="##any" processContents="lax"/>
 </xs:complexType>
 </xs:element>
 </xs:sequence>
@@ -99,11 +103,13 @@
 <xs:attribute name="DAO_name" type="xs:string" use="required" />
 <xs:attribute name="mission_statement" type="xs:string" />
 <xs:attribute name="hierarchical_inheritance" type="xs:boolean" use="required" />
+<xs:anyAttribute namespace="##any" processContents="lax"/>
 </xs:complexType>
 </xs:element>
 </xs:sequence>
 <xs:attribute name="name" type="xs:string" use="required" />
 <xs:attribute name="uniqueID" type="xs:ID" use="required" />
+<xs:anyAttribute namespace="##any" processContents="lax"/>
 </xs:complexType>
 </xs:element>
 </xs:schema>
