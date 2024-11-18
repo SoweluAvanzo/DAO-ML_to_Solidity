@@ -5,7 +5,7 @@
   <xs:complexType name="relation">
     <xs:simpleContent>
       <xs:extension base="xs:IDREFS">
-        <xs:anyAttribute namespace="##any" processContents="lax" />
+        <xs:anyAttribute namespace="##any" processContents="skip" />
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
@@ -16,7 +16,7 @@
 <!-- DAO Element -->
 <xs:element name="DAO" minOccurs="1" maxOccurs="unbounded">
 <xs:complexType>
-<xs:sequence>
+<xs:choice minOccurs="0" maxOccurs="unbounded">
 <!-- Role Element -->
 <xs:element name="Role" minOccurs="0" maxOccurs="unbounded">
 <xs:complexType>
@@ -41,7 +41,7 @@
 </xs:attribute>
 <xs:attribute name="aggregation_level" type="xs:int" use="required"/>
 <xs:attribute name="federation_level" type="xs:int" use="required"/>
-<xs:anyAttribute namespace="##any" processContents="lax"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
 </xs:complexType>
 </xs:element>
 <!-- Committee Element -->
@@ -60,7 +60,7 @@
 <xs:attribute name="decision_making_method" type="xs:string" use="optional"/>
 <xs:attribute name="aggregation_level" type="xs:int"/>
 <xs:attribute name="federation_level" type="xs:int"/>
-<xs:anyAttribute namespace="##any" processContents="lax"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
 </xs:complexType>
 </xs:element>
   <!-- GovernanceArea Element -->
@@ -77,7 +77,7 @@
 </xs:restriction>
 </xs:simpleType>
 </xs:attribute>
-<xs:anyAttribute namespace="##any" processContents="lax"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
 </xs:complexType>
 </xs:element>
 <!-- Permission Element -->
@@ -95,21 +95,21 @@
 </xs:simpleType>
 </xs:attribute>
 <xs:attribute name="ref_gov_area" type="xs:IDREF" use="optional" />
-<xs:anyAttribute namespace="##any" processContents="lax"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
 </xs:complexType>
 </xs:element>
-</xs:sequence>
+</xs:choice>
 <xs:attribute name="DAO_ID" type="xs:ID" use="required" />
 <xs:attribute name="DAO_name" type="xs:string" use="required" />
 <xs:attribute name="mission_statement" type="xs:string" />
 <xs:attribute name="hierarchical_inheritance" type="xs:boolean" use="required" />
-<xs:anyAttribute namespace="##any" processContents="lax"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
 </xs:complexType>
 </xs:element>
 </xs:sequence>
 <xs:attribute name="name" type="xs:string" use="required" />
 <xs:attribute name="uniqueID" type="xs:ID" use="required" />
-<xs:anyAttribute namespace="##any" processContents="lax"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
 </xs:complexType>
 </xs:element>
 </xs:schema>
