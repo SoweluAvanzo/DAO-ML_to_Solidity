@@ -19,7 +19,7 @@ class DiagramManager:
         # attualmente, "input" sara' il XML-visitor, in futuro sara'
         # un wrapper che itera e fornisce le varie strutture
     '''
-    def get_dao_by(self, daoOrID: str|dc.DAO) -> dc.DAO:
+    def get_dao_by(self, daoOrID):
         dao = None
         if isinstance(daoOrID, dc.DAO):
             dao = daoOrID

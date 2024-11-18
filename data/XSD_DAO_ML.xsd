@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--Created with Liquid Studio (https://www.liquid-technologies.com)-->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ <!-- Global Type Definitions -->
+  <xs:complexType name="relation">
+    <xs:simpleContent>
+      <xs:extension base="xs:IDREFS">
+        <xs:anyAttribute namespace="##any" processContents="lax" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 <!-- DAO-ML Diagram -->
 <xs:element name="DAO-ML_diagram">
 <xs:complexType>
@@ -13,18 +21,10 @@
 <xs:element name="Role" minOccurs="0" maxOccurs="unbounded">
 <xs:complexType>
 <xs:choice minOccurs="0" maxOccurs="unbounded">
-<xs:element name="is_controlled_by" type="xs:IDREFS" minOccurs="0" maxOccurs="unbounded" />
-<xs:element name="associated_to" type="xs:IDREFS" minOccurs="0" maxOccurs="unbounded" />
-<xs:element name="aggregates" type="xs:IDREFS" minOccurs="0" maxOccurs="unbounded" />
-<xs:element name="federates_into">
-<xs:complexType>
-<xs:simpleContent>
-<xs:extension base="xs:IDREFS">
-<xs:attribute name="condition" type="xs:string" use="optional"/>
-</xs:extension>
-</xs:simpleContent>
-</xs:complexType>
-</xs:element>
+<xs:element name="is_controlled_by" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="associated_to" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="aggregates" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="federates_into" type="relation" minOccurs="0" maxOccurs="unbounded" />
 </xs:choice>
 <xs:attribute name="role_ID" type="xs:ID" use="required" />
 <xs:attribute name="role_name" type="xs:string" use="required" />
@@ -48,10 +48,10 @@
 <xs:element name="Committee" minOccurs="0" maxOccurs="unbounded">
 <xs:complexType>
 <xs:choice minOccurs="0" maxOccurs="unbounded">
-<xs:element name="is_controlled_by" type="xs:IDREFS" minOccurs="0" maxOccurs="unbounded" />
-<xs:element name="associated_to" type="xs:IDREFS" minOccurs="0" maxOccurs="unbounded" />
-<xs:element name="aggregates" type="xs:IDREFS" minOccurs="0" maxOccurs="unbounded" />
-<xs:element name="federates_into" type="xs:IDREFS" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="is_controlled_by" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="associated_to" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="aggregates" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="federates_into" type="relation" minOccurs="0" maxOccurs="unbounded" />
 </xs:choice>
 <xs:attribute name="committee_ID" type="xs:ID" use="required" />
 <xs:attribute name="committee_description" type="xs:string" use="required"/>
