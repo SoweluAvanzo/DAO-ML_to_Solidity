@@ -313,18 +313,15 @@ class OptimizedSolidityTranslator(Translator):
         committee_list_param = [f"address _{x}" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
         committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ])
-        return f""" 
-        function initializeCommittees({committee_address_list}) {visibility}{{
-        require(roles[msg.sender] == {self.context.dao.dao_id}Owner && committee_initialization_blocked == false && {committee_requires}, "Invalid committee initialization");
-        roles[_GeneralAssembly] = GeneralAssembly;
-        roles[_EconomicCouncil] = EconomicCouncil;
-        roles[_CommunityCouncil] = CommunityCouncil;
-        roles[_TechnicalCouncil] = TechnicalCouncil;
-        committee_initialization_blocked = true;
-
-       }}
-
-       """
+        lines = []
+        lines.append(f"    function initializeCommittees({committee_address_list}) {visibility} {'{'}")
+        lines.append(f"        require(roles[msg.sender] == {self.context.dao.dao_id}Owner && committee_initialization_blocked == false && {committee_requires}, \"Invalid committee initialization\");")
+        for committee in self.context.dao.committees.values():
+            lines.append(f"        roles[_{committee.committee_id}] = {committee.committee_id};")
+        lines.append("        committee_initialization_blocked = true;")
+        lines.append("    }")
+        return "\n".join(lines)
+    
     def generate_functions(self):
         id_var_type = self.get_variable_type()
         perm_var_type = self.perm_var_type

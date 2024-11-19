@@ -1,0 +1,92 @@
+<DAO-ML_diagram name="Group Currency DAO Diagram" uniqueID="TravelhiveDiagram" xsi:noNamespaceSchemaLocation="XSD_DAO_ML.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" x="0" y="0" width="0" height="0">
+    <DAO DAO_ID="TRDAO" DAO_name="Travelhive DAO" mission_statement="manage the Travelhive ecosystem governance" hierarchical_inheritance="0" x="1335.2510287165524" y="-434.8613552778293" width="994.7317634511658" height="818.7303694555549">
+        <Committee committee_ID="FinancialBoard" committee_description="Financial Board" aggregation_level="0" federation_level="1" x="569.9155567933151" y="339.9605284371768" width="112" height="49">
+            <associated_to _id="4428e84d-02ae-492a-b1ad-a102c8ab6ead">transferTokens</associated_to>
+            <associated_to _id="0d0d558b-07da-4a0c-a7b3-c532937b69cf">cutProjectBudget</associated_to>
+            <associated_to _id="4da26046-d72e-4c1f-af45-614536994514">approveProjectBudget</associated_to>
+            <aggregates>DAOCouncil</aggregates>
+        </Committee>
+        <Committee committee_ID="DAOCouncil" committee_description="DAO Council" aggregation_level="1" federation_level="1" x="361.52488625835485" y="49.766250235389805" width="112" height="49">
+            <associated_to _id="52dfccaa-6b9c-42dc-b33f-3fcbc2a1453e">createNewDAO</associated_to>
+            <associated_to _id="126b5754-d5ca-4091-a4c3-2414152a745d">upgradePlatformFeature</associated_to>
+            <associated_to _id="eb95c497-e350-42c0-9d9a-a0c7e314ca5c">modifySalaryDistributionPolicy</associated_to>
+            <associated_to _id="bcce54e2-fd8c-461e-89d7-e8254a515bb4">activateRoleDelegation</associated_to>
+            <is_controlled_by _id="b1e11c4f-ad72-4aab-9cd0-70d56a841364">DAOCouncil</is_controlled_by>
+        </Committee>
+        <Committee committee_ID="TravelwareBoard" committee_description="Travelware Board" aggregation_level="0" federation_level="1" x="385.99185476320145" y="169.0146115464143" width="112" height="49">
+            <associated_to _id="1a9fcaa1-e9ff-4e10-ad37-49e245eb1d5f">assignTask</associated_to>
+            <is_controlled_by>DAOCouncil</is_controlled_by>
+            <aggregates>DAOCouncil</aggregates>
+        </Committee>
+        <Committee committee_ID="DevelopmentBoard" committee_description="Development Board" aggregation_level="0" federation_level="1" x="788.3355264892433" y="229.54431320334757" width="119" height="49">
+            <associated_to _id="4749ab4a-d590-4f07-8737-3c581c24b16a">upgradePlatformFeature</associated_to>
+            <aggregates>DAOCouncil</aggregates>
+        </Committee>
+        <Committee committee_ID="MarketingBoard" committee_description="Marketing Board" aggregation_level="0" federation_level="1" x="211.6526987450142" y="497.32334306448695" width="112" height="49">
+            <associated_to _id="7e7decc0-7a46-480f-9ab2-84e5c62e27b6">proposeCampaignBudget</associated_to>
+            <associated_to _id="d786b37e-14b0-45af-8d94-418e3ef301b2">launchCampaign</associated_to>
+            <aggregates>DAOCouncil</aggregates>
+        </Committee>
+        <Role role_ID="Advisor" role_name="Advisor" role_assignment_method="allowlist" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="476.7008038639711" y="269.86760477011313" width="50" height="80">
+            <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">TravelwareBoard</federates_into>
+            <associated_to _id="7bc48b47-72bf-4c54-be6c-3da7db064fde">vetoProposal</associated_to>
+        </Role>
+        <Role role_ID="MarketingDelegate" role_name="Marketing Delegate" role_assignment_method="application" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="476.7008038639711" y="269.86760477011313" width="50" height="80">
+            <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">MarketingBoard</federates_into>
+            <associated_to _id="7bc48b47-72bf-4c54-be6c-3da7db064fde">postEvent</associated_to>
+            <aggregates _id="8809ad2c-5792-47a1-9e17-b5020b240e05">DAOMember</aggregates>
+        </Role>
+        <Role role_ID="DAOMember" role_name="DAO Member" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="1" federation_level="0" x="90.12867971125445" y="303.93095160489634" width="50" height="80">
+        <associated_to _id="7bc48b47-72bf-4c54-be6c-3da7db064fde">executeTask</associated_to>
+        <associated_to _id="7bc48b47-72bf-4c54-be6c-3da7db064fde">supplyService</associated_to>
+        <associated_to _id="7bc48b47-72bf-4c54-be6c-3da7db064fde">proposeTaskDelegation</associated_to>
+        <associated_to _id="7bc48b47-72bf-4c54-be6c-3da7db064fde">applyForDAOGovernanceRole</associated_to>
+        <is_controlled_by>Founder</is_controlled_by>
+        </Role>
+        <Role role_ID="Founder" role_name="Founder" role_assignment_method="allowlist" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="224.3699705496091" y="282.60827134309875" width="50" height="80">
+            <associated_to _id="9e89d48c-870e-40d8-970f-4fc5ec1adb76">vetoProposal</associated_to>
+            <aggregates _id="bbe5855f-313e-4ad3-b7ae-53b6fb1308e2">DAOMember</aggregates>
+        </Role>
+        <Role role_ID="Ambassador" role_name="Ambassador" role_assignment_method="election" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="489.2301141992091" y="507.1087740556168" width="50" height="80">
+        <associated_to _id="9e89d48c-870e-40d8-970f-4fc5ec1adb76">appointDestinationCommittee</associated_to>
+        <associated_to _id="9e89d48c-870e-40d8-970f-4fc5ec1adb76">verifyInstitutionalProfile</associated_to>
+        <federates_into>MarketingBoard</federates_into>
+        <aggregates _id="c0104953-42a9-4899-8056-738b90815ffe">DAOMember</aggregates>
+        </Role>
+        <Role role_ID="MasterNode" role_name="Master Node" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="100.76857017979592" y="668.5473378039444" width="50" height="80">
+        <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">DevelopmentBoard</federates_into>
+        <aggregates _id="c0104953-42a9-4899-8056-738b90815ffe">DAOMember</aggregates>
+        </Role>
+        <Role role_ID="Developer" role_name="Developer" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="100.76857017979592" y="668.5473378039444" width="50" height="80">
+            <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">DevelopmentBoard</federates_into>
+            <aggregates _id="c0104953-42a9-4899-8056-738b90815ffe">DAOMember</aggregates>
+        </Role>
+        <Role role_ID="Investor" role_name="Master Node" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="100.76857017979592" y="668.5473378039444" width="50" height="80">
+        <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">FinancialBoard</federates_into>
+        <aggregates _id="c0104953-42a9-4899-8056-738b90815ffe">DAOMember</aggregates>
+        </Role>
+        <Role role_ID="MarketingManager" role_name="Marketing Manager" role_assignment_method="election" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="100.76857017979592" y="668.5473378039444" width="50" height="80">
+        <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">MarketingBoard</federates_into>
+        <is_controlled_by _id="c0104953-42a9-4899-8056-738b90815ffe">MarketingBoard</is_controlled_by>
+        <aggregates _id="c0104953-42a9-4899-8056-738b90815ffe">DAOMember</aggregates>
+        </Role>
+        <Permission permission_ID="createNewDAO" allowed_action="create new DDMO" permission_type="strategic"  x="695.1311742804655" y="63.840236632084626" width="105" height="49" />
+        <Permission permission_ID="modifySalaryDistributionPolicy" allowed_action="modify salary distribution policy" permission_type="operational"  x="95.73182632599975" y="46.008263805299066" width="231" height="49" />
+        <Permission permission_ID="transferTokens" allowed_action="transfer tokens" permission_type="strategic"  x="733.5596886478405" y="327.98604782558607" width="105" height="49" />
+        <Permission permission_ID="upgradePlatformFeature" allowed_action="upgrade platform feature" permission_type="operational"  x="610.9486733193742" y="136.45318081510732" width="168" height="49" />
+        <Permission permission_ID="activateRoleDelegation" allowed_action="activate role delegation" permission_type="operational"  x="137.33382759845153" y="116.31652195401404" width="168" height="49" />
+        <Permission permission_ID="assignTask" allowed_action="assign task" permission_type="operational"  x="238.76478022308106" y="198.65458937871338" width="91" height="49" />
+        <Permission permission_ID="cutProjectBudget" allowed_action="cut funding to project budget" permission_type="operational"  x="688.0374333293123" y="446.5908088781901" width="203" height="49" />
+        <Permission permission_ID="proposeCampaignBudget" allowed_action="propose campaign budget" permission_type="operational"  x="156.59973976414852" y="421.2171141711433" width="161" height="49" />
+        <Permission permission_ID="approveProjectBudget" allowed_action="approve project budget" permission_type="operational"  x="381.96141922255833" y="408.6763265779465" width="154" height="49" />
+        <Permission permission_ID="postEvent" allowed_action="Post Event" permission_type="operational"  x="591.5471623102169" y="622.1631819923732" width="98" height="49" />
+        <Permission permission_ID="verifyInstitutionalProfile" allowed_action="verify Institutional Profile" permission_type="operational"  x="730.4800532191016" y="550.0249501742985" width="98" height="49" />
+        <Permission permission_ID="launchCampaign" allowed_action="launchCampaign" permission_type="operational"  x="340.92254026025626" y="306.2872947618293" width="91" height="49" />
+        <Permission permission_ID="appointDestinationCommittee" allowed_action="appoint Destination Committee" permission_type="operational"  x="340.92254026025626" y="306.2872947618293" width="91" height="49" />
+        <Permission permission_ID="vetoProposal" allowed_action="veto proposal" permission_type="operational"  x="340.92254026025626" y="306.2872947618293" width="91" height="49" />
+        <Permission permission_ID="executeTask" allowed_action="execute Task" permission_type="operational"  x="340.92254026025626" y="306.2872947618293" width="91" height="49" />
+        <Permission permission_ID="proposeTaskDelegation" allowed_action="propose Task Delegation" permission_type="operational"  x="340.92254026025626" y="306.2872947618293" width="91" height="49" />
+        <Permission permission_ID="supplyService" allowed_action="supply Service" permission_type="operational"  x="340.92254026025626" y="306.2872947618293" width="91" height="49" />
+        <Permission permission_ID="applyForDAOGovernanceRole" allowed_action="apply For DAO Governance Role" permission_type="operational"  x="340.92254026025626" y="306.2872947618293" width="91" height="49" />
+    </DAO>
+</DAO-ML_diagram>
