@@ -12,15 +12,23 @@ class ConstraintValidator():
     def validate_against_schema(self):
         file_name = self.xmlname
         schema_name = self.schemafile
-
-        diagram_xml = etree.parse(file_name)
-        validation = xmlschema.XMLSchema(schema_name)    
-        if validation.is_valid(diagram_xml):
-            print(f'The XML file structure complies with the DAO-ML schema')
-            return True
-        else:
-            raise Exception("The XML file is not a valid DAO-ML diagram")
-
+        try: 
+            diagram_xml = etree.parse(file_name)
+            validation = xmlschema.XMLSchema(schema_name)    
+            if validation.is_valid(diagram_xml):
+                print(f'The XML file structure complies with the DAO-ML schema')
+                return True
+            else:
+                # Validate the XML file and collect errors
+                errors = list(validation.iter_errors(file_name))
+                print(f'The XML file is not valid. Found {len(errors)} error(s):')
+                for error in errors:
+                    print(f"- {error} \n")
+                return False
+        except xmlschema.XMLSchemaException as e:
+            print(f"Error with the schema file: {e}")
+            return False
+        
     def split_and_add_to_list(self,strings):
         result = []
         for string in strings:
@@ -95,7 +103,7 @@ class ConstraintValidator():
                             f"with id {relator_id} that has a higher or equal {rel_attribute} \n"
                             )
 
-    def check_relations_in_same_DAO(self, diagram, early_return = True):
+    def check_relations_in_same_DAO(self, diagram, early_return = False):
         possible_targets_by_dao_id: map[str, map[str, set]] = {} # { dao_id: TARGETS } ;; TARGETS-> { elem_id: set_of_targetsID }
 
         all_descendants_name = [ \
@@ -154,6 +162,8 @@ class ConstraintValidator():
                                 all_violations.append({"elementID_with_external_target": element_id, "incriminated_targetID": target_id, "daoID_of_element": dao_id, "other_daoID": other_dao_id})
         #print(f"all_violations: {all_violations}")
         # TODO: make a use of "all_violations", like printing or visualizing
+            if len(all_violations)>0:
+                print(f"all_violations: {all_violations}")
         return len(all_violations) == 0 # if no violations, then return True
 
 
