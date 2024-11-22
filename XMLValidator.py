@@ -21,13 +21,16 @@ class ConstraintValidator():
             else:
                 # Validate the XML file and collect errors
                 errors = list(validation.iter_errors(file_name))
+                error_output = []
                 print(f'The XML file is not valid. Found {len(errors)} error(s):')
                 for error in errors:
-                    print(f"- {error} \n")
-                return False
+                    #print(f"- {error} \n")
+                    #append error name
+                    error_output.append(f"- {error} \n")
+                return error_output
         except xmlschema.XMLSchemaException as e:
             print(f"Error with the schema file: {e}")
-            return False
+            return e
         
     def split_and_add_to_list(self,strings):
         result = []
@@ -44,7 +47,9 @@ class ConstraintValidator():
             #print(f"the set of {name1} \n {self.split_and_add_to_list(id_list1)} is a subset of {name2}:\n {self.split_and_add_to_list(id_list2)}\n")
             return True
         else:
-            raise Exception(f"invalid relation:{self.split_and_add_to_list(id_list1)} is not a subset of {self.split_and_add_to_list(id_list2)}\n")
+            errors = []
+            errors.append(f"invalid relation:{name1} \n {self.split_and_add_to_list(id_list1)} is not a subset of {name2}:\n {self.split_and_add_to_list(id_list2)}\n")
+            raise Exception(errors)
 
             
     #functions to check federation and aggregation relations in DO Diagrams
@@ -99,7 +104,7 @@ class ConstraintValidator():
                     else:
                         print(f"{rel_name} relation violation\n")
                         raise Exception(
-                            f"{elem.tag} with id {elem_id} has a {rel_name} relation with a {relator_elem.tag} "
+                            f"relation violation: {elem.tag} with id {elem_id} has a {rel_name} relation with a {relator_elem.tag} "
                             f"with id {relator_id} that has a higher or equal {rel_attribute} \n"
                             )
 
@@ -161,9 +166,10 @@ class ConstraintValidator():
                                     return False #ERROR
                                 all_violations.append({"elementID_with_external_target": element_id, "incriminated_targetID": target_id, "daoID_of_element": dao_id, "other_daoID": other_dao_id})
         #print(f"all_violations: {all_violations}")
-        # TODO: make a use of "all_violations", like printing or visualizing
             if len(all_violations)>0:
-                print(f"all_violations: {all_violations}")
+                violations_output = "\n".join(all_violations)
+                print(f"all_violations:\n{violations_output}")
+                return "\n".join(violations_output)
         return len(all_violations) == 0 # if no violations, then return True
 
 
@@ -181,10 +187,21 @@ class ConstraintValidator():
         conditions.append(self.check_relation_graphs(diagram,"federation_level", "federates_into"))
         conditions.append(self.check_relations_in_same_DAO(diagram, early_return=False))
         for condition in conditions:
-            if condition != True:
-                print(f"error at condition {conditions.index(condition)}")
+            if isinstance(condition, list):  # Check if the condition contains a list of errors
+                for sub_index, sub_condition in enumerate(condition):
+                    print(f"Error at condition {conditions.index(condition)}, sub-condition {sub_index}")
+                    print(sub_condition)
+                    raise Exception(
+                        f"Invalid diagram {diagram_file}, condition {conditions.index(condition)}, sub-condition {sub_index} failed: {sub_condition}"
+                    )
+            elif condition != True:
+                print(f"Error at condition {conditions.index(condition)}")
                 print(condition)
-                raise Exception(f"Invalid diagram {diagram_file}")
+                raise Exception(
+                    f"Invalid diagram {diagram_file}, condition {conditions.index(condition)} failed: {condition}"
+                )
+
         print(f"All conditions are valid for the diagram {diagram_file}")
         return True
+
 
