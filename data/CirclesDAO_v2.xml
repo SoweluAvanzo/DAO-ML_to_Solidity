@@ -1,12 +1,13 @@
     <DAO-ML_diagram xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="XSD_DAO_ML.xsd" name="Group Currency DAO Diagram" uniqueID="GCDAOdiagram" >
         <DAO DAO_ID="GCDAO" DAO_name="Group Currency DAO" mission_statement="Managing the governance of Group Currencies in the Circles UBI system." hierarchical_inheritance="0">
-            <Role role_ID="GroupMember" role_name="Group Member" agent_type="human" aggregation_level="0" federation_level="0">
+            <Role role_ID="GG111" role_name="Group Member   4" agent_type="human" aggregation_level="0" federation_level="0">
                 <federates_into>GeneralAssembly</federates_into>
                 <associated_to>propose_service_provision</associated_to>
                 <associated_to>update_user_profile</associated_to>
                 <associated_to>funding_request_submission</associated_to>
+                <is_controlled_by>zizzooooo</is_controlled_by>
             </Role>
-            <Role role_ID="TreasuryManager" role_name="Treasury Manager"  agent_type="human"  aggregation_level="0" federation_level="0">
+            <Role role_ID="zizzooooo" role_name="Treasury Manager"  agent_type="human"  aggregation_level="0" federation_level="0">
                 <federates_into>EconomicCouncil</federates_into>
                 <aggregates>ActiveMember</aggregates>
                 <associated_to>funding_request_assessment</associated_to>
@@ -14,20 +15,20 @@
                 <is_controlled_by>EconomicCouncil</is_controlled_by>
             </Role>
             <Role role_ID="ActiveMember" role_name="Active Member" n_agent_min="3" n_agent_max="15" agent_type="human"  aggregation_level="1" federation_level="0">
-                <federates_into>CommunityCouncil</federates_into>
+                <federates_into>caooooo</federates_into>
                 <federates_into>TechnicalCouncil</federates_into>
             </Role>
             <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" decision_making_method="simple_majority"  aggregation_level="0" federation_level="1">
                 <associated_to>activate_suspend_service_provision</associated_to>
                 <associated_to>evaluate_service_provision</associated_to>
                 <is_controlled_by>EconomicCouncil</is_controlled_by>
-                <is_controlled_by>TreasuryManager</is_controlled_by>
+                <is_controlled_by>zizzooooo</is_controlled_by>
             </Committee>
             <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" decision_making_method="lazy_consensus"  aggregation_level="0" federation_level="1" >
                 <associated_to>add_remove_allowed_collateral_type</associated_to>
-                <is_controlled_by>CommunityCouncil</is_controlled_by>
+                <is_controlled_by>caooooo</is_controlled_by>
             </Committee>
-            <Committee committee_ID="CommunityCouncil" committee_description="Community Council" decision_making_method="quadratic_voting" aggregation_level="0" federation_level="1">
+            <Committee committee_ID="caooooo" committee_description="Community Council" decision_making_method="quadratic_voting" aggregation_level="0" federation_level="1">
                 <associated_to>set_contribution_attestation</associated_to>
                 <associated_to>set_membership_requirements</associated_to>
                 <associated_to>include_exclude_group_members</associated_to>

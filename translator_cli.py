@@ -12,6 +12,7 @@ from DAOVisitor2 import DAOVisitor2
 #from translator import ContractSourcetype
 from DiagramManager import DiagramManager
 from solidity_translator import SolidityTranslator
+import utils as u
 
 if __name__ is not None and "." in __name__:
     from .XMLLexer import XMLLexer
@@ -30,7 +31,7 @@ def save_json(daos, folder_path=None):
     folder = "./out/json/daos" if folder_path is None else folder_path
     check_and_make_folder(folder)
     for dao in daos.values():
-        filename = f"{folder}/dao_{dao.dao_name}.json"
+        filename = f"{folder}/dao_{u.camel_case(dao.dao_name)}.json"
         with open(filename, "w") as f:
             json.dump(dao.toJSON(), f)
     #print("Success", "DAO properties have been saved to JSON files")
@@ -63,6 +64,7 @@ def translate(xml_file, translation_logic):
 
         for dao_id in diagram_manager.daoByID.keys():
             dao = diagram_manager.get_dao_by(dao_id)
+            dao_name = u.camel_case(dao.dao_name)
             # the translator uses the selected translation logic
             #if diamond_enabled.get()==True:
             #    translator = SolidityTranslator(dao, translation_logic.get(), diamond=True)  
@@ -70,14 +72,8 @@ def translate(xml_file, translation_logic):
             translator = SolidityTranslator(dao, translation_logic, diamond=False)
             #else:
             #    print("error with diamond configuration: ", diamond_enabled)
-            contracts_to_write.append(TranslationData(dao_id, dao_id, translator))
+            contracts_to_write.append(TranslationData(dao_name, dao_name, translator))
             # each committee is a Smart Contract by its own
-            '''
-            for committee in dao.committees.values():
-                translator = SolidityTranslator(committee, translation_logic.get())
-                contracts_to_write.append(TranslationData(dao_id, committee.committee_id, translator) )
-            '''
-
         # then, translate each Smart Contract into its translated version
         for translation_data in contracts_to_write:
             superfolder_name = "./translated/"

@@ -1,6 +1,7 @@
 import DAOclasses as dc
 from collections import defaultdict
 import networkx as nx
+import utils as u
 
 class DiagramManager:
     def __init__(self):
@@ -56,28 +57,12 @@ class DiagramManager:
     #
     #
     def createControlGraph(self):
-        # crea il control graph, tramite una istanza di una classe __che dovremmo ancora definire__
         for dao in self.daoByID.values():
             dao_id = dao.dao_id
             cg_wrapper = dc.ControlGraph(dao)
             #print(f'Control Graph {cg_wrapper.control_graph} created for DAO: {dao_id} \n')
             dao.dao_control_graph = cg_wrapper         
-        # for role in dao.roles.values():
-        #         for controller in role.controllers:
-        #             dao.dao_control_graph.add_edge(role.role_id,controller)
-        #     for committee in dao.committees.values():
-        #         for controller in committee.controllers:
-        #             dao.dao_control_graph.add_edge(committee.committee_id,controller)
-        #     print(f'Control graph generated for DAO {dao_id} \nPrinting edges and nodes \n')
-        #     #assignment of control graph to DAO object
-        #     # print edges
-        #     for node in dao.dao_control_graph.nodes:
-        #         print(f'Node: {node} \n')
-        #     for edge in dao.dao_control_graph.edges:
-        #         print(f'Edge: {edge} \n')
-        #     #print paths
-        #     for loop in nx.simple_cycles(dao.dao_control_graph):
-        #         print(f'Loop: {loop} \n') 
+       
         
     def get_aggregated_permissions(self, role_or_committee):
         # if not role_or_committee.aggregated:
@@ -214,7 +199,7 @@ class DiagramManager:
         
     def generateOwnerRole(self, dao):
         #create owner role
-        owner_role = dc.Role(role_id = dao.dao_id + "Owner", role_name= dao.dao_id + " Owner", role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
+        owner_role = dc.Role(role_id = dao.dao_name + " " + "Owner", role_name= dao.dao_name + " " + "Owner", role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
         for permission in dao.permissions.values():
             owner_role.add_permission(permission)
         dao.add_role(owner_role)
