@@ -61,7 +61,7 @@
             <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">DevelopmentBoard</federates_into>
             <aggregates _id="c0104953-42a9-4899-8056-738b90815ffe">DAOMember</aggregates>
         </Role>
-        <Role role_ID="Investor" role_name="Master Node" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="100.76857017979592" y="668.5473378039444" width="50" height="80">
+        <Role role_ID="Investor" role_name="Investor" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="100.76857017979592" y="668.5473378039444" width="50" height="80">
         <federates_into _id="c0104953-42a9-4899-8056-738b90815ffe">FinancialBoard</federates_into>
         <aggregates _id="c0104953-42a9-4899-8056-738b90815ffe">DAOMember</aggregates>
         </Role>

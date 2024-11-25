@@ -31,19 +31,29 @@ class OptimizedSolidityTranslator(Translator):
         id_var_type = self.get_variable_type()
         id_bit_size = self.group_size.value[1]
         mask = self.id_mask # calcolato nel costruttore
-
+        
         lines = []
         lines.append("\n")
-        lines.append(f"    modifier controlledBy({id_var_type} target_role_id, address controller_role_address) {'{'}")
-        lines.append(f"       {id_var_type} controller_role_id = roles[controller_role_address];")
-        lines.append("        //we obtain the control relations of the controller role by shifting the its id by the number of bits contained in ids")
-        lines.append(f"        require( (controller_role_id >> {id_bit_size} ) &")
-        lines.append(f"                (1 << ( target_role_id & {mask} )") #we obtain the id of the target role by using the bit mask which removes its control relations
-        lines.append(f"            ) != 0, \"the given controller can\'t perform the given operation on the given controlled one\" );") #we check if the controller can control the target role
+        lines.append(f"    modifier controlledBy(address sender, {id_var_type} user_target_role_id, bool allowNullRole) {'{'}")
+        lines.append("         //we obtain the control relations of the controller role by shifting the its id by the number of bits contained in ids")
+        lines.append("         //the sender must control BOTH the target role AND the user's role")
+        lines.append(f"        require(")
+        lines.append(f"            ( // \"CAN the sender control the target user (through its role)?\"")
+        lines.append(f"                (allowNullRole && (user_target_role_id == 0)) || // allow to add role if the user has not already one assigned to it")
+        lines.append(f"                ((")
+        lines.append(f"                    (user_target_role_id >> {id_bit_size}) // get the role's bitmask ")
+        lines.append(f"                    &  // (... and then perform the bitwise-and with ...)")
+        lines.append(f"                    ( {id_var_type}(1) << ( roles[sender] & {mask} ) ) // sender_role_index")
+        lines.append(f"                ) != 0) // THE FINAL CHECK")
+        lines.append(f"            )")
+        lines.append(f"            , \"the given controller can\'t perform the given operation on the given controlled one\" );")
+        lines.append(f"            ")
+        lines.append(f"            ")
         lines.append("        _;")
         lines.append("    }")
         lines.append("\n")
         return "\n".join(lines)
+
 
     def translateDao(self) -> TranslatedSmartContract: 
         lines = []
@@ -240,7 +250,6 @@ class OptimizedSolidityTranslator(Translator):
         return "\n".join(lines)
 
 
-
     def generate_constructor_v2(self):
         id_var_type = self.get_variable_type()
         lines = []
@@ -329,21 +338,35 @@ class OptimizedSolidityTranslator(Translator):
 
         return f"""
         
-        function assignRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
+        function canControl(uint32 controller, uint32 controlled) public pure returns(bool controls){{
+             // ( "CAN the sender control the target user (through its role)?"
+                //(allowNullRole && (target_role_id == 0)) || // allow to add role if the user has not already one assigned to it
+                if((
+                    (controlled >> 5 ) // get the role's bitmask 
+                    &  // (and then perform the bitwise-and with ...)
+                    (uint32(1) << ( controller & 31 )) // (...) get the sender role's index AND shift it accordingly 
+                ) != 0 ){{
+                    controls = true;
+                     return controls;}} else {{return controls;}}
+        }}
+        
+        function assignRole(address _user, {id_var_type} _role) external controlledBy(msg.sender, roles[_user], true) controlledBy(msg.sender, _role, false) {{
             require(_user != address(0) , "Invalid user address" );
             {self.generate_user_role_condition_evaluation("assignment_conditions", "_user", RoleInConditionCheckType.REQUIRE) if self.context.dao.assignment_conditions != {} else ""}
             roles[_user] = _role;
             emit RoleAssigned(_user, _role);
         }}
 
-        function revokeRole(address _user, {id_var_type} _role) external controlledBy(_role,msg.sender) {{
+        function revokeRole(address _user, {id_var_type} _role) external controlledBy(msg.sender, roles[_user], false) controlledBy(msg.sender, _role, false) {{
+            require(roles[_user] == _role, "User's role and the role to be removed don't coincide" );
+
             delete roles[_user];
             emit RoleRevoked(_user, _role);
 
         }}
 
-        function grantPermission({id_var_type} _role, {perm_var_type} _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
-
+        function grantPermission({id_var_type} _role, {perm_var_type} _permissionIndex) external hasPermission(msg.sender, _permissionIndex) {{
+            require(canControl(roles[msg.sender], _role), "cannot grant permission, as the control relation is lacking");
             {perm_var_type} new_role_perm_value;
             new_role_perm_value  = role_permissions[_role & {self.id_mask} ] | ({perm_var_type}(1) << _permissionIndex);
             role_permissions[_role & {self.id_mask} ] = new_role_perm_value;
@@ -352,8 +375,8 @@ class OptimizedSolidityTranslator(Translator):
 
         }}
 
-        function revokePermission({id_var_type} _role, {perm_var_type}  _permissionIndex) external controlledBy(_role, msg.sender) hasPermission(msg.sender, _permissionIndex) {{
-
+        function revokePermission({id_var_type} _role, {perm_var_type}  _permissionIndex) external hasPermission(msg.sender, _permissionIndex) {{
+            require(canControl(roles[msg.sender], _role), "cannot revoke permission, as the control relation is lacking");
             {perm_var_type} new_role_perm_value;
             new_role_perm_value = role_permissions[_role & {self.id_mask}] & ~({perm_var_type}(1) << _permissionIndex);
             role_permissions[_role & {self.id_mask}] = new_role_perm_value;

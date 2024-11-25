@@ -203,6 +203,10 @@ class DiagramManager:
         for permission in dao.permissions.values():
             owner_role.add_permission(permission)
         dao.add_role(owner_role)
+        for role in dao.roles.values():
+            role.add_controller(owner_role.role_id)
+        for committee in dao.committees.values():
+            committee.add_controller(owner_role.role_id)
 
             # Assign controllers to roles and committees in DAO based on control relations
             # for role in self.roles.values():
