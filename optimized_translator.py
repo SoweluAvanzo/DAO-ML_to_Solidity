@@ -11,6 +11,23 @@ class RoleInConditionCheckType(Enum):
     REQUIRE = 2
     EXPRESSION = 3
 
+
+class SolidityOptimizedTranslationContext(TranslationContext):
+    def __init__(self,  dao: DAO, solidity_version= "^0.8.0", daoOwner = True):
+        '''
+        TODO: translation context with all the data created to actually produce a Solidity file.
+        All Entities (Role & Committee) 's IDs, all bitmasks, the bitmasks's mak, etc.
+        This class is meant to be provided to all possible translators (Solidity file, Python stub 
+        proxying the deployed DAOs, a Colored Petri Nets embedding of the whole DAO, etc ...).
+        '''
+        super().__init__(dao, solidity_version=solidity_version, daoOwner=daoOwner)
+        self.group_size = None
+        self.id_mask = None
+        self.perm_var_type = None
+        self.permission_to_index:dict[str, int] = {permission: idx for idx, permission in enumerate(dao.permissions)}
+        self.role_to_final_index:dict[str, int] = {}
+        
+
 class OptimizedSolidityTranslator(Translator):
     def __init__(self, dao):
 
@@ -20,6 +37,8 @@ class OptimizedSolidityTranslator(Translator):
         self.id_mask = self.recalculate_id_mask()
         self.perm_var_type = self.get_permission_array_size()
         self.permission_to_index:dict[str, int] = {permission: idx for idx, permission in enumerate(self.context.dao.permissions)}
+        self.role_to_final_index:dict[str, int] = {}
+        
 
     def recalculate_id_mask(self):
         id_mask = 0
@@ -229,14 +248,18 @@ class OptimizedSolidityTranslator(Translator):
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(role, role.role_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[role.role_id] | mask_shifted_for_id_bits
             lines.append(f"    {id_var_type} {visibility} {constant} {u.camel_case(role.role_name)} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            self.role_to_final_index[role.role_id] = final_id
+            
         for committee in self.context.dao.committees.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[committee.committee_id] | mask_shifted_for_id_bits
             lines.append(f"    {id_var_type} {visibility} {constant} {u.camel_case(committee.committee_description)} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            self.role_to_final_index[committee.committee_id] = final_id
         # if self.context.daoOwner:
         #     lines.append("    address _owner;")
         #generate events
         lines.append(self.generate_events())
+        #print(self.role_to_final_index)
         return "\n".join(lines)
     
     def generate_events(self):

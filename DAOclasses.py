@@ -306,6 +306,7 @@ class DAO:
         self.dao_name = dao_name
         self.mission_statement = mission_statement
         self.hierarchical_inheritance = hierarchical_inheritance
+        self.owner_role: Role = None
         self.roles: dict[str, Role] = {}
         self.committees: dict[str, Committee] = {}
         self.permissions: dict[str, Permission] = {}

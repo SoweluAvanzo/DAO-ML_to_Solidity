@@ -36,20 +36,20 @@ class DiagramManager:
         dao_id = dao.dao_id
         self.relations_by_dao[dao_id] = []
     
-    def addRole(self, daoOrID: str|dc.DAO, role: dc.Role):
+    def addRole(self, daoOrID, role: dc.Role):
         dao = self.get_dao_by(daoOrID)
         dao.add_role(role)
 
-    def addCommittee(self, daoOrID: str|dc.DAO, committee: dc.Committee):
+    def addCommittee(self, daoOrID, committee: dc.Committee):
         dao = self.get_dao_by(daoOrID)
         dao.add_committee(committee)
 
-    def addPermission(self, daoOrID: str|dc.DAO, permission: dc.Permission ):
+    def addPermission(self, daoOrID, permission: dc.Permission ):
         dao = self.get_dao_by(daoOrID)
         dao.add_permission(permission)
         
 
-    def addRelation(self, daoOrID: str|dc.DAO, relationType: dc.RelationType, fromID: str, content:str ):
+    def addRelation(self, daoOrID, relationType: dc.RelationType, fromID: str, content:str ):
         dao = self.get_dao_by(daoOrID)
         dao_id = dao.dao_id
         self.relations_by_dao[dao_id].append( (relationType, fromID, content) )
@@ -199,7 +199,9 @@ class DiagramManager:
         
     def generateOwnerRole(self, dao):
         #create owner role
-        owner_role = dc.Role(role_id = dao.dao_name + " " + "Owner", role_name= dao.dao_name + " " + "Owner", role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
+        owner_role_name = f"{dao.dao_name} Owner"
+        owner_role = dc.Role(role_id = owner_role_name.replace(" ", "_"), role_name= owner_role_name, role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
+        dao.owner_role = owner_role
         for permission in dao.permissions.values():
             owner_role.add_permission(permission)
         dao.add_role(owner_role)

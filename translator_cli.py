@@ -13,6 +13,7 @@ from DAOVisitor2 import DAOVisitor2
 from DiagramManager import DiagramManager
 from solidity_translator import SolidityTranslator
 import utils as u
+from TestGenerator import *
 
 if __name__ is not None and "." in __name__:
     from .XMLLexer import XMLLexer
@@ -38,10 +39,11 @@ def save_json(daos, folder_path=None):
 
 
 class TranslationData:
-    def __init__(self, folder_name, contract_name, contract_translator) -> None:
+    def __init__(self, folder_name, contract_name, contract_translator, tests_translator) -> None:
         self.folder_name = folder_name
         self.contract_name = contract_name
         self.contract_translator = contract_translator
+        self.tests_translator = tests_translator
         
 def translate(xml_file, translation_logic):
     
@@ -61,6 +63,8 @@ def translate(xml_file, translation_logic):
         #save_json(diagram_manager.daoByID)
         contracts_to_write: list[TranslationData] = []
         # at first, gather all translators
+        
+        superfolder_name = "./translated/"
 
         for dao_id in diagram_manager.daoByID.keys():
             dao = diagram_manager.get_dao_by(dao_id)
@@ -72,11 +76,14 @@ def translate(xml_file, translation_logic):
             translator = SolidityTranslator(dao, translation_logic, diamond=False)
             #else:
             #    print("error with diamond configuration: ", diamond_enabled)
-            contracts_to_write.append(TranslationData(dao_name, dao_name, translator))
+            tests_translator = TestGeneratorOptimized(dao)
+            contracts_to_write.append(TranslationData(dao_name, dao_name, translator, tests_translator))
+             
+            #contracts_to_write.extend(all_translated_smart_contract__tests)
+            
             # each committee is a Smart Contract by its own
         # then, translate each Smart Contract into its translated version
         for translation_data in contracts_to_write:
-            superfolder_name = "./translated/"
             folder_name = translation_data.folder_name
             name = translation_data.contract_name
             translator = translation_data.contract_translator
@@ -112,6 +119,22 @@ def translate(xml_file, translation_logic):
                                     print(line)
                                 else:
                                     print("Error".join(line))
+                                    
+                        test_folder = f"folder_path_with_subfolder/tests/"
+                        test_template_path = "./Templates/test_scripts/"
+                        check_and_make_folder(test_folder)
+                        all_translated_smart_contract__tests = translation_data.tests_translator.generate_test_script(test_template_path)
+                        for t in all_translated_smart_contract__tests:
+                            try:
+                                check_and_make_folder(t.folder)
+                                with open( f"{t.folder}/{t.name}{t.extension}", "w") as f:
+                                    for line in t.lines_of_code:
+                                        f.write(line)
+                                        f.write('\n')
+                                        f.flush()
+                            except Exception as ex:
+                                print(f"Exception while writing the source code of test {t.name}")
+                                print(ex)
                 
         dao_ids = ", ".join(td.contract_name for td in contracts_to_write) + ".sol"
         print("Success", f"Solidity code has been generated for {dao_ids}")

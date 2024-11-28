@@ -9,7 +9,8 @@ import os
 import utils as u
 
 class TranslatedSmartContract:
-    def __init__(self, lines_of_code, name, folder = None):
+    def __init__(self, lines_of_code, name, folder = None, extension = ".sol"):
+        self.extension = extension
         self.lines_of_code = lines_of_code
         self.name = name
         self.folder = folder
@@ -17,7 +18,7 @@ class TranslatedSmartContract:
         return "\n".join(self.lines_of_code)
     def get_code_as_lines(self) -> list[str]:
         return self.lines_of_code
-    
+
 
 class Translator:
     def translate(self) -> list[TranslatedSmartContract]:
@@ -41,9 +42,8 @@ class Translator:
                 rendered_line = template.render(solidity_version=self.context.solidity_version)
                 # Append the rendered line to the list of rendered lines
                 rendered_lines.append(rendered_line)
-        if extension == ".sol":
         # Return a TranslatedSmartContract object with the list of rendered lines
-            return TranslatedSmartContract(rendered_lines, name, folder=output_folder)
+        return TranslatedSmartContract(rendered_lines, name, folder=output_folder, extension=extension)
 
 
 class TranslationContext:
