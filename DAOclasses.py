@@ -303,7 +303,7 @@ class DAOMetadata:
 class DAO:
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
         self.dao_id = dao_id
-        self.dao_name = dao_name
+        self.dao_name = dao_name.replace(" ", "_")
         self.mission_statement = mission_statement
         self.hierarchical_inheritance = hierarchical_inheritance
         self.owner_role: Role = None

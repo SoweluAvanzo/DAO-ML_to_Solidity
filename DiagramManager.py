@@ -199,8 +199,8 @@ class DiagramManager:
         
     def generateOwnerRole(self, dao):
         #create owner role
-        owner_role_name = f"{dao.dao_name} Owner"
-        owner_role = dc.Role(role_id = owner_role_name.replace(" ", "_"), role_name= owner_role_name, role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
+        owner_role_name = f"{dao.dao_name}Owner".replace(" ", "_")
+        owner_role = dc.Role(role_id = owner_role_name, role_name= owner_role_name, role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
         dao.owner_role = owner_role
         for permission in dao.permissions.values():
             owner_role.add_permission(permission)

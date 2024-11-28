@@ -87,7 +87,7 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(self.generate_functions())
         lines.append(self.generate_permission_functions())  
         lines.append(self.generate_closure())
-        name = u.camel_case(self.context.dao.dao_name)
+        name = self.context.dao.dao_name
         return TranslatedSmartContract(lines, name)
         #return "\n".join(lines)
 
@@ -154,7 +154,7 @@ class OptimizedSolidityTranslator(Translator):
         lines.append("import \"./interfaces/IPermissionManager.sol\";")
         if self.context.dao.conditions != []:
             lines.append(f"import \"./interfaces/ICondition.sol\";")
-        lines.append( f"contract {u.camel_case(self.context.dao.dao_name)} is IPermissionManager {'{'}")
+        lines.append( f"contract {self.context.dao.dao_name} is IPermissionManager {'{'}")
         return "\n".join(lines)
     
     def get_control_bitflags(self, role_or_committee, r_o_c_ID, group_size, functionalities_ids):
@@ -247,13 +247,13 @@ class OptimizedSolidityTranslator(Translator):
         for role in self.context.dao.roles.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(role, role.role_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[role.role_id] | mask_shifted_for_id_bits
-            lines.append(f"    {id_var_type} {visibility} {constant} {u.camel_case(role.role_name)} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            lines.append(f"    {id_var_type} {visibility} {constant} {role.role_name.replace(" ","_")} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
             self.role_to_final_index[role.role_id] = final_id
             
         for committee in self.context.dao.committees.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[committee.committee_id] | mask_shifted_for_id_bits
-            lines.append(f"    {id_var_type} {visibility} {constant} {u.camel_case(committee.committee_description)} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            lines.append(f"    {id_var_type} {visibility} {constant} {committee.committee_description.replace(" ","_")} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
             self.role_to_final_index[committee.committee_id] = final_id
         # if self.context.daoOwner:
         #     lines.append("    address _owner;")
@@ -289,7 +289,7 @@ class OptimizedSolidityTranslator(Translator):
             
         lines.append(self.generate_role_permission_mapping())
         if self.context.daoOwner:
-            lines.append(f"roles[msg.sender] = {u.camel_case(self.context.dao.dao_name)}Owner;")
+            lines.append(f"roles[msg.sender] = {self.context.dao.dao_name}Owner;")
         if self.context.dao.conditions != []:
             lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
         if self.context.dao.voting_conditions != {}:
@@ -305,7 +305,7 @@ class OptimizedSolidityTranslator(Translator):
 
 
     def generate_constructor(self):
-        committee_list_param = [f"address _{x}" for x in [u.camel_case(committee.committee_description) for committee in self.context.dao.committees.values()] ]
+        committee_list_param = [f"address _{x}" for x in [committee.committee_description.replace(" ", "_")for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
         lines = []
         lines.append(f"    constructor( {committee_address_list}) {'{'}")
@@ -320,9 +320,9 @@ class OptimizedSolidityTranslator(Translator):
         #     lines.append(f"        controlRelations[{committee.committee_id}] = {control_mask};")
         lines.append(self.generate_role_permission_mapping())
         for committee in self.context.dao.committees.values():
-            lines.append(f"         roles[_{u.camel_case(committee.committee_description)}] = {u.camel_case(committee.committee_description)}; \n" )
+            lines.append(f"         roles[_{committee.committee_description.replace(" ","_")}] = {committee.committee_description.replace(" ","_")}; \n" )
         if self.context.daoOwner:
-            lines.append(f"        roles[msg.sender] = {u.camel_case(self.context.dao.dao_name)}Owner;")
+            lines.append(f"        roles[msg.sender] = {self.context.dao.dao_name}Owner;")
         lines.append("    }")
         return "\n".join(lines)
 
@@ -341,14 +341,14 @@ class OptimizedSolidityTranslator(Translator):
     
 
     def generate_committee_initialization_function(self, visibility = "external"):
-        committee_list_param = [f"address _{x}" for x in [u.camel_case(committee.committee_description) for committee in self.context.dao.committees.values()] ]
+        committee_list_param = [f"address _{x}" for x in [committee.committee_description.replace(" ","_") for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
-        committee_requires = ' && '.join([f"_{x} != address(0)" for x in [u.camel_case(committee.committee_description) for committee in self.context.dao.committees.values()] ])
+        committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_description.replace(" ","_") for committee in self.context.dao.committees.values()] ])
         lines = []
         lines.append(f"    function initializeCommittees({committee_address_list}) {visibility} {'{'}")
-        lines.append(f"        require(roles[msg.sender] == {u.camel_case(self.context.dao.dao_name)}Owner && committee_initialization_blocked == false && {committee_requires}, \"Invalid committee initialization\");")
+        lines.append(f"        require(roles[msg.sender] == {self.context.dao.dao_name}Owner && committee_initialization_blocked == false && {committee_requires}, \"Invalid committee initialization\");")
         for committee in self.context.dao.committees.values():
-            lines.append(f"        roles[_{u.camel_case(committee.committee_description)}] = {u.camel_case(committee.committee_description)};")
+            lines.append(f"        roles[_{committee.committee_description.replace(" ","_")}] = {committee.committee_description.replace(" ","_")};")
         lines.append("        committee_initialization_blocked = true;")
         lines.append("    }")
         return "\n".join(lines)
@@ -436,9 +436,9 @@ class OptimizedSolidityTranslator(Translator):
         # Create a mapping from role IDs to the indices of the permissions they have
         role_permissions_mapping = {}
         for role in self.context.dao.roles.values():
-            role_permissions_mapping[u.camel_case(role.role_name)] = [self.get_permission_index(permission.permission_id) for permission in role.permissions]
+            role_permissions_mapping[role.role_name.replace(" ","_")] = [self.get_permission_index(permission.permission_id) for permission in role.permissions]
         for committee in self.context.dao.committees.values():
-            role_permissions_mapping[u.camel_case(committee.committee_description)] = [self.get_permission_index(permission.permission_id) for permission in committee.permissions]
+            role_permissions_mapping[committee.committee_description.replace(" ","_")] = [self.get_permission_index(permission.permission_id) for permission in committee.permissions]
             
         # define the way a "role_permission" must work; in particular how
         # its data is accessed: if we are still "optimizing" (i.e., the

@@ -140,7 +140,7 @@ class CommitteeTranslator:
 
     def translateCommittee(self,committee: Committee, voting_permission_index=None, proposal_permission_index=None, decision_making_method=None,optimized=False ) -> TranslatedSmartContract:
         self.committee = committee
-        contract_name = u.camel_case(committee.committee_description)
+        contract_name = committee.committee_description.replace(" ","_")
         decision_making_method = committee.decision_making_method
         lines:list[str] = []
         
@@ -150,17 +150,17 @@ class CommitteeTranslator:
         state_var_declarations = "IPermissionManager public permissionManager;"
         constructor_actions= "permissionManager = IPermissionManager(_permissionManager); "
         inherited_contracts=", IPermissionManager"
-        name = u.camel_case(committee.committee_description)
+        name = committee.committee_description.replace(" ","_")
         constructor_parameters = ", address _permissionManager"
         imports=self.generate_import_statements()
-        dao_name= u.camel_case(self.context.dao.dao_name)
+        dao_name= self.context.dao.dao_name
         if decision_making_method == None:
             decision_making_method = "custom_decision_making_method"
         template_name = decision_making_method + ".sol.jinja"
         if template_name in self.get_voting_protocol_list():
-            lines.extend(self.generate_voting_protocol_from_template(committee_name=u.camel_case(committee.committee_description), decision_making_method_name=decision_making_method, state_var_declarations= state_var_declarations,dao_name= dao_name,imports= imports, constructor_parameters= constructor_parameters, inherited_contracts=inherited_contracts, constructor_actions= constructor_actions,vote_requirement= vote_requirement, proposal_requirement=proposal_requirement, template_path=template_path, name= contract_name, output_folder="", extension=".sol"))
+            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_description.replace(" ","_"), decision_making_method_name=decision_making_method, state_var_declarations= state_var_declarations,dao_name= dao_name,imports= imports, constructor_parameters= constructor_parameters, inherited_contracts=inherited_contracts, constructor_actions= constructor_actions,vote_requirement= vote_requirement, proposal_requirement=proposal_requirement, template_path=template_path, name= contract_name, output_folder="", extension=".sol"))
         else:
-            lines.extend(self.generate_voting_protocol_from_template(committee_name=u.camel_case(committee.committee_description), decision_making_method_name=committee.decision_making_method,dao_name= dao_name, template_path=template_path, name= contract_name, custom=True))
+            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_description.replace(" ","_"), decision_making_method_name=committee.decision_making_method,dao_name= dao_name, template_path=template_path, name= contract_name, custom=True))
         return TranslatedSmartContract(lines, name)
     
 

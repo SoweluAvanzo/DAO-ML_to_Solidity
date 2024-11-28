@@ -43,10 +43,10 @@ class TestGeneratorOptimized:
             ).splitlines()
 
         # Return a TranslatedSmartContract object with the list of rendered lines
-        return TranslatedSmartContract(rendered_lines, name, folder=output_folder, extension=extension)
+        return TranslatedSmartContract(rendered_lines, self.context.dao.dao_name + "_test", folder=output_folder, extension=extension)
     
     def generate_address_dict(self) -> None:
-        self.address_dict = {f"{role.role_id}": f"{u.camel_case(role.role_name)}Address" for role in self.dao.roles.values()}
+        self.address_dict = {f"{role.role_id}": f"{role.role_name.replace(" ","_")}Address" for role in self.dao.roles.values()}
         
     
     def generate_address_list(self) -> list[str]:
