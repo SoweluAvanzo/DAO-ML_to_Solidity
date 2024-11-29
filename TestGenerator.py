@@ -17,7 +17,7 @@ class TestGeneratorOptimized:
         
     def generate_test_script(self, folder_template_path: str) -> list[TranslatedSmartContract]:
         return [\
-            self.generate_test_from_template(folder_template_path, "test_2") \
+            self.generate_test_from_template(folder_template_path, "test_3") \
                 ] # TODO: add the other tests, if any
     
     def generate_test_from_template(self, template_path: str, name: str, output_folder="test", extension=".js") -> TranslatedSmartContract:
@@ -39,7 +39,8 @@ class TestGeneratorOptimized:
                 addressesByEntityValue=addressesByEntityValue,
                 owner=owner_id_bitmask,
                 DAO_name=self.dao.dao_name.replace(" ", "_"),
-                owner_role_value=owner_role_value
+                owner_role_value=owner_role_value,
+                control_relation_results=self.generate_control_tests_expected_results()
             ).splitlines()
 
         # Return a TranslatedSmartContract object with the list of rendered lines
@@ -50,7 +51,7 @@ class TestGeneratorOptimized:
         
     
     def generate_address_list(self) -> list[str]:
-        return [ f"dict{i}" for i in range(len(self.dao.roles) + len(self.dao.committees) -1) ]
+        return [ f"addr{i +1}" for i in range(len(self.dao.roles) + len(self.dao.committees) -1) ]
 
     def generate_addresses_by_entity_value(self) -> dict[int, str]:
         abEV = {}
@@ -69,26 +70,8 @@ class TestGeneratorOptimized:
             i += 1
         return abEV
     
-    """ 
-    def generate_control_tests(self) -> list[str]:
-        lines = []
-        for role in self.dao.roles.values():
-              
-            lines.append(f"await expect({self.address_dict[role.role_id]}.assignRole({{not_controlled_role_address}}.address, 2309)).to.be.revertedWith(")
-    
-     
-        "the given controller can't perform the given operation on the given controlled one"
-      ); 
-     
-     
-     
-     
-     
-     
-it("{{role_name}} should not be able to assign the roles it doesn't control {{not_controlled_role_name}}", async function () {
-  {{for not_controlled_role_name in not controlled_roles}}
-        expect(await {{DAO_name}}.canControl(259), (2309)).to.equal(false);
-          await expect({{role_address}}.assignRole({{not_controlled_role_address}}.address, {{not_controlled_role_value}})).to.be.revertedWith(
-            "the given controller can't perform the given operation on the given controlled one"
-          );
-    """
+    def generate_control_tests_expected_results(self) -> list[tuple[int, int, bool]]:
+        entities = [*self.dao.roles.values(), *self.dao.committees.values()]
+        controlledBy = {entity.get_id(): set(entity.controllers) for entity in entities}
+        return [(self.roles_to_final_index[entity.get_id()], self.roles_to_final_index[controlled_entity.get_id()], entity.get_id() in controlledBy[controlled_entity.get_id()]) for entity in entities for controlled_entity in entities]
+        

@@ -47,7 +47,6 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
       //entityByValue = new Map();
       addressesByEntityValue = new Map();
 
-      addressesByEntityValue.set({{owner}}, owner);
       {% for entity_value, address in addressesByEntityValue.items() %}
       addressesByEntityValue.set({{entity_value}}, {{address}});
       {% endfor %}
@@ -55,7 +54,7 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
 
       let ownerAddr = {{DAO_name}}.connect(owner);
       {% for role_address in addresses_list %}
-        let {{ role_address }}Connect = {{DAO_name}}.connect(role_address);
+        let {{ role_address }}Connect = {{DAO_name}}.connect({{role_address}});
        
       // addresses_by_entity.set( role_value, role_address); // role_value is the role role_name
       {% endfor %}
@@ -69,7 +68,7 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
             
             return txPromise.then( (txAR) => {{ "{" }}
             
-              txAR.wait().then(
+              Promise.resolve(txAR.wait()).then(
                 (txWaitResult) => {{ "{" }}
                   resolve( {{ "{" }} "address": addr.address, "tx": txWaitResult, "indexAddress": index{{ "}" }} ); // FINALMENTE QUESTO assignRole E' FINITO!
                 {{ "}" }}
@@ -92,6 +91,12 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
       expect(failedAssignmentTx).deep.equal(emptyArrayOfFailures);
 
     {{ "}" }} ); // end of BEFORE
+
+it("Control relations should reflect the organizational structure of the DAO.", async function () {
+{%for control_relation in control_relation_results%}
+  expect(await {{DAO_name}}.canControl({{control_relation[0]}}, {{control_relation[1]}}).to.equal( {%if control_relation[2] %} true  {%else%} false {%endif%}));
+{%endfor%}
+  }); // end of it "Roles should not be able to assign the roles they don't control"
     
   {{ "}" }}); // end of describe "Control relations"
 
