@@ -17,19 +17,19 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
 
     return{{ "{" }}{{DAO_name}}, owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}{{ "}"}};
  {{ "}"}}
-
-  describe("Deployment", function (){{ "{" }}
+    
     it("Should set the right owner", async function (){{ "{" }}
       const{{ "{" }}{{DAO_name}}, owner{{ "}"}} = await loadFixture(deployTokenFixture);
       expect(await {{DAO_name}}.hasRole(owner.address)).to.equal({{owner_role_value}});
    {{ "}"}});
- {{ "}"}});
-
-  describe("Control relations", function (){{ "{" }}
-    before(async function () {});
 
     it("Control relations should reflect the organizational structure of the DAO.", async function (){{ "{" }}
       let{{ "{" }}{{DAO_name}}, owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}{{ "}"}} = await loadFixture(deployTokenFixture);
+
+    ownerConnect = {{DAO_name}}.connect(owner);
+    {% for role_address in addresses_list %}
+    {{role_address}}Connect = {{DAO_name}}.connect({{role_address}});
+    {% endfor %}
 
       // Map to link roles with addresses
       addressesByEntityValue = new Map();
@@ -37,14 +37,11 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
       addressesByEntityValue.set({{entity_value}}, {{address}});
       {% endfor %}
 
-      // Connect to contract with the owner's wallet
-      const ownerAddr = {{DAO_name}}.connect(owner);
-
       // Iterate over the mapping and assign roles
       for (const [roleValue, addr] of addressesByEntityValue.entries()){{ "{" }}
         try{{ "{" }}
           console.log(`Assigning role ${roleValue} to address ${addr.address}`);
-          const tx = await ownerAddr.assignRole(addr.address, roleValue);
+          const tx = await ownerConnect.assignRole(addr.address, roleValue);
           await tx.wait();
           console.log(`Role ${roleValue} successfully assigned to address ${addr.address}`);
        {{ "}"}} catch (error){{ "{" }}
@@ -61,5 +58,20 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
       expect(result).to.equal({% if control_relation[2] %} true {% else %} false {% endif %});
       {% endfor %}
    {{ "}"}});
- {{ "}"}});
-{{ "}"}});
+
+
+
+it("Permissions should be properly configured.", async function (){{"{"}}
+      {% for permission in permissions %}
+      {% if permission[2] %}
+      result = await {{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}();
+      //console.log(`Execution result of permission ({{permission[1]}} for {{permission[0]}}):`, result);
+      await expect(result).not.to.be.reverted;
+      {%else%}
+      await expect({{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}()).to.be.revertedWith(
+        "User does not have this permission"
+      );
+      {% endif %}
+      {% endfor %}
+{{"}"}});
+{{"}"}});

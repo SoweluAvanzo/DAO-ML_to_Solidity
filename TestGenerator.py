@@ -29,6 +29,7 @@ class TestGeneratorOptimized:
         addressesByEntityValue = self.generate_addresses_by_entity_value()
         owner_id_bitmask = self.roles_to_final_index[ self.dao.owner_role.role_id]
         owner_role_value = owner_id_bitmask
+        permission_tests_expected_results = self.generate_permission_tests_expected_results()
 
         with open(file_name_and_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
@@ -40,7 +41,8 @@ class TestGeneratorOptimized:
                 owner=owner_id_bitmask,
                 DAO_name=self.dao.dao_name.replace(" ", "_"),
                 owner_role_value=owner_role_value,
-                control_relation_results=self.generate_control_tests_expected_results()
+                control_relation_results=self.generate_control_tests_expected_results(),
+                permissions=permission_tests_expected_results
             ).splitlines()
 
         # Return a TranslatedSmartContract object with the list of rendered lines
@@ -75,3 +77,15 @@ class TestGeneratorOptimized:
         controlledBy = {entity.get_id(): set(entity.controllers) for entity in entities}
         return [(self.roles_to_final_index[entity.get_id()], self.roles_to_final_index[controlled_entity.get_id()], entity.get_id() in controlledBy[controlled_entity.get_id()]) for entity in entities for controlled_entity in entities]
         
+ 
+    def generate_permission_tests_expected_results(self)-> list[tuple[int,str,bool]]:
+        entities = [*self.dao.roles.values(), *self.dao.committees.values()]
+        #Filter permissions that correspond to actual function invocations in the DAO. Hence, we need to remove voting and prpoposal permissions.
+        postprocessed_permissions = []
+        for permission in self.dao.permissions.values():
+            if permission.voting_right == False and permission.proposal_right == False:
+                postprocessed_permissions.append(permission)
+        
+        permission_tests_expected_results = [(self.roles_to_final_index[entity.get_id()], permission.allowed_action.replace("/", "_").replace(" ", "_").replace("\\", ""), permission in entity.permissions and permission.voting_right == False and permission.proposal_right == False) for entity in entities for permission in postprocessed_permissions]
+        print(permission_tests_expected_results)
+        return permission_tests_expected_results
