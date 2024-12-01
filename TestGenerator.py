@@ -4,10 +4,17 @@ import os
 import utils as u
 from translator import *
 from optimized_translator import *
+from simple_translator import *
 
 class TestGeneratorOptimized:
-    def __init__(self, dao: DAO):
-        translator = OptimizedSolidityTranslator(dao)
+    def __init__(self, dao: DAO, optimized = False):
+        self.optimized = optimized
+        if optimized:
+            translator = OptimizedSolidityTranslator(dao)
+        else:
+            translator = SimpleSolidityTranslator(dao)
+            
+       
         translator.translate()
         self.dao = dao
         self.context = translator.context         
@@ -16,8 +23,12 @@ class TestGeneratorOptimized:
         print(self.roles_to_final_index)
         
     def generate_test_script(self, folder_template_path: str) -> list[TranslatedSmartContract]:
+        if self.optimized:
+            script_name = "optimized_test_script_template"  
+        else:
+            script_name = "standard_test_script_template"
         return [\
-            self.generate_test_from_template(folder_template_path, "test_3") \
+            self.generate_test_from_template(folder_template_path, script_name) \
                 ] # TODO: add the other tests, if any
     
     def generate_test_from_template(self, template_path: str, name: str, output_folder="test", extension=".js") -> TranslatedSmartContract:
@@ -42,7 +53,8 @@ class TestGeneratorOptimized:
                 DAO_name=self.dao.dao_name.replace(" ", "_"),
                 owner_role_value=owner_role_value,
                 control_relation_results=self.generate_control_tests_expected_results(),
-                permissions=permission_tests_expected_results
+                permissions=permission_tests_expected_results,
+                committee_addresses=self.generate_committee_addresses()
             ).splitlines()
 
         # Return a TranslatedSmartContract object with the list of rendered lines
@@ -71,6 +83,9 @@ class TestGeneratorOptimized:
             abEV[ self.roles_to_final_index[ id ] ] = f"addr{i}"
             i += 1
         return abEV
+    def generate_committee_addresses(self) -> list[str]:
+        committee_list = [f"addr{i}" for i in range(1, len(self.dao.committees) + 1)]
+        return committee_list
     
     def generate_control_tests_expected_results(self) -> list[tuple[int, int, bool]]:
         entities = [*self.dao.roles.values(), *self.dao.committees.values()]

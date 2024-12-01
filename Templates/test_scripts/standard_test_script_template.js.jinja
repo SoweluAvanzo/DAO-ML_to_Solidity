@@ -12,7 +12,7 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
 
   async function deployTokenFixture(){{ "{" }}
     const [owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}] = await ethers.getSigners();
-    const {{DAO_name}} = await ethers.deployContract("{{DAO_name}}");
+    const {{DAO_name}} = await ethers.deployContract("{{DAO_name}}", ["{{DAO_name}}", owner.address, {% for committee_address in committee_addresses%}{{committee_address}}.address {% if not loop.last %} , {% endif %}{% endfor %}]);
     await {{DAO_name}}.waitForDeployment();
 
     return{{ "{" }}{{DAO_name}}, owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}{{ "}"}};
@@ -53,23 +53,26 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
       // Validate control relations
       let result = null;
       {% for control_relation in control_relation_results %}
-      result = await {{DAO_name}}.canControl({{control_relation[0]}}, {{control_relation[1]}});
-      console.log(`Result of canControl({{control_relation[0]}}, {{control_relation[1]}}):`, result);
+      try{{ "{" }}
+      console.log(`Result of can_control({{addressesByEntityValue[control_relation[0]]}}, {{addressesByEntityValue[control_relation[1]]}}):`);
+      result = await {{DAO_name}}.can_control({{addressesByEntityValue[control_relation[0]]}}.address, {{addressesByEntityValue[control_relation[1]]}}.address);
       expect(result).to.equal({% if control_relation[2] %} true {% else %} false {% endif %});
+      {{"}"}} catch (error){{ "{" }}
+      console.error(`Failed to validate control relation between {{control_relation[0]}} and {{control_relation[1]}}:`, error);
+      throw error; // Stop execution if there's an error
+      {{ "}"}}
       {% endfor %}
    {{ "}"}});
-
-
 
 it("Permissions should be properly configured.", async function (){{"{"}}
       {% for permission in permissions %}
       {% if permission[2] %}
       result = await {{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}();
-      //console.log(`Execution result of permission ({{permission[1]}} for {{permission[0]}}):`, result);
+      console.log(`Execution result of permission ({{permission[1]}} for {{permission[0]}})`);
       await expect(result).not.to.be.reverted;
       {%else%}
       await expect({{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}()).to.be.revertedWith(
-        "User does not have this permission"
+        "Only authorized roles can execute this function."
       );
       {% endif %}
       {% endfor %}
