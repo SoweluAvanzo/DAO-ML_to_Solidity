@@ -12,6 +12,25 @@ class RoleInConditionCheckType(Enum):
     EXPRESSION = 3
 
 
+class EntityTypeControllable(Enum):
+    ROLE = "Role"
+    COMMITTEE = "Committee"
+
+
+def newEntityData(final_id=0, name="", index=-1, original_id="", address="", entity_type:EntityTypeControllable=None):
+    if entity_type == None:
+        entity_type = EntityTypeControllable.ROLE # default
+    return {\
+        "final_id": final_id, \
+        "name": name, \
+        "index": index, \
+        "original_id": original_id, \
+         # example: "addr1"
+        "address": address, \
+        "entity_type": entity_type
+    }
+
+
 class SolidityOptimizedTranslationContext(TranslationContext):
     def __init__(self,  dao: DAO, solidity_version= "^0.8.0", daoOwner = True):
         '''
@@ -25,19 +44,16 @@ class SolidityOptimizedTranslationContext(TranslationContext):
         self.id_mask = None
         self.perm_var_type = None
         self.permission_to_index:dict[str, int] = {permission: idx for idx, permission in enumerate(dao.permissions)}
-        self.role_to_final_index:dict[str, int] = {}
+        self.entity_to_data:dict[str, dict[str, any]] = {} # type_return_of(newEntityData)
         
 
 class OptimizedSolidityTranslator(Translator):
     def __init__(self, dao):
-
-        self.context = TranslationContext(dao, role_declaration_policy = None, solidity_version = "^0.8.0", daoOwner = True)
+        self.context = SolidityOptimizedTranslationContext(dao, solidity_version = "^0.8.0", daoOwner = True)
         #self.dao = dao
         self.group_size = self.context.dao.metadata.user_functionalities_group_size
         self.id_mask = self.recalculate_id_mask()
         self.perm_var_type = self.get_permission_array_size()
-        self.permission_to_index:dict[str, int] = {permission: idx for idx, permission in enumerate(self.context.dao.permissions)}
-        self.role_to_final_index:dict[str, int] = {}
         
 
     def recalculate_id_mask(self):
@@ -46,7 +62,7 @@ class OptimizedSolidityTranslator(Translator):
             id_mask |= 1 << i
         return id_mask
     
-    def generate_modifier_control_relation(self):
+    def generate_modifier_control_relation_OLD(self):
         id_var_type = self.get_variable_type()
         id_bit_size = self.group_size.value[1]
         mask = self.id_mask # calcolato nel costruttore
@@ -73,6 +89,88 @@ class OptimizedSolidityTranslator(Translator):
         lines.append("\n")
         return "\n".join(lines)
 
+    def generate_modifier_sanity_check_user_exists(self):
+        '''
+        Deprecated
+        '''
+        return '''
+        modifier sanityCheck_user_exists(address user){
+            require(roles[user] != 0, \"The user must exists\");
+            _;
+        }
+        '''
+
+    def generate_modifier_role_exists(self):
+        '''
+        Deprecated
+        '''
+        id_var_type = self.get_variable_type()
+        id_bit_size = self.group_size.value[1]
+ 
+        formatting_args={
+            "_id_var_type": id_var_type,
+            "_id_bit_size": id_bit_size,
+        }
+        return '''
+        modifier sanityCheck_role_exists({_id_var_type} role){
+            {_id_var_type} index_role = role & {_mask};
+            require(roles[user] != 0, \"The user must exists\");
+            _;
+        }
+        '''
+
+    def generate_modifier_control_relation(self):
+        id_var_type = self.get_variable_type()
+        id_bit_size = self.group_size.value[1]
+        mask = self.id_mask # calcolato nel costruttore
+        entities_amount = len(self.context.dao.roles) + len(self.context.dao.committees)
+
+        formatting_args={
+            "_id_var_type": id_var_type,
+            "_id_bit_size": id_bit_size,
+            "_mask": mask,
+            "_entities_amount": entities_amount
+        }
+        
+        lines = []
+        lines.append("\n")
+        #lines.append(f"    modifier controlledBy(address sender, {id_var_type} user_target_role_id, bool allowNullRole) {'{'}")
+        lines.append(\
+        '''
+        modifier controlledBy(address sender, {_id_var_type} user_role_id, bool allowNullRole_user, {_id_var_type} new_role_id) {{
+            //we obtain the control relations of the controller role by shifting the its id by the number of bits contained in ids
+            //the sender must control BOTH the target role AND the user's role
+
+            {_id_var_type} index_new_role = new_role_id & {_mask};
+            {_id_var_type} sender_role_index = ( {_id_var_type}(1) << ( roles[sender] & {_mask} ) );
+
+            require(
+                ( // the new role must be a valid one
+                    index_new_role < {_entities_amount} // checking for \"index out of bounds\"
+                )
+                && ( // \"CAN the sender control the target user (through its role)?\"
+                    (allowNullRole_user && (user_role_id == 0)) || // allow to add role if the user has not already one assigned to it
+                    ((
+                        (user_role_id >> {_id_bit_size}) // get the user role's bitmask 
+                        &  // (... and then perform the bitwise-and with ...)
+                        sender_role_index
+                    ) != 0) // THE FINAL CHECK
+                ) &&
+                ( // \"CAN the sender control the target role?\"
+                    (
+                        ( all_roles[index_new_role] >> {_id_bit_size}) // get the new role's bitmask (the one saved internally, rather than the provided ones, due to safety reasons: avoiding roles forgery)
+                        &  // (... and then perform the bitwise-and with ...)
+                        sender_role_index
+                    ) != 0 // THE FINAL CHECK
+                )
+                , \"the given controller can\'t perform the given operation on the given controlled one\" );
+            _;
+        }}
+        '''.format(**formatting_args))
+        
+        lines.append("\n")
+        return "\n".join(lines)
+
 
     def translateDao(self) -> TranslatedSmartContract: 
         lines = []
@@ -88,7 +186,7 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(self.generate_permission_functions())  
         lines.append(self.generate_closure())
         name = self.context.dao.dao_name
-        return TranslatedSmartContract(lines, name)
+        return TranslatedSmartContract(lines, name, testable=True)
         #return "\n".join(lines)
 
 
@@ -113,6 +211,7 @@ class OptimizedSolidityTranslator(Translator):
         return TranslatedSmartContract(lines, "ICondition", folder="interfaces")
 
     def translate(self) -> list[TranslatedSmartContract]:
+            print("TRANSLATE() -- invocato")
             all_smart_contracts: list[TranslatedSmartContract] = []
 
             # at first, translate all Committees
@@ -120,8 +219,8 @@ class OptimizedSolidityTranslator(Translator):
             for c in self.context.dao.committees.values():
                 voting_permission_key = c.committee_id + "VotingRight"
                 proposal_permission_key = c.committee_id + "ProposalRight"
-                voting_permission_index = self.permission_to_index[voting_permission_key]
-                proposal_permission_index = self.permission_to_index[proposal_permission_key]
+                voting_permission_index = self.context.permission_to_index[voting_permission_key]
+                proposal_permission_index = self.context.permission_to_index[proposal_permission_key]
                 translated_committee = ct.translateCommittee(c, proposal_permission_index , voting_permission_index, optimized=True) 
                 all_smart_contracts.append(translated_committee)
             all_smart_contracts.append(self.generate_IPermissionManager_interface())
@@ -244,22 +343,40 @@ class OptimizedSolidityTranslator(Translator):
             functionalities_ids[committee.committee_id] = i
             i += 1
         
+        entities_amount = len(self.context.dao.roles) + len(self.context.dao.committees)
+        lines.append(f"    {id_var_type}[{entities_amount}] {visibility} all_roles = [")
+
+        index_entity = 0
         for role in self.context.dao.roles.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(role, role.role_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[role.role_id] | mask_shifted_for_id_bits
-            lines.append(f"    {id_var_type} {visibility} {constant} {role.role_name.replace(" ","_")} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
-            self.role_to_final_index[role.role_id] = final_id
+            #lines.append(f"    {id_var_type} {visibility} {constant} {role.role_name.replace(" ","_")} = {final_id}; // ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            name_sanitized = role.role_name.replace(" ","_")
+            lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity}) {name_sanitized} -> ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            index_entity += 1
+
+            self.context.entity_to_data[role.role_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE)
             
         for committee in self.context.dao.committees.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
             final_id = functionalities_ids[committee.committee_id] | mask_shifted_for_id_bits
-            lines.append(f"    {id_var_type} {visibility} {constant} {committee.committee_description.replace(" ","_")} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
-            self.role_to_final_index[committee.committee_id] = final_id
+            #lines.append(f"    {id_var_type} {visibility} {constant} {committee.committee_description.replace(" ","_")} = {final_id}; // ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            name_sanitized = committee.committee_description.replace(" ","_")
+            lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity})  {name_sanitized} -> ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
+            index_entity += 1
+            self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
+
+        print("\n\n\n\n\n AAAAAAAAAAAAAAAAAAA in OptimizedSolidityTranslator self.context.entity_to_data \n\n\n")
+        print(self.context.entity_to_data)
+        print("FINEH")
+
+
+        lines.append("    ];")
         # if self.context.daoOwner:
         #     lines.append("    address _owner;")
         #generate events
         lines.append(self.generate_events())
-        #print(self.role_to_final_index)
+        #print(self.context.entity_to_data)
         return "\n".join(lines)
     
     def generate_events(self):
@@ -289,7 +406,8 @@ class OptimizedSolidityTranslator(Translator):
             
         lines.append(self.generate_role_permission_mapping())
         if self.context.daoOwner:
-            lines.append(f"roles[msg.sender] = {self.context.dao.dao_name}Owner;")
+            #lines.append(f"roles[msg.sender] = {self.context.dao.dao_name}Owner;")
+            lines.append(f"roles[msg.sender] = all_roles[{len(self.context.dao.roles)}]; // {self.context.dao.dao_name}Owner")
         if self.context.dao.conditions != []:
             lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
         if self.context.dao.voting_conditions != {}:
@@ -322,7 +440,9 @@ class OptimizedSolidityTranslator(Translator):
         for committee in self.context.dao.committees.values():
             lines.append(f"         roles[_{committee.committee_description.replace(" ","_")}] = {committee.committee_description.replace(" ","_")}; \n" )
         if self.context.daoOwner:
-            lines.append(f"        roles[msg.sender] = {self.context.dao.dao_name}Owner;")
+            #lines.append(f"        roles[msg.sender] = {self.context.dao.dao_name}Owner;")
+            lines.append(f"        roles[msg.sender] = all_roles[{len(self.context.dao.roles)}]; // {self.context.dao.dao_name}Owner")
+ 
         lines.append("    }")
         return "\n".join(lines)
 
@@ -343,13 +463,21 @@ class OptimizedSolidityTranslator(Translator):
     def generate_committee_initialization_function(self, visibility = "external"):
         committee_list_param = [f"address _{x}" for x in [committee.committee_description.replace(" ","_") for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
-        committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_description.replace(" ","_") for committee in self.context.dao.committees.values()] ])
         lines = []
         lines.append(f"    function initializeCommittees({committee_address_list}) {visibility} {'{'}")
-        lines.append(f"        require(roles[msg.sender] == {self.context.dao.dao_name}Owner && committee_initialization_blocked == false && {committee_requires}, \"Invalid committee initialization\");")
-        for committee in self.context.dao.committees.values():
-            lines.append(f"        roles[_{committee.committee_description.replace(" ","_")}] = {committee.committee_description.replace(" ","_")};")
-        lines.append("        committee_initialization_blocked = true;")
+        #lines.append(f"        require(roles[msg.sender] == {self.context.dao.dao_name}Owner && committee_initialization_blocked == false && {committee_requires}, \"Invalid committee initialization\");")
+        index_role_owner = len(self.context.dao.roles)
+        lines.append(f"        require(roles[msg.sender] == all_roles[{index_role_owner}], \"Only the owner can initialize the Dao\");  // {self.context.dao.dao_name}Owner")
+        if len(self.context.dao.committees) > 0:
+            committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_description.replace(" ","_") for committee in self.context.dao.committees.values()] ])
+            lines.append(f"    require(committee_initialization_blocked == false && {committee_requires}, \"Invalid committee initialization\");")
+ 
+            committees_as_list = list(self.context.dao.committees.values())
+            for index_committee, committee in enumerate(committees_as_list):
+                sanitized_committee_name = committee.committee_description.replace(" ","_")
+                #lines.append(f"        roles[_{sanitized_committee_name}] = {sanitized_committee_name};")
+                lines.append(f"        roles[_{sanitized_committee_name}] = all_roles[{index_committee}]; // {sanitized_committee_name}")
+            lines.append("        committee_initialization_blocked = true;")
         lines.append("    }")
         return "\n".join(lines)
     
@@ -373,14 +501,14 @@ class OptimizedSolidityTranslator(Translator):
                      return controls;}} else {{return controls;}}
         }}
         
-        function assignRole(address _user, {id_var_type} _role) external controlledBy(msg.sender, roles[_user], true) controlledBy(msg.sender, _role, false) {{
+        function assignRole(address _user, {id_var_type} _role) external controlledBy(msg.sender, roles[_user], true, _role) {{
             require(_user != address(0) , "Invalid user address" );
             {self.generate_user_role_condition_evaluation("assignment_conditions", "_user", RoleInConditionCheckType.REQUIRE) if self.context.dao.assignment_conditions != {} else ""}
             roles[_user] = _role;
             emit RoleAssigned(_user, _role);
         }}
 
-        function revokeRole(address _user, {id_var_type} _role) external controlledBy(msg.sender, roles[_user], false) controlledBy(msg.sender, _role, false) {{
+        function revokeRole(address _user, {id_var_type} _role) external controlledBy(msg.sender, roles[_user], false, _role) {{
             require(roles[_user] == _role, "User's role and the role to be removed don't coincide" );
 
             delete roles[_user];
@@ -434,11 +562,11 @@ class OptimizedSolidityTranslator(Translator):
     #TO BE TESTED
     def generate_role_permission_mapping(self):
         # Create a mapping from role IDs to the indices of the permissions they have
-        role_permissions_mapping = {}
+        entities_permissions = []
         for role in self.context.dao.roles.values():
-            role_permissions_mapping[role.role_name.replace(" ","_")] = [self.get_permission_index(permission.permission_id) for permission in role.permissions]
+            entities_permissions.append((role.role_name.replace(" ","_"), [self.get_permission_index(permission.permission_id) for permission in role.permissions]))
         for committee in self.context.dao.committees.values():
-            role_permissions_mapping[committee.committee_description.replace(" ","_")] = [self.get_permission_index(permission.permission_id) for permission in committee.permissions]
+            entities_permissions.append((committee.committee_description.replace(" ","_"), [self.get_permission_index(permission.permission_id) for permission in committee.permissions]))
             
         # define the way a "role_permission" must work; in particular how
         # its data is accessed: if we are still "optimizing" (i.e., the
@@ -447,18 +575,20 @@ class OptimizedSolidityTranslator(Translator):
         # otherwise, "role_permission" is a straightforward "mapping", i.e. the "role" as a whole is used
         # as the mapping's key
         is_role_access_optimized = self.group_size is not None
-        role_to_index_fn = lambda r: f"{r} & {self.id_mask}" \
+        role_to_index_fn = lambda r, index_role: f"{index_role}" \
             if is_role_access_optimized \
-            else lambda r: r
+            else lambda r, index_role: r
         # Generate the Solidity code to set the role_permissions mapping
         lines = []
-        for role, permission_indices in role_permissions_mapping.items():
+        for index_entity, entity_data in enumerate(entities_permissions, start=0):
+                role = entity_data[0]
+                permission_indices = entity_data[1]
                 # Initialize the bitflag for the given role
                 bitflag = 0
                 # Set the bit for each permission index
                 for index in permission_indices:
                     bitflag |= (1 << index)
-                lines.append(f"        role_permissions[{role_to_index_fn(role)}] = {bitflag};\n")
+                lines.append(f"        role_permissions[{role_to_index_fn(role, index_entity)}] = {bitflag}; // #{index_entity}) {role} \n")
         return "\n".join(lines)
     
     def generate_user_role_condition_evaluation(self, condition_mapping_name, user_variable_name, roleInConditionCheckType: RoleInConditionCheckType = RoleInConditionCheckType.RETURN):
@@ -526,7 +656,7 @@ class OptimizedSolidityTranslator(Translator):
 
     def get_permission_index(self, permission):
         #Map permission_id to an integer index
-        return self.permission_to_index[permission]
+        return self.context.permission_to_index[permission]
 
     def generate_closure(self):
         return "}"

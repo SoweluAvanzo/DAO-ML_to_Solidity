@@ -38,3 +38,7 @@ We provide below a class diagram displaying the key classes of a language-indepe
 ![immagine](https://github.com/user-attachments/assets/36f18139-71a0-44f7-8e69-d8fcd74912d9)
 
 
+## Run Simulation tests
+
+npx hardhat compile
+npx hardhat test

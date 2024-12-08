@@ -203,8 +203,10 @@ class DiagramManager:
         owner_role = dc.Role(role_id = owner_role_name, role_name= owner_role_name, role_assignment_method = "Non Assignable", n_agent_min =None, n_agent_max=None, agent_type=None)
         dao.owner_role = owner_role
         for permission in dao.permissions.values():
+            print(f'Permission {permission.permission_id} assigned to Owner Role {owner_role.role_id} \n')
             owner_role.add_permission(permission)
         dao.add_role(owner_role)
+        print(f'Owner Role {owner_role.role_id} created for DAO {dao.dao_id} has the following permissions: {dao.owner_role.permissions}\n')
         for role in dao.roles.values():
             role.add_controller(owner_role.role_id)
         for committee in dao.committees.values():

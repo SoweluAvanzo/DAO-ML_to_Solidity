@@ -9,18 +9,33 @@ import os
 import utils as u
 
 class TranslatedSmartContract:
-    def __init__(self, lines_of_code, name, folder = None, extension = ".sol"):
-        self.extension = extension
+    def __init__(self, lines_of_code, name, folder = None, testable=False, extension = ".sol"):
         self.lines_of_code = lines_of_code
         self.name = name
         self.folder = folder
+        self.testable = testable
+        self.extension = extension
     def get_code_as_text(self) -> str:
         return "\n".join(self.lines_of_code)
     def get_code_as_lines(self) -> list[str]:
         return self.lines_of_code
 
+class TranslationContext:
+    def __init__(self, dao: DAO, role_declaration_policy = "topological_order", solidity_version= "^0.8.0", daoOwner = True):
+        self.dao = dao
+        self.role_declaration_policy = role_declaration_policy
+        self.solidity_version = solidity_version
+        self.control_transitivity = dao.hierarchical_inheritance == 1 or dao.hierarchical_inheritance == "1"
+        self.daoOwner = daoOwner
+        self.permission_to_index:dict[str, int] = {}
+        self.entity_to_data:dict[str, dict[str, any]] = {} # dict entity_id -> {"final_id": int, "name": str, "index": int, "original_id": int}
+
 
 class Translator:
+    def __init__(self):
+        # fields shared across all Translators; NOTE: should be object or something that could be easily passed to proxies
+        self.context:TranslationContext = None 
+
     def translate(self) -> list[TranslatedSmartContract]:
         pass
 
@@ -44,15 +59,6 @@ class Translator:
                 rendered_lines.append(rendered_line)
         # Return a TranslatedSmartContract object with the list of rendered lines
         return TranslatedSmartContract(rendered_lines, name, folder=output_folder, extension=extension)
-
-
-class TranslationContext:
-    def __init__(self, dao: DAO, role_declaration_policy = "topological_order", solidity_version= "^0.8.0", daoOwner = True):
-        self.dao = dao
-        self.role_declaration_policy = role_declaration_policy
-        self.solidity_version = solidity_version
-        self.control_transitivity = dao.hierarchical_inheritance == 1 or dao.hierarchical_inheritance == "1"
-        self.daoOwner = daoOwner
 
 
 class CommitteeTranslator:

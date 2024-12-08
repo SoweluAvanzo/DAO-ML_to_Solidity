@@ -7,20 +7,23 @@ from optimized_translator import *
 from simple_translator import *
 
 class TestGeneratorOptimized:
-    def __init__(self, dao: DAO, optimized = False):
+    # NOTA 3: questa classe deve trovarsi in coda alla pipelone (lettura/parsing -> DiagramManager -> traduzione ".sol" -> test)
+    def __init__(self, dao: DAO, optimized = False, translator:Translator=None):
         self.optimized = optimized
-        if optimized:
-            translator = OptimizedSolidityTranslator(dao)
-        else:
-            translator = SimpleSolidityTranslator(dao)
+        #if optimized:
+        #    translator = OptimizedSolidityTranslator(dao)
+        #else:
+        #    translator = SimpleSolidityTranslator(dao)
             
        
-        translator.translate()
+        #translator.translate() # NOTA 1: la sua UNICA utilita e' quella di riempire "translator.context.entity_to_data"
         self.dao = dao
-        self.context = translator.context         
-        self.roles_to_final_index = translator.role_to_final_index
+        self.context = translator.context
+
+        # NOTA 2: a questa classe serve una DAO gia' tradotta, in quanto ha i dati gia' preparati
+
+        self.entity_to_data = translator.context.entity_to_data  # dict entity_id -> {"final_id": int, "name": str, "index": int, "original_id": str}
         self.address_dict = {}
-        print(self.roles_to_final_index)
         
     def generate_test_script(self, folder_template_path: str) -> list[TranslatedSmartContract]:
         if self.optimized:
@@ -33,13 +36,13 @@ class TestGeneratorOptimized:
     
     def generate_test_from_template(self, template_path: str, name: str, output_folder="test", extension=".js") -> TranslatedSmartContract:
         # Define the full path to the template file
-        file_name_and_path = template_path + name + extension + ".jinja"
+        file_name_and_path = f"{template_path}/{name}{extension}.jinja"
         # Initialize an empty list to store each rendered line
         rendered_lines = []
         addresses_list = self.generate_address_list()
         addressesByEntityValue = self.generate_addresses_by_entity_value()
-        owner_id_bitmask = self.roles_to_final_index[ self.dao.owner_role.role_id]
-        owner_role_value = owner_id_bitmask
+        owner_id_bitmask = self.entity_to_data[ self.dao.owner_role.role_id]['final_id']
+        owner_role_value = owner_id_bitmask # redundant, but kept for clarity
         permission_tests_expected_results = self.generate_permission_tests_expected_results()
 
         with open(file_name_and_path, 'r', encoding='utf-8') as f:
@@ -54,43 +57,69 @@ class TestGeneratorOptimized:
                 owner_role_value=owner_role_value,
                 control_relation_results=self.generate_control_tests_expected_results(),
                 permissions=permission_tests_expected_results,
-                committee_addresses=self.generate_committee_addresses()
+                committee_addresses=[ \
+                    #entity_data['final_id'] : entity_data['address'] \
+                    entity_data['address'] \
+                    for entity_data in self.entity_to_data.values() \
+                        if entity_data['entity_type'] == EntityTypeControllable.COMMITTEE \
+                ]
             ).splitlines()
 
         # Return a TranslatedSmartContract object with the list of rendered lines
         return TranslatedSmartContract(rendered_lines, self.context.dao.dao_name + "_test", folder=output_folder, extension=extension)
     
-    def generate_address_dict(self) -> None:
-        self.address_dict = {f"{role.role_id}": f"{role.role_name.replace(" ","_")}Address" for role in self.dao.roles.values()}
+    # def generate_address_dict(self) -> None:
+    #     self.address_dict = {f"{role.role_id}": f"{role.role_name.replace(" ","_")}Address" for role in self.dao.roles.values()}
         
     
     def generate_address_list(self) -> list[str]:
-        return [ f"addr{i +1}" for i in range(len(self.dao.roles) + len(self.dao.committees) -1) ]
+        return [ f"addr{i +1}" for i in range(len(self.dao.roles) + len(self.dao.committees) -1) ]  # -1 because the owner is not included in the list of addresses
 
-    def generate_addresses_by_entity_value(self) -> dict[int, str]:
+    def generate_addresses_by_entity_value(self) -> dict[int, dict[str, any]]: # see "optimized_translator.newEntityData(...)"
         abEV = {}
         owner_role = self.dao.owner_role
         address_role = "owner"
-        owner_id = owner_role.role_id
-        abEV[ self.roles_to_final_index[ owner_id] ] = address_role
 
-        i = 1
-        for id in self.dao.roles.keys():
-            if owner_id != id:
-                abEV[ self.roles_to_final_index[ id ] ] = f"addr{i}"
+        entity_data_by_original_id = { e['original_id'] : e for e in self.entity_to_data.values()}
+        #reminder: the "final_id" is the justapposition of "bitmasn" + "id"
+        i = 0
+        owner_id = owner_role.role_id
+        for entity_id in self.dao.roles.keys(): # note: type "entity_id" == str
+            if owner_id != entity_id:
+                entity_data = entity_data_by_original_id[ entity_id ]
+                entity_data['address'] = f"addr{i}"
+                abEV[ entity_data['final_id'] ] = entity_data['address']
                 i += 1
-        for id in self.dao.committees.keys():
-            abEV[ self.roles_to_final_index[ id ] ] = f"addr{i}"
+        entity_data = entity_data_by_original_id[ owner_id ]
+        abEV[ entity_data['final_id'] ] = address_role
+        i+=1
+        for entity_id in self.dao.committees.keys():
+            entity_data = entity_data_by_original_id[ entity_id ]
+            entity_data['address'] = f"addr{i}"
+            abEV[ entity_data['final_id'] ] = entity_data['address']
             i += 1
         return abEV
-    def generate_committee_addresses(self) -> list[str]:
-        committee_list = [f"addr{i}" for i in range(1, len(self.dao.committees) + 1)]
-        return committee_list
+        
+    # def generate_committee_addresses(self) -> list[str]:
+    #     committee_list = [f"addr{i}" for i in range(1, len(self.dao.committees) + 1)]
+    #     return committee_list
     
     def generate_control_tests_expected_results(self) -> list[tuple[int, int, bool]]:
         entities = [*self.dao.roles.values(), *self.dao.committees.values()]
         controlledBy = {entity.get_id(): set(entity.controllers) for entity in entities}
-        return [(self.roles_to_final_index[entity.get_id()], self.roles_to_final_index[controlled_entity.get_id()], entity.get_id() in controlledBy[controlled_entity.get_id()]) for entity in entities for controlled_entity in entities]
+        return [ \
+            (
+                # the controller
+                self.entity_to_data[entity.get_id()]['final_id'], \
+                # the one who gets controlled by
+                self.entity_to_data[controlled_entity.get_id()]['final_id'], \
+                # the test
+                entity.get_id() in controlledBy[controlled_entity.get_id()] \
+            ) \
+            # cartesian product
+            for entity in entities \
+                for controlled_entity in entities \
+        ]
         
  
     def generate_permission_tests_expected_results(self)-> list[tuple[int,str,bool]]:
@@ -101,6 +130,6 @@ class TestGeneratorOptimized:
             if permission.voting_right == False and permission.proposal_right == False:
                 postprocessed_permissions.append(permission)
         
-        permission_tests_expected_results = [(self.roles_to_final_index[entity.get_id()], permission.allowed_action.replace("/", "_").replace(" ", "_").replace("\\", ""), permission in entity.permissions and permission.voting_right == False and permission.proposal_right == False) for entity in entities for permission in postprocessed_permissions]
+        permission_tests_expected_results = [(self.entity_to_data[entity.get_id()]['final_id'], permission.allowed_action.replace("/", "_").replace(" ", "_").replace("\\", ""), permission in entity.permissions and permission.voting_right == False and permission.proposal_right == False) for entity in entities for permission in postprocessed_permissions]
         print(permission_tests_expected_results)
         return permission_tests_expected_results

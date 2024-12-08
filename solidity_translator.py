@@ -159,21 +159,25 @@ class SolidityTranslator(Translator):
         self.translation_type = translation_type
         self.additional_metadata = additional_metadata
         self.diamond = diamond
-        
-    def translate(self) -> list[TranslatedSmartContract]:
-
+        # set the translator that these parameters are enforcing
+        self.translator_proxy:Translator = None
         # voting_protocol_translator = VotingProtocolTranslator() #TODO: instanziare il traduttore del protocollo di voto
         group_size = self.dao.metadata.user_functionalities_group_size
         if self.translation_type == "simple" or group_size == None:
-            translator = SimpleSolidityTranslator(self.dao) # , voting_protocol_translator)
+            self.translator_proxy = SimpleSolidityTranslator(self.dao) # , voting_protocol_translator)
         elif self.translation_type == "optimized":
             if self.diamond == True:
-                translator = OptimizedDiamondTranslator(self.dao)
+                self.translator_proxy = OptimizedDiamondTranslator(self.dao)
             else:
-                translator = OptimizedSolidityTranslator(self.dao) # , voting_protocol_translator)
+                self.translator_proxy = OptimizedSolidityTranslator(self.dao) # , voting_protocol_translator)
         else:
             raise ValueError("Invalid translation type")
-        return translator.translate()
+        # continue to mimic the proxy by overriding all this instances' values with the proxy ones
+        self.context = self.translator_proxy.context
+
+    def translate(self) -> list[TranslatedSmartContract]:
+        # call the pre-calculated proxy
+        return self.translator_proxy.translate()
     # def save_to_file(self):
     #     with open(f"{self.dao.dao_id}.sol", "w") as f:
     #         f.write(self.translate())
