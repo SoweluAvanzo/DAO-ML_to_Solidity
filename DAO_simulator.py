@@ -8,7 +8,7 @@ from TestGenerator import *
 from solidity_translator import *
 #implements the simulation design
 class DAOGenerator:
-    def __init__(self,n_daos:int, n_roles: int, n_permissions: int, sparsity_coefficient: float, permissions_per_role):
+    def __init__(self,n_daos:int, n_roles: int, n_permissions: int, sparsity_coefficient: float, permissions_per_role, seed= 5):
         self.n_daos = n_daos
         self.n_roles_max = n_roles
         self.n_permissions_max = n_permissions
@@ -16,6 +16,7 @@ class DAOGenerator:
         self.permissions_per_role = permissions_per_role
         self.Translator = Translator
         self.daos_by_id = {}
+        self.seed = seed
         
     def generate_daos(self):
         self.daos_by_id = {}
@@ -86,6 +87,7 @@ class DAOGenerator:
         all_possible_edges = [(role.role_id, target.role_id) for role in roles for target in roles if role != target]
 
         # Step 2: Randomly select edges to match the target sparsity
+        selected_edges = random.seed(self.seed)
         selected_edges = random.sample(all_possible_edges, target_edges)
 
         # Step 3: Assign controllers to roles based on selected edges
