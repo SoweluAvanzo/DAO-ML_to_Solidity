@@ -42,6 +42,7 @@ class TestGeneratorOptimized:
         addresses_list = self.generate_address_list()
         addressesByEntityValue = self.generate_addresses_by_entity_value()
         owner_id_bitmask = self.entity_to_data[ self.dao.owner_role.role_id]['final_id']
+        print(f"in generate_test_from_template (test generator)- owner_id_bitmask is {owner_id_bitmask}")
         owner_role_value = owner_id_bitmask # redundant, but kept for clarity
         permission_tests_expected_results = self.generate_permission_tests_expected_results()
 
@@ -73,14 +74,20 @@ class TestGeneratorOptimized:
         
     
     def generate_address_list(self) -> list[str]:
-        return [ f"addr{i +1}" for i in range(len(self.dao.roles) + len(self.dao.committees) -1) ]  # -1 because the owner is not included in the list of addresses
+        entities = [*self.dao.roles.values(), *self.dao.committees.values()]
+        addresses_list = [f"addr{index}" for index, entity in enumerate(entities) if entity.get_id() != self.dao.owner_role.role_id ]
+
+        return addresses_list 
 
     def generate_addresses_by_entity_value(self) -> dict[int, dict[str, any]]: # see "optimized_translator.newEntityData(...)"
         abEV = {}
         owner_role = self.dao.owner_role
+        print(f"in generate_address_list (test generator) - owner_role is {owner_role}")
         address_role = "owner"
 
         entity_data_by_original_id = { e['original_id'] : e for e in self.entity_to_data.values()}
+        print(f"in generate_address_list - entity_data_by_original_id is {entity_data_by_original_id}")
+
         #reminder: the "final_id" is the justapposition of "bitmasn" + "id"
         i = 0
         owner_id = owner_role.role_id
@@ -90,6 +97,8 @@ class TestGeneratorOptimized:
                 entity_data['address'] = f"addr{i}"
                 abEV[ entity_data['final_id'] ] = entity_data['address']
                 i += 1
+            else:
+                print(f"IN THE LOOP OF generate_address_list - owner_id is {owner_id}, WITH ID {entity_id} AND INDEX {i}")
         entity_data = entity_data_by_original_id[ owner_id ]
         abEV[ entity_data['final_id'] ] = address_role
         i+=1

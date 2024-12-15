@@ -1,7 +1,7 @@
 import os
 import networkx as nx
 from DAOclasses import*
-from translator import TranslatedSmartContract, CommitteeTranslator, TranslationContext, Translator
+from translator import *
 from jinja2 import Template
 import utils as u
 from enum import Enum
@@ -11,24 +11,6 @@ class RoleInConditionCheckType(Enum):
     REQUIRE = 2
     EXPRESSION = 3
 
-
-class EntityTypeControllable(Enum):
-    ROLE = "Role"
-    COMMITTEE = "Committee"
-
-
-def newEntityData(final_id=0, name="", index=-1, original_id="", address="", entity_type:EntityTypeControllable=None):
-    if entity_type == None:
-        entity_type = EntityTypeControllable.ROLE # default
-    return {\
-        "final_id": final_id, \
-        "name": name, \
-        "index": index, \
-        "original_id": original_id, \
-         # example: "addr1"
-        "address": address, \
-        "entity_type": entity_type
-    }
 
 
 class SolidityOptimizedTranslationContext(TranslationContext):
@@ -407,7 +389,7 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(self.generate_role_permission_mapping())
         if self.context.daoOwner:
             #lines.append(f"roles[msg.sender] = {self.context.dao.dao_name}Owner;")
-            lines.append(f"roles[msg.sender] = all_roles[{len(self.context.dao.roles)}]; // {self.context.dao.dao_name}Owner")
+            lines.append(f"roles[msg.sender] = all_roles[{len(self.context.dao.roles)-1}]; // {self.context.dao.dao_name}Owner")
         if self.context.dao.conditions != []:
             lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
         if self.context.dao.voting_conditions != {}:
@@ -466,7 +448,7 @@ class OptimizedSolidityTranslator(Translator):
         lines = []
         lines.append(f"    function initializeCommittees({committee_address_list}) {visibility} {'{'}")
         #lines.append(f"        require(roles[msg.sender] == {self.context.dao.dao_name}Owner && committee_initialization_blocked == false && {committee_requires}, \"Invalid committee initialization\");")
-        index_role_owner = len(self.context.dao.roles)
+        index_role_owner = len(self.context.dao.roles) -1
         lines.append(f"        require(roles[msg.sender] == all_roles[{index_role_owner}], \"Only the owner can initialize the Dao\");  // {self.context.dao.dao_name}Owner")
         if len(self.context.dao.committees) > 0:
             committee_requires = ' && '.join([f"_{x} != address(0)" for x in [committee.committee_description.replace(" ","_") for committee in self.context.dao.committees.values()] ])

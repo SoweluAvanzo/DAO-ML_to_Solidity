@@ -111,8 +111,9 @@ def write_SCs(contracts_to_write:list[TranslationData],superfolder_name):
         for translation_data in contracts_to_write:
             folder_name = translation_data.folder_name
             name = translation_data.contract_name
+            print(f"write_SCS: Writing SCs for {name}")
             translator = translation_data.contract_translator
-
+            print(f"write_SCS: using Translator: {translator}")
             folder_path = f'{superfolder_name}/{folder_name}'
             check_and_make_folder(folder_path)
 
@@ -172,12 +173,7 @@ def write_SCs(contracts_to_write:list[TranslationData],superfolder_name):
         dao_ids = ", ".join(td.contract_name for td in contracts_to_write) + ".sol"
         print("Success", f"Solidity code has been generated for {dao_ids}")
 
-def generate_simulations(n_daos=3, n_roles=20, n_permissions=35, sparsity_coefficient=0.4, permissions_per_role=3):
-    #steps for generating dao scs: 
-# initialize the DAOGenerator: _init__(self,n_daos:int, n_roles: int, n_permissions: int, sparsity_coefficient: float, permissions_per_role, Translator: Translator)
-# initialize DAOSimulator:  __init__(self, translator: SolidityTranslator, test_generator: TestGeneratorOptimized)
-# DAOGenerator obj.generate_daos
-# DAOSimulator obj.translate_daos
+def generate_simulations(n_daos=3, n_roles=20, n_permissions=35, sparsity_coefficient=0.4, permissions_per_role=10, optimized=True):
     dao_gen = DAOGenerator(n_daos, n_roles, n_permissions, sparsity_coefficient, permissions_per_role)
     dao_gen.generate_daos()
     daos = dao_gen.get_daos()
@@ -188,13 +184,14 @@ def generate_simulations(n_daos=3, n_roles=20, n_permissions=35, sparsity_coeffi
             #if diamond_enabled.get()==True:
             #    translator = SolidityTranslator(dao, translation_logic.get(), diamond=True)  
             #elif diamond_enabled.get()==False:
-            translator = SolidityTranslator(dao, "optimized", diamond=False)
+            translation_type = "optimized" if optimized else "simple"
+            translator = SolidityTranslator(dao,translation_type, diamond=False)
             #else:
             #    print("error with diamond configuration: ", diamond_enabled)
-            tests_translator = TestGeneratorOptimized(dao, True, translator)
+            tests_translator = TestGeneratorOptimized(dao, optimized, translator)
             translation_data = TranslationData(dao_name, dao_name, translator, tests_translator)
             contracts_to_write.append(translation_data)
-            print(contracts_to_write)
+            print(f"Generate Simulations: Generated DAO {dao_name}. passed to COntracts to write: ")
     return contracts_to_write
 
 def print_json(xml_file):

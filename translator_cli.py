@@ -53,7 +53,8 @@ def main():
     args = parser.parse_args()
 
     if args.function == "simulate":
-        write_SCs(generate_simulations(n_daos=args.n_daos), args.sf)
+        optimized= True if args.translation_type== "optimized" else False
+        write_SCs(generate_simulations(n_daos=args.n_daos, optimized=optimized), args.sf)
         return        
     
     if not args.file:

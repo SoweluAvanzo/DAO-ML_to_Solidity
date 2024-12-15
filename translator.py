@@ -7,6 +7,27 @@ from DAOclasses import DAO, Committee, GraphType, Permission
 from jinja2 import Template
 import os
 import utils as u
+from enum import Enum
+
+
+
+class EntityTypeControllable(Enum):
+    ROLE = "Role"
+    COMMITTEE = "Committee"
+
+
+def newEntityData(final_id=0, name="", index=-1, original_id="", address="", entity_type:EntityTypeControllable=None):
+    if entity_type == None:
+        entity_type = EntityTypeControllable.ROLE # default
+    return {\
+        "final_id": final_id, \
+        "name": name, \
+        "index": index, \
+        "original_id": original_id, \
+         # example: "addr1"
+        "address": address, \
+        "entity_type": entity_type
+    }
 
 class TranslatedSmartContract:
     def __init__(self, lines_of_code, name, folder = None, testable=False, extension = ".sol"):
