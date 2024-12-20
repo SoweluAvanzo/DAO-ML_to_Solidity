@@ -178,10 +178,11 @@ class OptimizedSolidityTranslator(Translator):
         lines.append("pragma solidity ^0.8.0;")
         lines.append("interface IPermissionManager {")
         lines.append(f"    function has_permission(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
-        lines.append(f"    function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
-        lines.append(f"    function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
+        if self.context.dao.committees != {}:
+            lines.append(f"    function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
+            lines.append(f"    function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool);")
         lines.append("}")
-        return TranslatedSmartContract(lines, "IPermissionManager", folder="interfaces")
+        return TranslatedSmartContract(lines, "IPermissionManager", folder="interfaces", testable=True)
     
     def generate_ICondition_interface(self):
         lines = []
@@ -190,7 +191,7 @@ class OptimizedSolidityTranslator(Translator):
         lines.append("interface ICondition {")
         lines.append("    function evaluate(address user) external view returns (bool);")
         lines.append("}")
-        return TranslatedSmartContract(lines, "ICondition", folder="interfaces")
+        return TranslatedSmartContract(lines, "ICondition", folder="interfaces", testable=True)
 
     def translate(self) -> list[TranslatedSmartContract]:
             print("TRANSLATE() -- invocato")
@@ -348,9 +349,7 @@ class OptimizedSolidityTranslator(Translator):
             index_entity += 1
             self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
 
-        print("\n\n\n\n\n AAAAAAAAAAAAAAAAAAA in OptimizedSolidityTranslator self.context.entity_to_data \n\n\n")
         print(self.context.entity_to_data)
-        print("FINEH")
 
 
         lines.append("    ];")
@@ -471,13 +470,13 @@ class OptimizedSolidityTranslator(Translator):
 
         return f"""
         
-        function canControl(uint32 controller, uint32 controlled) public pure returns(bool controls){{
+        function canControl({id_var_type} controller, {id_var_type} controlled) public pure returns(bool controls){{
              // ( "CAN the sender control the target user (through its role)?"
                 //(allowNullRole && (target_role_id == 0)) || // allow to add role if the user has not already one assigned to it
                 if((
-                    (controlled >> 5 ) // get the role's bitmask 
+                    (controlled >> {self.group_size.value[1]} ) // get the role's bitmask 
                     &  // (and then perform the bitwise-and with ...)
-                    (uint32(1) << ( controller & 31 )) // (...) get the sender role's index AND shift it accordingly 
+                    ({id_var_type}(1) << ( controller & {self.id_mask} )) // (...) get the sender role's index AND shift it accordingly 
                 ) != 0 ){{
                     controls = true;
                      return controls;}} else {{return controls;}}
@@ -667,6 +666,6 @@ class ConditionTranslator:
                 # Append the rendered line to the list of rendered lines
                 rendered_lines.append(rendered_line)
         # Return a TranslatedSmartContract object with the list of rendered lines
-        return TranslatedSmartContract(rendered_lines, u.camel_case(condition_name), folder=output_folder)
+        return TranslatedSmartContract(rendered_lines, u.camel_case(condition_name), folder=output_folder, testable=True)
         
     

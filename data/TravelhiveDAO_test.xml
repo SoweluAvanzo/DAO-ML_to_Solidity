@@ -6,23 +6,23 @@
             <associated_to _id="4da26046-d72e-4c1f-af45-614536994514">approveProjectBudget</associated_to>
             <aggregates>DAOCouncil</aggregates>
         </Committee>
-        <Committee committee_ID="DAOCouncil" committee_description="DAO Council" aggregation_level="1" federation_level="1" x="361.52488625835485" y="49.766250235389805" width="112" height="49">
+        <Committee committee_ID="DAOCouncil" committee_description="DAO Council" aggregation_level="1" federation_level="1" x="361.52488625835485" y="49.766250235389805" width="112" height="49" decision_making_method="simple_majority_voting">
             <associated_to _id="52dfccaa-6b9c-42dc-b33f-3fcbc2a1453e">createNewDAO</associated_to>
             <associated_to _id="126b5754-d5ca-4091-a4c3-2414152a745d">upgradePlatformFeature</associated_to>
             <associated_to _id="eb95c497-e350-42c0-9d9a-a0c7e314ca5c">modifySalaryDistributionPolicy</associated_to>
             <associated_to _id="bcce54e2-fd8c-461e-89d7-e8254a515bb4">activateRoleDelegation</associated_to>
             <is_controlled_by _id="b1e11c4f-ad72-4aab-9cd0-70d56a841364">DAOCouncil</is_controlled_by>
         </Committee>
-        <Committee committee_ID="TravelwareBoard" committee_description="Travelware Board" aggregation_level="0" federation_level="1" x="385.99185476320145" y="169.0146115464143" width="112" height="49">
+        <Committee committee_ID="TravelwareBoard" committee_description="Travelware Board" aggregation_level="0" federation_level="1" x="385.99185476320145" y="169.0146115464143" width="112" height="49" decision_making_method="quadratic_voting">
             <associated_to _id="1a9fcaa1-e9ff-4e10-ad37-49e245eb1d5f">assignTask</associated_to>
             <is_controlled_by>DAOCouncil</is_controlled_by>
             <aggregates>DAOCouncil</aggregates>
         </Committee>
-        <Committee committee_ID="DevelopmentBoard" committee_description="Development Board" aggregation_level="0" federation_level="1" x="788.3355264892433" y="229.54431320334757" width="119" height="49">
+        <Committee committee_ID="DevelopmentBoard" committee_description="Development Board" aggregation_level="0" federation_level="1" x="788.3355264892433" y="229.54431320334757" width="119" height="49" decision_making_method="lazy_consensus">
             <associated_to _id="4749ab4a-d590-4f07-8737-3c581c24b16a">upgradePlatformFeature</associated_to>
             <aggregates>DAOCouncil</aggregates>
         </Committee>
-        <Committee committee_ID="MarketingBoard" committee_description="Marketing Board" aggregation_level="0" federation_level="1" x="211.6526987450142" y="497.32334306448695" width="112" height="49">
+        <Committee committee_ID="MarketingBoard" committee_description="Marketing Board" aggregation_level="0" federation_level="1" x="211.6526987450142" y="497.32334306448695" width="112" height="49" decision_making_method="optimistic_governance">
             <associated_to _id="7e7decc0-7a46-480f-9ab2-84e5c62e27b6">proposeCampaignBudget</associated_to>
             <associated_to _id="d786b37e-14b0-45af-8d94-418e3ef301b2">launchCampaign</associated_to>
             <aggregates>DAOCouncil</aggregates>
