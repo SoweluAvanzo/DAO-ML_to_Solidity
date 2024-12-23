@@ -100,6 +100,9 @@ class DAOGenerator:
 
 
 class DAOSimulator:
+    '''
+    Deprecated ???
+    '''
     def __init__(self):
         self.dao_smart_contracts_by_DAO_ID  = {} 
         self.dao_tests_by_DAO_ID = {}

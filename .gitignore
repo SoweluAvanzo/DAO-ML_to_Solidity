@@ -165,6 +165,11 @@ cython_debug/
 #.idea/
 
 
+# JavaScript
+node_modules
+node_modules/
+node_modules/*
+
 # nostre
 *_properties.txt
 *.txt
