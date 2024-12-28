@@ -72,6 +72,11 @@ def main():
         # 3.1) SoliditySmartContractGenerators: "simple" o "optimized", trasformano un "DiagramManager" in una lista di Smart Contract
         # 3.1.N) abbiamo: "SolidityTranslatorSimple", "SolidityTranslatorOptimize", "SolidityTranslatorDiamond", "SolidityTranslator" (sopraclasse), "Translator" (sopra-sopraclasse)
         # 3.2) SoliditySCOutput: prende una lista di Smart Contract e un "TextFileOutput" e genera i file ".sol"
+        # 3.2.1) NOTA DEL 26/12/2024 : per poter definire in generale un template aggiungere una interfaccia / classe base
+        #        contenente dei metodi che restituiscono le stringhe dei "pezzi base" che compongono un comune Smart Contract:
+        #        per esempio, le variabili di sistema addizionale, i modifiers, variabili addizionali nel costruttore (con anche
+        #        un flag per indicare se servisse la virgola all'inizio?), il corpo addizionale del costruttore, altri metodi privati
+        #        ed altri metodi pubblici. ... le implementazioni di default restituiscono tutte la stringa vuota "".
         # 3.3) SolidityTestOutput: riceve dei dati gia' preparati, invoca "TemplateRenderer" e fornisce il suo risultato ad un "TextFileOutput"
         # 3.3) SolidityTestManager: algoritmo:
         # 3.3.1) prende una DAO (o meglio: un "DiagramManager" ed itera per ogni DAO)
