@@ -42,7 +42,6 @@ class TestGeneratorOptimized:
         addresses_list = self.generate_address_list()
         addressesByEntityValue = self.generate_addresses_by_entity_value()
         owner_id_bitmask = self.entity_to_data[ self.dao.owner_role.role_id]['final_id']
-        print(f"in generate_test_from_template (test generator)- owner_id_bitmask is {owner_id_bitmask}")
         owner_role_value = owner_id_bitmask # redundant, but kept for clarity
         permission_tests_expected_results = self.generate_permission_tests_expected_results()
 
