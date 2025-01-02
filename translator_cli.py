@@ -1,7 +1,6 @@
-import sys
 from FileHandler import *
 import argparse
-import json
+
 def main():
     parser = argparse.ArgumentParser(
         description="CLI Parser for DAO-ML to Solidity Translator"

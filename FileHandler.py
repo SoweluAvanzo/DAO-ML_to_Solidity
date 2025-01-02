@@ -43,7 +43,6 @@ def save_json(daos, folder_path=None):
         filename = f"{folder}/dao_{u.camel_case(dao.dao_name)}.json"
         with open(filename, "w") as f:
             json.dump(dao.toJSON(), f)
-    #print("Success", "DAO properties have been saved to JSON files")
 
 
 class TranslationData:
@@ -72,9 +71,7 @@ def translate_SCs(xml_file, translation_logic):
         diagram_manager = DiagramManager()
         visitor.parseDiagramTree(tree, diagram_manager)
 
-        print(f"\n\n________ DIAGRAM MANAGER CREATED _____\n\n")
-
-        # PARTE 3, ... ) GENERAZIONE ".sol", dei test, e dell'output .. INSOMMA, TUTTO IL RESTO
+        # PARTE 3, ... ) GENERAZIONE ".sol", dei test, e dell'output .. i.e., tutto il resto
 
         #visitor.visit(tree)
         #save_json(diagram_manager.daoByID)
@@ -92,7 +89,6 @@ def translate_SCs(xml_file, translation_logic):
             #elif diamond_enabled.get()==False:
             translator = SolidityTranslator(dao, translation_logic , diamond=False)
             #else:
-            #    print("error with diamond configuration: ", diamond_enabled)
             tests_translator = TestGeneratorOptimized(dao, translation_logic == 'optimized', translator)
             contracts_to_write.append(TranslationData(dao_name, dao_name, translator, tests_translator))
              
@@ -111,9 +107,7 @@ def write_SCs(contracts_to_write:list[TranslationData],superfolder_name):
         for translation_data in contracts_to_write:
             folder_name = translation_data.folder_name
             name = translation_data.contract_name
-            print(f"write_SCS: Writing SCs for {name}")
             translator = translation_data.contract_translator
-            print(f"write_SCS: using Translator: {translator}")
             folder_path = f'{superfolder_name}/{folder_name}'
             check_and_make_folder(folder_path)
 
@@ -187,21 +181,17 @@ def generate_simulations(n_daos=3, n_roles=20, n_permissions=35, sparsity_coeffi
             translation_type = "optimized" if optimized else "simple"
             translator = SolidityTranslator(dao,translation_type, diamond=False)
             #else:
-            #    print("error with diamond configuration: ", diamond_enabled)
             tests_translator = TestGeneratorOptimized(dao, optimized, translator)
             translation_data = TranslationData(dao_name, dao_name, translator, tests_translator)
             contracts_to_write.append(translation_data)
-            print(f"Generate Simulations: Generated DAO {dao_name}. passed to COntracts to write: ")
     return contracts_to_write
 
 def print_json(xml_file):
     folder = "./out/json"
     check_and_make_folder(folder)
-
     if not xml_file:
         print("Error", "Please enter the XML file name.")
         return None
-
     try:
         condition_validator = ConstraintValidator(xml_file, "data/XSD_DAO_ML.xsd")
         condition_validator.validate_dao_ml_diagram()

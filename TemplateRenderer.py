@@ -4,7 +4,6 @@ from FileHandler import get_base_folder, concat_folder_filename
 
 class TemplateRenderer:
     def __init__(self, folder_base:str=None, extension:str=None):
-        # TODO: super().__init__(???)
         self.folder_base = folder_base
         self.extension = extension
 

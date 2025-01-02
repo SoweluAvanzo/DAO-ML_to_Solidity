@@ -24,7 +24,6 @@ class ConstraintValidator():
                 error_output = []
                 print(f'The XML file is not valid. Found {len(errors)} error(s):')
                 for error in errors:
-                    #print(f"- {error} \n")
                     #append error name
                     error_output.append(f"- {error} \n")
                 return error_output
@@ -44,14 +43,12 @@ class ConstraintValidator():
         id_list1 = diagram.xpath(query1)
         id_list2 = diagram.xpath(query2)
         if self.split_and_add_to_list(id_list1).issubset(self.split_and_add_to_list(id_list2)):
-            #print(f"the set of {name1} \n {self.split_and_add_to_list(id_list1)} is a subset of {name2}:\n {self.split_and_add_to_list(id_list2)}\n")
             return True
         else:
             errors = []
             errors.append(f"invalid relation:{name1} \n {self.split_and_add_to_list(id_list1)} is not a subset of {name2}:\n {self.split_and_add_to_list(id_list2)}\n")
             raise Exception(errors)
 
-            
     #functions to check federation and aggregation relations in DO Diagrams
     def check_relation_graphs(self,diagram, rel_attribute, rel_name):
         for elem in diagram.xpath("//Role | //Committee"):
@@ -64,11 +61,8 @@ class ConstraintValidator():
                 continue  # Skip if it's neither Role nor Committee
             
             level = elem.get(rel_attribute)
-
             if level is None:
-                #print(f"{elem.tag} with id {elem_id} does not have a level for {rel_name}")
                 continue
-
             level = int(level)
 
             # Retrieve the relation elements based on the relation name
@@ -78,7 +72,6 @@ class ConstraintValidator():
                     # Find the related element based on the relation ID (either role_ID or committee_ID)
                     relator_elems = diagram.xpath(f'//*[@role_ID="{relator_id}"] | //*[@committee_ID="{relator_id}"]')
                     if not relator_elems:
-                        #print(f"No element found with id {relator_id}")
                         continue
 
                     relator_elem = relator_elems[0]
@@ -87,19 +80,12 @@ class ConstraintValidator():
                     relator_level = relator_elem.get(rel_attribute)
 
                     if relator_level is None:
-                        #print(f"Relator with id {relator_id} does not have a {rel_attribute}")
                         continue
 
                     relator_level = int(relator_level)
 
-                    # Logging information for debugging
-                    #print(f"Checking {elem.tag} with id {elem_id}")
-                    #print(f"{elem.tag} {rel_name} level: {level}")
-                    #print(f"Relator id: {relator_id}, Relator level: {relator_level}")
-
                     # Check the relation constraint (current element's level should be less than relator's level)
                     if level <= relator_level:
-                        #print(f"{rel_name} relation is valid\n")
                         return True
                     else:
                         print(f"{rel_name} relation violation\n")
@@ -165,7 +151,6 @@ class ConstraintValidator():
                                 if early_return:
                                     return False #ERROR
                                 all_violations.append({"elementID_with_external_target": element_id, "incriminated_targetID": target_id, "daoID_of_element": dao_id, "other_daoID": other_dao_id})
-        #print(f"all_violations: {all_violations}")
             if len(all_violations)>0:
                 violations_output = "\n".join(all_violations)
                 print(f"all_violations:\n{violations_output}")
@@ -203,5 +188,3 @@ class ConstraintValidator():
 
         print(f"All conditions are valid for the diagram {diagram_file}")
         return True
-
-
