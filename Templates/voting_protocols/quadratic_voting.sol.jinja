@@ -1,0 +1,75 @@
+// SPDX-License-Identifier: MIT
+pragma solidity {{solidity_version}};
+// @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
+
+{% for import in imports %}
+{{ import }}
+{% endfor %}
+
+contract {{contract_name}} is Governor, GovernorVotes, GovernorSettings{{inherited_contracts}} {
+     {{state_var_declarations}}
+
+    constructor(IVotes _token)
+        Governor("{{contract_name}}")
+        GovernorVotes(_token)
+        GovernorSettings(1 /* voting delay */, 45818 /* voting period */, 0) 
+    {
+         {{constructor_actions}}
+    }
+
+    function getVotes(address account, uint256 blockNumber) public view override returns ( uint256) {
+        uint256 basicVotingPower = super.getVotes(account, blockNumber);
+        return sqrt(basicVotingPower);
+    }
+    
+    function sqrt(uint256 y) internal pure returns ( uint256 z) {
+    if (y > 3) {
+        z = y;
+        uint256 x = y / 2 + 1;
+        while (x < z) {
+            z = x;
+            x = (y / x + x) / 2;
+        }
+    } else if (y != 0) {
+        z = 1;
+    }
+}
+
+    function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
+        public
+        override
+        returns (uint256)
+    {
+        {{proposal_requirement}}
+
+        return super.propose(targets, values, calldatas, description);
+    }
+    
+function castVote(uint256 proposalId, uint8 support)
+        public
+        override
+        returns (uint256)
+    {
+        {{vote_requirement}}
+        return super.castVote(proposalId, support);
+    }
+ // Override proposal threshold to integrate quadratic cost (if needed)
+    function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
+        return super.proposalThreshold();
+    }
+
+    // Override votingDelay to specify the delay between proposal and voting
+    function votingDelay() public view override(Governor, GovernorSettings) returns (uint256) {
+        return super.votingDelay();
+    }
+
+    // Override votingPeriod to specify the duration of the voting period
+    function votingPeriod() public view override(Governor, GovernorSettings) returns (uint256) {
+        return super.votingPeriod();
+    }
+
+    // Override quorum function to specify the quorum required for a vote to pass
+    function quorum(uint256 blockNumber) public view override(Governor, GovernorVotes) returns (uint256) {
+        return super.quorum(blockNumber);
+    }
+}

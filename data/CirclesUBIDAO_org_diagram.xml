@@ -1,0 +1,76 @@
+<DAO-ML_diagram xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="XSD_TDM_Decentralized_Organization.xsd" name="Group Currency DAO Diagram" uniqueID="GCDAOdiagram" >
+    <DAO DAO_ID="GCDAO" DAO_name="Group Currency DAO" mission_statement="Managing the governance of Group Currencies in the Circles UBI system." hierarchical_inheritance="1">
+        <Role role_ID="GroupMember" role_name="Group Member" role_assignment_method="depositing Circles tokens" agent_type="human">
+            <aggregates>GeneralAssembly</aggregates>
+            <associated_to>propose_service_provision</associated_to>
+            <associated_to>update_user_profile</associated_to>
+            <associated_to>funding_request_submission</associated_to>
+            <associated_to>ServiceProvision</associated_to>
+        </Role>
+        <Role role_ID="TreasuryManager" role_name="Treasury Manager" role_assignment_method="election" agent_type="human">
+            <aggregates>EconomicCouncil</aggregates>
+            <aggregates>ActiveMember</aggregates>
+            <associated_to>funding_request_assessment</associated_to>
+            <associated_to>set_limits_to_group_currency_minting</associated_to>
+            <associated_to>TreasuryManagement</associated_to>
+            <is_controlled_by>EconomicCouncil</is_controlled_by>
+        </Role>
+        <Role role_ID="ActiveMember" role_name="Active Member" role_assignment_method="Perishable Share ownership"  n_agent_min="1" n_agent_max="7" agent_type="human">
+            <aggregates>CommunityCouncil</aggregates>
+            <aggregates>EconomicCouncil</aggregates>
+            <aggregates>TechnicalCouncil</aggregates>
+            <aggregates>GroupMember</aggregates>
+        </Role>
+        <Committee committee_ID="GeneralAssembly" committee_description="General Assembly" voting_condition="group currency ownership" decision_making_method="simple_majority_voting">
+            <associated_to>activate_suspend_service_provision</associated_to>
+            <associated_to>evaluate_service_provision</associated_to>
+            <is_controlled_by>TechnicalCouncil</is_controlled_by>
+            <is_controlled_by>CommunityCouncil</is_controlled_by>
+        </Committee>
+        <Committee committee_ID="EconomicCouncil" committee_description="Economic Council" voting_condition="Perishable Share ownership threshold" decision_making_method="quadratic_voting">
+            <associated_to>add_remove_allowed_collateral_type</associated_to>
+            <associated_to>TreasuryManagement</associated_to>
+            <is_controlled_by>CommunityCouncil</is_controlled_by>
+        </Committee>
+        <Committee committee_ID="CommunityCouncil" committee_description="Community Council" proposal_condition="rotation" decision_making_method="optimistic">
+            <associated_to>Attestations</associated_to>
+            <associated_to>set_contribution_attestation</associated_to>
+            <associated_to>set_membership_requirements</associated_to>
+            <associated_to>GroupMembership</associated_to>
+            <associated_to>include_exclude_group_members</associated_to>
+            <is_controlled_by>TechnicalCouncil</is_controlled_by>
+
+
+        </Committee>
+        <Committee committee_ID="TechnicalCouncil" committee_description="Technical Council" proposal_condition="election" decision_making_method="simple_majority_voting">
+            <associated_to>upgrade_Group_Currency_smart_contracts</associated_to>
+            <associated_to>member_data_management</associated_to>
+            <associated_to>suspension_of_the_group_currency</associated_to>
+            <associated_to>DAOUpgrades</associated_to>
+            <associated_to>upgrade_DAO_smart_contracts</associated_to>
+            <associated_to>EmergencyResponse</associated_to>
+            <is_controlled_by>TechnicalCouncil</is_controlled_by>
+        </Committee>
+        <GovernanceArea gov_area_ID="ServiceProvision" gov_area_description="Service Provision" implementation="hybrid"/>
+        <GovernanceArea gov_area_ID="GroupMembership" gov_area_description="Group Membership" implementation="on-chain"/>
+        <GovernanceArea gov_area_ID="DAOUpgrades" gov_area_description="DAO Upgrades" implementation="on-chain"/>
+        <GovernanceArea gov_area_ID="Attestations" gov_area_description="Attestations" implementation="on-chain"/>
+        <GovernanceArea gov_area_ID="TreasuryManagement" gov_area_description="Treasury Management" implementation="on-chain"/>
+        <GovernanceArea gov_area_ID="EmergencyResponse" gov_area_description="Emergency Response" implementation="hybrid"/>
+        <Permission permission_ID="activate_suspend_service_provision" allowed_action="suspend service provision" permission_type="strategic" ref_gov_area = "ServiceProvision"/>
+        <Permission permission_ID="evaluate_service_provision" allowed_action="evaluate service provision" permission_type="strategic"/>
+        <Permission permission_ID="propose_service_provision" allowed_action="propose service provision" permission_type="operational"/>
+        <Permission permission_ID="update_user_profile" allowed_action="update user profile" permission_type="structural"/>
+        <Permission permission_ID="funding_request_submission" allowed_action="funding request submission" permission_type="operational"/>
+        <Permission permission_ID="set_limits_to_group_currency_minting" allowed_action="set limits to group currency minting" permission_type="strategic"/>
+        <Permission permission_ID="add_remove_allowed_collateral_type" allowed_action="add/remove allowed collateral type" permission_type="strategic"/>
+        <Permission permission_ID="funding_request_assessment" allowed_action="funding request assessment" permission_type="strategic"/>
+        <Permission permission_ID="set_membership_requirements" allowed_action="set membership requirements" permission_type="structural"/>
+        <Permission permission_ID="suspension_of_the_group_currency" allowed_action="suspension of the Group Currency" permission_type="structural"/>
+        <Permission permission_ID="upgrade_Group_Currency_smart_contracts" allowed_action="upgrade Group Currency smart contracts" permission_type="structural"/>
+        <Permission permission_ID="upgrade_DAO_smart_contracts" allowed_action="upgrade DAO smart contracts" permission_type="structural"/>
+        <Permission permission_ID="include_exclude_group_members" allowed_action="include/exclude members" permission_type="structural"/>
+        <Permission permission_ID="set_contribution_attestation" allowed_action="set contribution attestation" permission_type="structural"/>
+        <Permission permission_ID="member_data_management" allowed_action="member data management" permission_type="structural"/>
+    </DAO>
+</DAO-ML_diagram>

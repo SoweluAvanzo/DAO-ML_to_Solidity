@@ -1,0 +1,265 @@
+
+
+// We import Chai to use its asserting functions here.
+//parameters: DAO_name, addresses_list, addresses, owner_role_value, role_value, role_address, role_name
+const { expect } = require("chai");
+
+const {
+  loadFixture,
+} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+
+describe("{{DAO_name}} Permission Manager contract", function () {
+  let addresses = null;
+  let addresses_by_entity = new Map();
+  async function deployTokenFixture() {
+    const [owner, {{ addresses_list }}] = await ethers.getSigners();
+    const {{DAO_name}} = await ethers.deployContract("{{DAO_name}}");
+    await {{DAO_name}}.waitForDeployment();
+    
+    return { {{DAO_name}}, owner, {{addresses_list}}};
+  }
+
+  describe("Deployment", function () {
+    it("Should set the right owner", async function () {
+      const { {{DAO_name}}, owner } = await loadFixture(deployTokenFixture);
+      expect(await {{DAO_name}}.hasRole(owner.address)).to.equal({{owner_role_value}});
+    });
+    /* 
+
+  describe("Roles canControl", function () {
+    let { {{DAO_name}}, owner, {{addresses_list}}} = await loadFixture(deployTokenFixture);
+    addresses = [owner, {{addresses_list}}}];
+
+    let ownerAddr = {{DAO_name}}.connect(owner);
+    {% for role_address in addresses %}
+    let {{ role_address }}Connect = {{DAO_name}}.connect(address)
+    addresses_by_entity.set({{role_value}}, {{role_address}}); //TODO: {{role_value}} is the role {{role_name}}
+    {% endfor %}
+      // TODO: Add members, one per each role and committee (therefore, assigning a role/committee to each member)
+      addresses = [owner, {{addresses_list}}];//TODO: generate automatically in translation
+      addresses_by_entity.set({{owner_role_value}}, owner); //{{owner_role_value}} is the owner role
+      let tx = null;
+    beforeEach(async function () {
+
+    const map = new Map([
+  ['key1', 'value1'],
+  ['key2', 'value2']
+]);
+
+for (const [key, value] of map.entries()) {
+  console.log(`Key: ${key}, Value: ${value}`);
+}
+    {% for role_address in addresses %}
+    tx = await ownerAddr.assignRole({{role_address}}.address, {{role_value}});
+      await tx.wait();
+    let {{ role_address }}Connect = {{DAO_name}}.connect(address)
+    {% endfor %}
+    });
+   /* let addresses = null;
+    let addresses_by_entity = new Map();
+
+    before(async function () {
+      const { {{DAO_name}}, owner, {{addresses_list}}} = await loadFixture(deployTokenFixture); 
+      // TODO: Add members, one per each role and committee (therefore, assigning a role/committee to each member)
+      addresses = [owner, {{addresses_list}}];//TODO: generate automatically in translation
+      addresses_by_entity.set({{owner_role_value}}, owner); //TODO: {{owner_role_value}} is the owner role
+      {% for role_address in addresses %}
+    addresses_by_entity.set({{role_value}}, {{role_address}}); //TODO:{{role_value}}  is the role {{role_name}}
+    let {{ role_address }}Connect = {{DAO_name}}.connect(role_address)
+    {% endfor %}
+    \\SONO ARRIVATOQUI 
+      // Connetti il contratto all'indirizzo addr1
+      const ownerAddr = {{DAO_name}}.connect(owner);
+      // Addr1 chiama la funzione setValue
+      let tx = await ownerAddr.assignRole(ownerAddr.address, 259);
+      await tx.wait();
+        tx = await ownerAddr.assignRole(addr1.address, 1281);
+      await tx.wait();
+      tx = await ownerAddr.assignRole(addr2.address, 258);
+      await tx.wait();
+      
+      expect(ownerAddr.address).to.equal(owner); */
+
+      /* {{DAO_name}}.assignRole(1281, addr1);
+      {{DAO_name}}.assignRole(258, addr2); */
+     
+      //  });TODO iterare per ogni altra entity
+      
+    it("Owner should be able to set role and not vice versa", async function () {
+
+      await expect(addr1Connect.assignRole(addr3.address, 2309)).to.be.revertedWith(
+        "the given controller can't perform the given operation on the given controlled one"
+      );
+      
+      // const addr2Connect = {{DAO_name}}.connect(addr2);
+      await expect(addr1Connect.assignRole(addr2.address, 259)).to.be.revertedWith(
+        "the given controller can't perform the given operation on the given controlled one"
+      );
+      await expect(addr1Connect.assignRole(addr2.address, 1281)).to.be.revertedWith(
+        "the given controller can't perform the given operation on the given controlled one"
+      );
+
+      expect(await {{DAO_name}}.hasRole(addr3.address)).to.equal(2309);
+      expect(await {{DAO_name}}.hasRole(addr1.address)).to.equal(1281);
+      expect(await {{DAO_name}}.hasRole(addr2.address)).to.equal(258);
+    });
+      //uncomment
+      /* 
+        tx = await ownerAddr.assignRole(addr1.address, 1281);
+      await tx.wait();
+      tx = await ownerAddr.assignRole(addr2.address, 258);
+      await tx.wait(); */
+      
+      // Connetti il contratto all'indirizzo addr1
+     
+      /* 
+      let addr1Assign_1348_addr2 = false;
+      let addr1Assign_1348_addr2_expected = false; */
+      // try{
+      //   tx = await addr1Connect.assignRole(addr2.address, 1348);
+      //   await tx.wait();
+      //   addr1Assign_1348_addr2 = true;
+      // } catch(e){
+      //   addr1Assign_1348_addr2 = false;
+      // }
+      //uncomment
+      //await expect( addr1Connect.assignRole(addr2.address, 1348) ).to.be.revertedWith("the given controller can't perform the given operation on the given controlled one");
+      
+      // expect(addr1Assign_1348_addr2).to.equal( addr1Assign_1348_addr2_expected );
+
+      
+      // let addr2Assign_1348_addr1 = false;
+      // let addr2Assign_1348_addr1_expected = false;
+      // try{
+      //   tx = await addr2Connect.assignRole(addr1.address, 1348);
+      //   await tx.wait();
+      //   addr2Assign_1348_addr1 = true;
+      // } catch(e){
+      //   addr2Assign_1348_addr1 = false;
+      // }
+      // expect(addr2Assign_1348_addr1).to.equal( addr2Assign_1348_addr1_expected );
+      //await expect( addr2Connect.assignRole(addr1.address, 1348) ).to.be.revertedWith("the given controller can't perform the given operation on the given controlled one");
+
+
+      // expect(addr1Connect.hasRole(addr2.address)).to.equal(258);
+      
+    it ("Control relations should be properly configured", async function () {
+
+
+      expect(await {{DAO_name}}.canControl(259), (2309)).to.equal(true);
+      expect(await {{DAO_name}}.canControl(259), (258).to.equal(true));
+      expect(await {{DAO_name}}.canControl(259), (259)).to.equal(true);
+      expect(await {{DAO_name}}.canControl(259), (1281)).to.equal(true);
+      expect(await {{DAO_name}}.canControl(259), (1348)).to.equal(true);/* 
+      expect(await {{DAO_name}}.canControl(1281), (258)).to.equal(false);
+      expect(await {{DAO_name}}.canControl(1281), (259)).to.equal(false);
+      expect(await {{DAO_name}}.canControl(1281), (1281)).to.equal(true);
+      expect(await {{DAO_name}}.canControl(1281), (2309)).to.equal(false);
+      expect(await {{DAO_name}}.canControl(1281), (258)).to.equal(false);
+      expect(await {{DAO_name}}.canControl(1281), (259)).to.equal(false);
+      expect(await {{DAO_name}}.canControl(1281), (1281)).to.equal(true);
+      expect(await {{DAO_name}}.canControl(1281), (2309)).to.equal(false);
+      expect(await {{DAO_name}}.canControl(1281), (258)).to.equal(false);
+      expect(await {{DAO_name}}.canControl(1281), (259)).to.equal(false); */
+    });
+
+    // TODO produrre a ciclo i test per ogni ruolo intersecato con ogni altro ruolo (2 cicli for, innestati, per ogni coppia di ruoli)
+    
+    //it("Should allow a role to assign another role", async function () {});
+    /* 
+    it("Should allow a role to control another role", async function () {
+      // TODO: TUTTO cio' che segue sono suggerimenti per la traduzione in Python
+      // alcuni valori sabbero dei numeri (es, i valori delle entity) ma qui riporto le "scritte" che le rappresentano
+      // al fine di essere leggibili A NOI in un futuro
+      const { {{DAO_name}} } = await loadFixture(deployTokenFixture);
+      const entities = [ 3, 7169, ] // sarebbe ["owner", "TreasuryManager", ...]
+      let responses = new Array(entities.length * entities.length); // quadratic length
+      const expectedResp = [ true, false, false, true, "ETCETERA...."];  // qualcosa di computato in PYTHON durante la traduzione verificando la relazione "canControl" per ogni coppia di entity
+
+      let index = 0;
+      for(const eFrom of entities){
+        for(const eTo of entities){
+          responses[index++] = await {{DAO_name}}.canControl(addresses_by_entity.get(eFrom), addresses_by_entity.get(eTo));
+        } 
+      }
+      expect(responses).deep.equal(expectedResp);
+    });
+      
+    it("Should add a role", async function () {
+      const { {{DAO_name}}, addr1, addr2 } = await loadFixture(deployTokenFixture);
+      await {{DAO_name}}.addRole(addr1.address, 1);
+      expect(await {{DAO_name}}.hasRole(addr1.address)).to.equal(1);
+    });
+
+    it("Should remove a role", async function () {
+      const { {{DAO_name}}, owner, addr1 } = await loadFixture(deployTokenFixture);
+      await {{DAO_name}}.addRole(addr1.address, 1);
+      await {{DAO_name}}.removeRole(addr1.address, 1);
+      expect(await {{DAO_name}}.hasRole(addr1.address)).to.equal(0);
+    });
+
+    it("Should fail if sender doesn't have the right role", async function () {
+      const { {{DAO_name}}, owner, addr1 } = await loadFixture(deployTokenFixture);
+      await expect(
+        {{DAO_name}}.connect(addr1).addRole(owner.address, 1)
+      ).to.be.revertedWith("Not enough permissions");
+    });
+
+  */
+  }); //end of Roles canControl
+
+/* 
+  describe("Transactions", function () {
+    it("Should transfer tokens between accounts", async function () {
+      const { hardhatToken, owner, addr1, addr2 } = await loadFixture(
+        deployTokenFixture
+      );
+      // Transfer 50 tokens from owner to addr1
+      await expect(
+        hardhatToken.transfer(addr1.address, 50)
+      ).to.changeTokenBalances(hardhatToken, [owner, addr1], [-50, 50]);
+
+      // Transfer 50 tokens from addr1 to addr2
+      // We use .connect(signer) to send a transaction from another account
+      await expect(
+        hardhatToken.connect(addr1).transfer(addr2.address, 50)
+      ).to.changeTokenBalances(hardhatToken, [addr1, addr2], [-50, 50]);
+    });
+
+    it("Should emit Transfer events", async function () {
+      const { hardhatToken, owner, addr1, addr2 } = await loadFixture(
+        deployTokenFixture
+      );
+
+      // Transfer 50 tokens from owner to addr1
+      await expect(hardhatToken.transfer(addr1.address, 50))
+        .to.emit(hardhatToken, "Transfer")
+        .withArgs(owner.address, addr1.address, 50);
+
+      // Transfer 50 tokens from addr1 to addr2
+      // We use .connect(signer) to send a transaction from another account
+      await expect(hardhatToken.connect(addr1).transfer(addr2.address, 50))
+        .to.emit(hardhatToken, "Transfer")
+        .withArgs(addr1.address, addr2.address, 50);
+    });
+
+    it("Should fail if sender doesn't have enough tokens", async function () {
+      const { hardhatToken, owner, addr1 } = await loadFixture(
+        deployTokenFixture
+      );
+      const initialOwnerBalance = await hardhatToken.balanceOf(owner.address);
+
+      // Try to send 1 token from addr1 (0 tokens) to owner.
+      // `require` will evaluate false and revert the transaction.
+      await expect(
+        hardhatToken.connect(addr1).transfer(owner.address, 1)
+      ).to.be.revertedWith("Not enough tokens");
+
+      // Owner balance shouldn't have changed.
+      expect(await hardhatToken.balanceOf(owner.address)).to.equal(
+        initialOwnerBalance
+      );
+    });
+  }); 
+    */
+});

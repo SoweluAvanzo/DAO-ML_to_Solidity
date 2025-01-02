@@ -1,0 +1,152 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+// @title Economiccouncil in GCDAO, using the lazy_consensus protocol
+
+
+import "@openzeppelin/contracts/governance/Governor.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+
+import "./interfaces/IPermissionManager.sol";
+
+
+contract Economiccouncil is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, IPermissionManager {
+
+    // State variables
+    IPermissionManager public permissionManager;
+
+    struct Proposal {
+        bool challenged;
+        uint256 creationTime;
+        bool executed;
+        uint256 stakedTokens;
+    }
+
+    uint256 public challengePeriod; // Duration of the challenge period
+    uint256 public requiredStake; // Minimum stake required to propose
+    mapping(uint256 => Proposal) public proposals; // Tracking the status of each proposal
+    mapping(uint256 => mapping(address => uint256)) public stakers; // Tracking stakers for each proposal
+
+    constructor(IVotes _token, address _permissionManager, uint256 _challengePeriod, uint256 _requiredStake)
+        Governor("Economiccouncil")
+        GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
+        GovernorVotes(_token)
+        GovernorVotesQuorumFraction(0)
+    {
+        challengePeriod = _challengePeriod; // Set the challenge period duration
+        requiredStake = _requiredStake; // Set the minimum stake required
+        permissionManager = IPermissionManager(_permissionManager); 
+    }
+
+    // Propose a new governance action
+    function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
+        public
+        override
+        payable
+        returns (uint256)
+    {
+        //No specific requirements implemented for proposing in this case except
+        // Ensure the proposer stakes enough tokens
+        require(msg.value >= requiredStake, "Insufficient stake to propose");
+
+        uint256 proposalId = super.propose(targets, values, calldatas, description);
+
+        // Create a new proposal in pending state, can be challenged within the challenge period
+        proposals[proposalId] = Proposal({
+            challenged: false,
+            creationTime: block.timestamp,
+            executed: false,
+            stakedTokens: msg.value
+        });
+
+        stakers[proposalId][msg.sender] = msg.value; // Record the stake
+
+        return proposalId;
+    }
+
+    function challengeProposal(uint256 proposalId) public {
+        Proposal storage proposal = proposals[proposalId];
+        require(!proposal.challenged, "Proposal already challenged");
+        require(block.timestamp < proposal.creationTime + challengePeriod, "Challenge period expired");
+
+        proposal.challenged = true;
+    }
+
+    // Execute proposal optimistically after the challenge period if not challenged
+    function executeProposal(uint256 proposalId) public {
+        Proposal storage proposal = proposals[proposalId];
+        require(!proposal.executed, "Proposal already executed");
+        require(block.timestamp >= proposal.creationTime + challengePeriod, "Challenge period not over");
+
+        // If the proposal is challenged, prevent execution
+        if (proposal.challenged) {
+            revert("Proposal has been challenged and needs a vote");
+        }
+        super.execute(proposalId);
+        proposal.executed = true;
+        // Staked tokens distribution to the proposer
+        payable(msg.sender).transfer(proposal.stakedTokens);
+    }
+    // Reward voters after voting if the proposal is challenged
+    function rewardVoters(uint256 proposalId, uint256 totalVotes, uint256 voterStake) internal {
+        // Logic to reward voters with a portion of the staked tokens
+        Proposal storage proposal = proposals[proposalId];
+        uint256 reward = (voterStake * proposal.stakedTokens) / totalVotes;
+        payable(msg.sender).transfer(reward);
+    }
+    // handles proposals only if challenged
+    function castVote(uint256 proposalId, uint8 support)
+        public
+        override
+        returns (uint256)
+    {
+        Proposal storage proposal = proposals[proposalId];
+        require(proposal.challenged, "Cannot vote on an unchallenged proposal");
+        require(permissionManager.canVote(msg.sender, None), "PermissionManager: User cannot vote");
+        return super.castVote(proposalId, support);
+    }
+
+    // Other Governor function overrides
+    function votingDelay()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.votingDelay();
+    }
+
+    function votingPeriod()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.votingPeriod();
+    }
+
+    function quorum(uint256 blockNumber)
+        public
+        view
+        override(Governor, GovernorVotesQuorumFraction)
+        returns (uint256)
+    {
+        return super.quorum(blockNumber);
+    }
+
+    function proposalThreshold()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.proposalThreshold();
+    }
+}

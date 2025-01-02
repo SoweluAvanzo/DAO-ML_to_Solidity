@@ -1,0 +1,80 @@
+// We import Chai to use its asserting functions here.
+//parameters: DAO_name, addresses_list, addresses, owner_role_value, role_value, role_address, role_name
+const {{ "{" }} expect {{ "}" }} = require("chai");
+
+const {{ "{" }}
+  loadFixture,
+{{ "}" }}= require("@nomicfoundation/hardhat-toolbox/network-helpers");
+
+describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
+  let addresses = null;
+  let addressesByEntityValue = null;
+
+  async function deployTokenFixture(){{ "{" }}
+    const [owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}] = await ethers.getSigners();
+    const {{DAO_name}} = await ethers.deployContract("{{DAO_name}}");
+    await {{DAO_name}}.waitForDeployment();
+
+    return{{ "{" }}{{DAO_name}}, owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}{{ "}"}};
+ {{ "}"}}
+    
+    it("Should set the right owner and initialize committees", async function (){{ "{" }}
+      const{{ "{" }}{{DAO_name}}, owner, {% for committee_address in committee_addresses%}{{committee_address}} {% if not loop.last %} , {% endif %}{% endfor %} {{ "}"}} = await loadFixture(deployTokenFixture);
+      expect(await {{DAO_name}}.hasRole(owner.address)).to.equal({{owner_role_value}});
+      // Initialize committees
+      ownerConnect = Travelhive_DAO.connect(owner);
+      const tx = await ownerConnect.initializeCommittees({% for committee_address in committee_addresses%}{{committee_address}}.address {% if not loop.last %} , {% endif %}{% endfor %});
+      await tx.wait();
+      expect(tx).to.not.be.reverted;
+   {{ "}"}});
+
+    it("Control relations should reflect the organizational structure of the DAO.", async function (){{ "{" }}
+      let{{ "{" }}{{DAO_name}}, owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}{{ "}"}} = await loadFixture(deployTokenFixture);
+
+    ownerConnect = {{DAO_name}}.connect(owner);
+    {% for role_address in addresses_list %}
+    {{role_address}}Connect = {{DAO_name}}.connect({{role_address}});
+    {% endfor %}
+
+      // Map to link roles with addresses
+      addressesByEntityValue = new Map();
+      {% for entity_value, address in addressesByEntityValue.items() %}
+      addressesByEntityValue.set({{entity_value}}, {{address}});
+      {% endfor %}
+
+      // Iterate over the mapping and assign roles
+      for (const [roleValue, addr] of addressesByEntityValue.entries()){{ "{" }}
+        try{{ "{" }}
+          console.log(`Assigning role ${roleValue} to address ${addr.address}`);
+          const tx = await ownerConnect.assignRole(addr.address, roleValue);
+          await tx.wait();
+          console.log(`Role ${roleValue} successfully assigned to address ${addr.address}`);
+       {{ "}"}} catch (error){{ "{" }}
+          console.error(`Failed to assign role ${roleValue} to address ${addr.address}:`, error);
+          throw error; // Stop execution if there's an error
+       {{ "}"}}
+     {{ "}"}}
+
+      // Validate control relations
+      let result = null;
+      {% for control_relation in control_relation_results %}
+      result = await {{DAO_name}}.canControl({{control_relation[0]}}, {{control_relation[1]}});
+      console.log(`Result of canControl({{control_relation[0]}}, {{control_relation[1]}}):`, result);
+      expect(result).to.equal({% if control_relation[2] %} true {% else %} false {% endif %});
+      {% endfor %}
+   {{ "}"}});
+
+it("Permissions should be properly configured.", async function (){{"{"}}
+      {% for permission in permissions %}
+      {% if permission[2] %}
+      result = await {{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}();
+      //console.log(`Execution result of permission ({{permission[1]}} for {{permission[0]}}):`, result);
+      await expect(result).not.to.be.reverted;
+      {%else%}
+      await expect({{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}()).to.be.revertedWith(
+        "User does not have this permission"
+      );
+      {% endif %}
+      {% endfor %}
+{{"}"}});
+{{"}"}});
