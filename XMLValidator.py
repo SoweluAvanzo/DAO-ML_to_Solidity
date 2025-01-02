@@ -98,7 +98,7 @@ class ConstraintValidator():
                     #print(f"Relator id: {relator_id}, Relator level: {relator_level}")
 
                     # Check the relation constraint (current element's level should be less than relator's level)
-                    if level < relator_level:
+                    if level <= relator_level:
                         #print(f"{rel_name} relation is valid\n")
                         return True
                     else:
