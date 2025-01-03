@@ -163,11 +163,15 @@ class ConstraintValidator():
     def check_cyclic_dependencies(self, diagram, rel_name):
         daos_and_loops = []
         for dao in diagram.xpath('//DAO'):
+            print(f"CHECKING {rel_name} LOOPS IN DAO: {dao}")
             dao_id = dao.get("DAO_ID")
             graph = nx.DiGraph()
             for elem in dao.xpath("./Role | ./Committee"):
                 # Retrieve the relation elements based on the relation name
-                id = elem.get("_id")
+                element_type = elem.tag  # This will be either 'Role' or 'Committee'
+                is_role = element_type == "Role"
+                id = elem.get("role_ID") if is_role else elem.get("committee_ID")
+                print(f"CHECKING {rel_name} LOOPS IN ELEMENT: {id}")
                 relation = elem.xpath(f"{rel_name}/text()")
                 if relation:
                     target = relation[0] # ID of the "neighbour"
