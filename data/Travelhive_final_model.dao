@@ -1,0 +1,172 @@
+<DAO-ML_diagram name="update  DDMO Board Member number" uniqueID="dao_a10f2b1a_ee5b_4b99_b531_a704edb909ca" xsi:noNamespaceSchemaLocation="XSD_DAO_ML.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" x="0" y="0" width="0" height="0">
+	<DAO DAO_ID="dao_4db8f1bb_b139_462e_b859_245ad17d2514" DAO_name="Travelhive DAO" mission_statement="Manage the Travelhive ecosystem governance" hierarchical_inheritance="false" x="403.51017869275967" y="405.68447847623025" width="1232.5552658266886" height="777.1958192318468">
+    <Role role_ID="dao_04abd46e_6c68_46d3_820d_573a732a60af" role_name="Advisor" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="495.556296307872" y="1001.9362619875442" width="50" height="80">
+		<federates_into _id="dao_33b79460_d151_4ccb_bdf9_99fb13230f8a">dao_88e4a6f9_b82e_4227_b8bb_3c1065471ace</federates_into>
+		<aggregates _id="dao_4650cd96_0051_48b3_9213_8ff68daef50a">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
+		<associated_to _id="dao_32a4e6c5_3d46_475f_8845_87a596eca24a">dao_ce969c91_5e5e_4922_9302_6084a778fb95</associated_to>
+	</Role>
+		<Role role_ID="dao_3c34acbc_cf26_4737_9c11_191a9484d280" role_name="Founder" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="192.35590138907529" y="361.7863776984612" width="50" height="80">
+			<federates_into _id="dao_a61651aa_50a0_4950_b58e_6e70d7f5f809">dao_88e4a6f9_b82e_4227_b8bb_3c1065471ace</federates_into>
+			<aggregates _id="dao_238729db_7c8d_4812_8def_c0820593a680">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
+			<associated_to _id="dao_0ee5c19f_86a5_42b8_bd77_24e616a0b4bd">dao_ce969c91_5e5e_4922_9302_6084a778fb95</associated_to>
+		</Role>
+		<Role role_ID="dao_244d51cb_7531_4189_8448_1022837ca4a8" role_name="Master Node" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="505.42375671027804" y="414.2215512843767" width="50" height="80">
+			<federates_into _id="dao_84dceacc_7635_4cb7_978d_4e00869d1f3f">dao_307e62f2_5ae1_4a98_9f9b_401c7d00c3cf</federates_into>
+			<aggregates _id="dao_27cf21a1_3244_4cc0_b6c6_ac0c87a5c3a3">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
+		</Role>
+		<Role role_ID="dao_1664ffdd_b5b5_4642_9104_90f0314e7a6c" role_name="Marketing Delegate" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="157.51059100695016" y="248.0215757164388" width="50" height="80">
+			<federates_into _id="dao_778143a6_28ca_4964_beae_e04a5edd8c76">dao_7c5cecfb_f7c9_4ff5_88bd_c2c1b6ba41a4</federates_into>
+			<associated_to _id="dao_1cadc62e_7bfe_4903_9a92_3f34b5c75ffd">dao_757f92fb_baef_4b79_8284_d6843949803b</associated_to>
+			<aggregates _id="dao_63c4cc53_1a33_4eaa_96a7_bc275b2473f5">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
+		</Role>
+		<Role role_ID="dao_1798d75a_dc3d_4756_8410_892ce660c196" role_name="Investor" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="940.386191673532" y="665.4947103267394" width="50" height="80">
+			<federates_into _id="dao_ba4edbbf_0f19_45c5_8504_4107dfd6c43e">dao_4357d4cc_7e75_4ab3_b51f_127c194cf619</federates_into>
+			<aggregates _id="dao_c78e79cd_4e84_47b9_82ac_46127182cca0">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
+		</Role>
+		<Role role_ID="dao_e86e5990_0ee8_4cd1_8262_3dc400148997" role_name="Developer" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="815.2456921507838" y="558.7180475548677" width="50" height="80">
+			<aggregates _id="dao_9762bf93_ce55_4986_8f0d_de61624203e8">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
+			<federates_into _id="dao_7fca3644_3eac_406f_8d0c_7db75b7e865b">dao_307e62f2_5ae1_4a98_9f9b_401c7d00c3cf</federates_into>
+		</Role>
+		<Committee committee_ID="dao_381786b9_effe_4564_9200_cf2e74ef3c1f" committee_description="DAO Council" aggregation_level="0" federation_level="0" x="875.2185869584947" y="372.3718029010038" width="112" height="49">
+			<associated_to _id="dao_e3744e93_7d32_4811_a653_9172b5b72f02">dao_a22d3a72_7bb1_4141_80ce_4e866bc2d398</associated_to>
+			<associated_to _id="dao_d3744ba2_fdf4_4308_9d06_15977f03c862">dao_8a3ad695_2546_492f_b1f2_59f7dc743c92</associated_to>
+			<associated_to _id="dao_d3b2dbec_40d4_4e8c_abc8_6b69f65e1988">dao_35ed4536_90dc_4672_b2e1_8daae63a60b4</associated_to>
+			<is_controlled_by _id="dao_95cbc97b_cf96_4f2e_80ec_7f77212e4d13">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</is_controlled_by>
+			<associated_to _id="dao_b4396f6e_38ed_4241_b0ff_bd70af824edd">dao_a759f135_b8e9_403d_aac7_fe44efd0ffb4</associated_to>
+			<associated_to _id="dao_fa2c570d_702e_4de9_9109_308ea285a1be">dao_3c3c132e_7e4b_473a_aa4a_30dbc0a32b47</associated_to>
+		</Committee>
+		<Committee committee_ID="dao_7c5cecfb_f7c9_4ff5_88bd_c2c1b6ba41a4" committee_description="Marketing Board" aggregation_level="0" federation_level="0" x="748.5821811320366" y="97.83346679343697" width="112" height="49">
+			<aggregates _id="dao_f81a6293_ba86_436c_9f96_501410200f29">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</aggregates>
+			<associated_to _id="dao_b04c6b0f_d3b0_4aba_ae68_950680f739b9">dao_67d41a9c_d433_4280_b0ad_c6514ce208a2</associated_to>
+		</Committee>
+		<Committee committee_ID="dao_4357d4cc_7e75_4ab3_b51f_127c194cf619" committee_description="Financial Board" aggregation_level="0" federation_level="0" x="881.1743859648848" y="525.8128451672314" width="112" height="49">
+			<aggregates _id="dao_5b1f7213_9b76_4ca5_926a_6cf6e2234d19">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</aggregates>
+			<associated_to _id="dao_13413095_f921_4ab8_8cb3_eafce4d9b8fe">dao_f60546f6_b378_4e2a_8560_b3605cbba023</associated_to>
+			<associated_to _id="dao_c3c41954_5c4e_4041_aa9b_4f0b427bec9c">dao_739ec078_95b5_4d83_9b71_1566fe2b9dc8</associated_to>
+			<associated_to _id="dao_eb02bf1d_2df8_42da_8865_5afadd3a3d70">dao_d3af4bab_9466_4dec_a83f_ffc0abb228f9</associated_to>
+		</Committee>
+		<Role role_ID="dao_0bdc80b2_ddd7_42a6_aace_f85f9143137a" role_name="Ambassador" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="420.8081391655849" y="94.83993905087975" width="50" height="80">
+			<federates_into _id="dao_519391d4_3ba2_4c3e_a8b3_5b288063ecba">dao_7c5cecfb_f7c9_4ff5_88bd_c2c1b6ba41a4</federates_into>
+			<associated_to _id="dao_3d7c4297_eb0a_4d86_92c9_ec40202774cd">dao_ec980d2e_1b2b_4f7c_93f3_7ebcaaeccdc5</associated_to>
+			<associated_to _id="dao_afe5f3f4_3300_4cab_bb02_92f777cb27ea">dao_ac2c85dd_bb46_400f_86e7_9675de89856d</associated_to>
+			<aggregates _id="dao_1699b91e_b616_48bd_8a26_cc09fbb5ebed">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
+		</Role>
+		<Committee committee_ID="dao_88e4a6f9_b82e_4227_b8bb_3c1065471ace" committee_description="Travelware Board" aggregation_level="0" federation_level="0" x="393.4130467328496" y="368.08973270360997" width="112" height="49">
+			<aggregates _id="dao_ef1657dc_4c5a_4187_8cbc_eb4d0f624a71">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</aggregates>
+			<is_controlled_by _id="dao_bae263c0_f04c_4570_a3b9_9ca8a9430773">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</is_controlled_by>
+			<associated_to _id="dao_c6d8a55f_626e_49d7_8af3_67c657dd28ea">dao_0ab24a59_0b5b_485d_9976_00e0cf5a0af4</associated_to>
+		</Committee>
+		<Role role_ID="dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903" role_name="DAO Member" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="659.2831876886542" y="619.8734829344075" width="50" height="80">
+			<federates_into _id="dao_ce089360_5f2a_49fa_8ffb_215aeeeb07c2">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</federates_into>
+			<associated_to _id="dao_6621de04_96d9_4fc4_9255_c5d9818534d7">dao_b417085e_a6e8_4aea_9131_71a0c8132a0b</associated_to>
+			<associated_to _id="dao_aa8f9d58_05fe_4c9e_bc61_b9b2fac23a46">dao_6f56683c_94a4_4e4f_854b_d4a83e7b11dc</associated_to>
+			<is_controlled_by _id="dao_9721f7a4_baf8_45d9_87be_019dbe6c84ba">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</is_controlled_by>
+			<associated_to _id="dao_1302f02f_75b6_4f2e_9821_4d18b193bf40">dao_d1208988_d2b2_473c_a163_b4d088f30d02</associated_to>
+			<associated_to _id="dao_64b28548_3088_4288_9782_1295905c4f27">dao_5cb39adc_9f8d_4c1e_974e_9f4902c4e136</associated_to>
+		</Role>
+		<Committee committee_ID="dao_307e62f2_5ae1_4a98_9f9b_401c7d00c3cf" committee_description="Development Board" aggregation_level="0" federation_level="0" x="652.7111736915836" y="495.14578416134276" width="119" height="49">
+			<aggregates _id="dao_e98ab7e0_7dcb_450d_ba58_034654170811">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</aggregates>
+			<associated_to _id="dao_901f0e65_4dbd_4c02_be21_58286300bcf6">dao_8a3ad695_2546_492f_b1f2_59f7dc743c92</associated_to>
+		</Committee>
+		<Permission permission_ID="dao_a22d3a72_7bb1_4141_80ce_4e866bc2d398" allowed_action="modify salary distribution policy" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="990.0294736433768" y="172.69549893401546" width="231" height="49" />
+		<Permission permission_ID="dao_8a3ad695_2546_492f_b1f2_59f7dc743c92" allowed_action="upgrade platform feature" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="612.7666089446748" y="404.396079148411" width="168" height="49" />
+		<Permission permission_ID="dao_739ec078_95b5_4d83_9b71_1566fe2b9dc8" allowed_action="transfer tokens" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="1106.175209957854" y="532.2351045143332" width="105" height="49" />
+		<Permission permission_ID="dao_f60546f6_b378_4e2a_8560_b3605cbba023" allowed_action="approve project budget" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="1059.145172156721" y="602.1754756785521" width="154" height="49" />
+		<Permission permission_ID="dao_d3af4bab_9466_4dec_a83f_ffc0abb228f9" allowed_action="cut project funding" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="1077.1006976363444" y="468.63128529261047" width="133" height="49" />
+		<Permission permission_ID="dao_35ed4536_90dc_4672_b2e1_8daae63a60b4" allowed_action="Modify salary distribution policy" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="602.8366376213542" y="250.0553764774184" width="231" height="49" />
+		<Permission permission_ID="dao_b417085e_a6e8_4aea_9131_71a0c8132a0b" allowed_action="supply service" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="761.0807027148793" y="710.0446083327585" width="98" height="49" />
+		<Permission permission_ID="dao_6f56683c_94a4_4e4f_854b_d4a83e7b11dc" allowed_action="execute task" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="519.4630625808347" y="706.3140582759568" width="91" height="49" />
+		<Permission permission_ID="dao_0ab24a59_0b5b_485d_9976_00e0cf5a0af4" allowed_action="assign task" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="375.5199425537032" y="286.50008724834646" width="91" height="49" />
+		<Permission permission_ID="dao_757f92fb_baef_4b79_8284_d6843949803b" allowed_action="post event" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="12.866694131992801" y="225.46679918927921" width="91" height="49" />
+		<Permission permission_ID="dao_ac2c85dd_bb46_400f_86e7_9675de89856d" allowed_action="verify institutional profile" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="141.10011962369677" y="132.0757319761454" width="196" height="49" />
+		<Permission permission_ID="dao_ec980d2e_1b2b_4f7c_93f3_7ebcaaeccdc5" allowed_action="appoint destination committee" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="155.4217036918636" y="48.81662017426953" width="203" height="49" />
+		<Permission permission_ID="dao_a759f135_b8e9_403d_aac7_fe44efd0ffb4" allowed_action="create new DDMO" permission_type="structural" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="895.0940947172664" y="244.60203730486796" width="105" height="49" />
+		<Permission permission_ID="dao_67d41a9c_d433_4280_b0ad_c6514ce208a2" allowed_action="propose campaign budget" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="966.9575435741431" y="97.74638596262969" width="161" height="49" />
+		<Permission permission_ID="dao_ce969c91_5e5e_4922_9302_6084a778fb95" allowed_action="Veto Proposal" permission_type="strategic" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="40.687710798292635" y="419.28101732639414" width="91" height="49" />
+		<Permission permission_ID="dao_d1208988_d2b2_473c_a163_b4d088f30d02" allowed_action="apply for governance role" permission_type="structural" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="305.40207300571507" y="714.3525311631083" width="175" height="49" />
+		<Permission permission_ID="dao_3c3c132e_7e4b_473a_aa4a_30dbc0a32b47" allowed_action="activate role delegation" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="1057.9032856641015" y="392.8102407021573" width="168" height="49" />
+		<Permission permission_ID="dao_5cb39adc_9f8d_4c1e_974e_9f4902c4e136" allowed_action="request task delegation" permission_type="operational" ref_gov_area="dao_4db8f1bb_b139_462e_b859_245ad17d2514" x="314.67546324004144" y="571.5113072087305" width="161" height="49" />
+	</DAO>
+	
+	<DAO DAO_ID="dao_4b37ca2c_c550_4b64_9635_9cc667cdaddd" DAO_name="Decentralized Destination Management Organization" mission_statement="Manage the governance of an individual destination on the platform" hierarchical_inheritance="false" x="2179.205766758867" y="439.01068741509306" width="1027.9635613268595" height="832.641520486035">
+		<Role role_ID="dao_18268352_2d38_4bb4_9578_ad62682d1ff5" role_name="DDMO Member" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="318.19755339943026" y="201.71227546315833" width="50" height="80">
+			<associated_to _id="dao_adf695f7_86c1_41bb_beb2_f4d4dc2e6040">dao_8e7d55f4_d70f_4aae_8a3e_e8f826e210ca</associated_to>
+			<associated_to _id="dao_2ebc20c3_8f0b_4634_aa7b_54267f74ff72">dao_e0e51cbd_79e4_446c_9cdc_7aada5b2441c</associated_to>
+			<associated_to _id="dao_c91ba9e7_6ded_42e8_9f8e_b26401e90aed">dao_e04ce977_8bf8_4b53_9a2b_73fcc3f3d81e</associated_to>
+			<associated_to _id="dao_642bb6e5_86aa_4b94_ba97_43a1f1facad0">dao_d0469fed_8292_4527_b7f1_29a79ba5d250</associated_to>
+			<associated_to _id="dao_386e7eea_5a61_4dbc_8dfa_64a4b0436b76">dao_0308008d_63c1_4201_a0cf_a67e09e0eabb</associated_to>
+			<associated_to _id="dao_433e7f8c_9ce4_4f84_b622_82ec990ab88f">dao_d6896e2c_91f2_483a_8611_7eaf51081b33</associated_to>
+		</Role>
+		<Role role_ID="dao_e95e4bcd_b93c_44e5_82b3_6ec1eeb23f7c" role_name="Magister" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="620.5155663306069" y="202.61555671781173" width="50" height="80">
+			<aggregates _id="dao_7df9a798_6a23_475c_85ce_55db7a6c6151">dao_014bdce7_1628_4eaf_9e1d_2901cfe6b322</aggregates>
+			<associated_to _id="dao_baa09325_4962_441c_86c9_c91a73d5b69c">dao_a54c7fa1_74a6_4005_93dd_0b59f9c6f0d6</associated_to>
+			<associated_to _id="dao_099dea6c_e3ed_4864_be3d_629d2cfddb43">dao_cc2ff6c5_3355_411f_bb6b_863b04f1592a</associated_to>
+			<associated_to _id="dao_50687bd8_62a3_483b_8e79_196cd30e92b6">dao_990ea5a9_c42d_420c_91db_b7e33ab921cc</associated_to>
+			<associated_to _id="dao_b60daced_44e7_427f_81c6_43c41a0f0159">dao_4603199e_f01e_4510_86b0_6048c8ca89c4</associated_to>
+		</Role>
+		<Role role_ID="dao_598f84fc_922c_426f_be6e_4ef72c4ec425" role_name="Host" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="422.06447439326143" y="58.44316679245773" width="50" height="80">
+			<aggregates _id="dao_682fb33b_3a51_48bc_9fb4_105c945207a4">dao_18268352_2d38_4bb4_9578_ad62682d1ff5</aggregates>
+		</Role>
+		<Role role_ID="dao_8d7583aa_61c0_441d_ba7f_c878483a03cd" role_name="Analyst" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="58.246691964229775" y="386.5636138593986" width="50" height="80">
+			<associated_to _id="dao_a1fe392c_81ea_4fd7_a265_895c4157c85c">dao_d6f3c403_a499_488e_a967_590b26b87fb4</associated_to>
+			<aggregates _id="dao_6a4e170f_907f_40f7_8493_b5639d6c09c8">dao_18268352_2d38_4bb4_9578_ad62682d1ff5</aggregates>
+		</Role>
+		<Role role_ID="dao_e6a74f35_0b01_4de4_9ec3_a68c9779655f" role_name="Worker" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="228.33916366926292" y="18.974795285438347" width="50" height="80">
+			<aggregates _id="dao_be69b21f_1d40_4f7b_9f97_d406007e0e9d">dao_18268352_2d38_4bb4_9578_ad62682d1ff5</aggregates>
+		</Role>
+		<Role role_ID="dao_88d8d906_1435_4947_a349_d4dbceea9b4b" role_name="Student" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="216.93912627292147" y="322.44902452789586" width="50" height="80">
+			<aggregates _id="dao_5d3a5ffc_aba1_4e53_8d4d_7c965053922a">dao_18268352_2d38_4bb4_9578_ad62682d1ff5</aggregates>
+			<associated_to _id="dao_716429db_1258_40c9_a8a5_daf30926ae26">dao_d6f3c403_a499_488e_a967_590b26b87fb4</associated_to>
+		</Role>
+		<Role role_ID="dao_014bdce7_1628_4eaf_9e1d_2901cfe6b322" role_name="DDMO Board Member" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="539.7698392408213" y="234.97400702271617" width="50" height="80">
+			<federates_into _id="dao_9ccdebf0_51f0_4a22_8ae1_08c657b4fedb">dao_d0e6f05b_6369_4714_a878_cee63dfbf644</federates_into>
+			<is_controlled_by _id="dao_71d62179_a729_42ff_acfa_037db8c628e3">dao_d0e6f05b_6369_4714_a878_cee63dfbf644</is_controlled_by>
+			<aggregates _id="dao_af5d8617_8e04_4953_a297_750893fc3388">dao_18268352_2d38_4bb4_9578_ad62682d1ff5</aggregates>
+		</Role>
+		<Role role_ID="dao_76023761_36c0_4cb1_b739_beaaf2fd0e14" role_name="Freelancer" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="329.8768102275154" y="43.389978612361425" width="50" height="80">
+			<aggregates _id="dao_f18a3999_3b94_4d8b_927a_ffb1e0a34a39">dao_18268352_2d38_4bb4_9578_ad62682d1ff5</aggregates>
+		</Role>
+		<Role role_ID="dao_ee4b56c2_4687_4e73_9ee0_21049b48882d" role_name="Institutional Representative" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="398.3837635128634" y="280.9831395048971" width="50" height="80">
+			<associated_to _id="dao_0531398f_59f1_4262_a814_304fbc416fe0">dao_d6f3c403_a499_488e_a967_590b26b87fb4</associated_to>
+			<aggregates _id="dao_31647cf8_2c83_4bdf_906b_50d04e1827cf">dao_014bdce7_1628_4eaf_9e1d_2901cfe6b322</aggregates>
+		</Role>
+		<Committee committee_ID="dao_d0e6f05b_6369_4714_a878_cee63dfbf644" committee_description="DDMO Council" aggregation_level="0" federation_level="0" x="257.3080660477145" y="558.0619505144439" width="112" height="49">
+			<associated_to _id="dao_cf019fa4_0303_4e13_8936_ea23a9588b0f">dao_29058c71_7448_45fd_871c_0aabef5313a7</associated_to>
+			<associated_to _id="dao_c0fd0f64_7f4c_4cd9_9c62_ecdb9c25adba">dao_65b4cd76_7ba3_4ca8_815b_eeeb86dd88b9</associated_to>
+			<associated_to _id="dao_2312a2cf_aac7_4741_b4bc_e65ce154e237">dao_1672bb37_adfa_4ac5_ad7d_197e7ac55ce2</associated_to>
+			<associated_to _id="dao_14cb7805_8944_47b3_91f0_54358c0d7b92">dao_dfc67591_2c76_4df5_8fd3_55cef73c456f</associated_to>
+			<associated_to _id="dao_b70ff7da_3922_467a_b641_458dee3faa61">dao_0552e0bf_1ff3_4dde_8a78_6e8195dd9b9c</associated_to>
+			<associated_to _id="dao_2e1eda6a_d009_461a_b8ce_ab4a4c0687c4">dao_e2fecb93_8e55_49b7_8f4d_7dc47b50df01</associated_to>
+		</Committee>
+		<GovernanceArea gov_area_ID="dao_bcdba946_c06d_4552_8e71_9c2514506721" gov_area_description="Task Execution" implementation="on-chain" x="20.061383014187808" y="34.28008327241318" width="193.2" height="276" />
+		<GovernanceArea gov_area_ID="dao_11c5e573_7072_4bbf_81c4_bd79b77ccba8" gov_area_description="Dispute Resolution" implementation="on-chain" x="741.699184792929" y="51.12988644530249" width="235.2" height="384" />
+		<Role role_ID="dao_9c61855a_e102_4af9_826e_cd1e94a6c119" role_name="Mentor" n_agent_min="0" n_agent_max="0" agent_type="human" aggregation_level="0" federation_level="0" x="828.2232891536871" y="537.7997502430464" width="50" height="80">
+			<aggregates _id="dao_4f574d3c_396e_4fbd_b983_659024afa0f9">dao_014bdce7_1628_4eaf_9e1d_2901cfe6b322</aggregates>
+			<associated_to _id="dao_56df1a3a_d78d_41d6_b107_8226166922aa">dao_0edf210d_9220_4d09_b990_62025727e7d0</associated_to>
+			<associated_to _id="dao_546e17c5_9942_46fb_bb8e_d5db798a0e43">dao_c470f504_977b_4dcf_873e_e3cc62cbf035</associated_to>
+		</Role>
+		<GovernanceArea gov_area_ID="dao_db762579_2d4c_4f43_a5f6_32a2e683c4ec" gov_area_description="DDMO Restructuring" implementation="on-chain" x="37.343464189043644" y="548.9801915434043" width="172.8" height="222" />
+		<GovernanceArea gov_area_ID="dao_6e75c711_d47e_493d_a09e_d55cc78fccd1" gov_area_description="Destination Data Management" implementation="hybrid" x="458.1729199380913" y="413.2909729051718" width="259.2" height="222" />
+		<GovernanceArea gov_area_ID="dao_2b642545_de7f_4062_80a8_fedad5213b2c" gov_area_description="Council Governance" implementation="on-chain" x="429.3798228780017" y="655.3374982338786" width="310.8" height="168" />
+		<GovernanceArea gov_area_ID="dao_8a8470fd_73d4_48a0_8c70_8e08b00f981c" gov_area_description="DDMO Membership" implementation="on-chain" x="490.94762018629996" y="54.50178093463536" width="159.6" height="114" />
+		<Permission permission_ID="dao_8e7d55f4_d70f_4aae_8a3e_e8f826e210ca" allowed_action="Supply Service" permission_type="operational" ref_gov_area="dao_bcdba946_c06d_4552_8e71_9c2514506721" x="16.1" y="40" width="98" height="49" />
+		<Permission permission_ID="dao_e0e51cbd_79e4_446c_9cdc_7aada5b2441c" allowed_action="Propose Task Delegation" permission_type="operational" ref_gov_area="dao_bcdba946_c06d_4552_8e71_9c2514506721" x="16.1" y="94" width="161" height="49" />
+		<Permission permission_ID="dao_e04ce977_8bf8_4b53_9a2b_73fcc3f3d81e" allowed_action="Execute Task" permission_type="operational" ref_gov_area="dao_bcdba946_c06d_4552_8e71_9c2514506721" x="16.1" y="148" width="91" height="49" />
+		<Permission permission_ID="dao_d0469fed_8292_4527_b7f1_29a79ba5d250" allowed_action="Share Task" permission_type="operational" ref_gov_area="dao_bcdba946_c06d_4552_8e71_9c2514506721" x="16.1" y="202" width="91" height="49" />
+		<Permission permission_ID="dao_d6896e2c_91f2_483a_8611_7eaf51081b33" allowed_action="report task unaccomplishment" permission_type="operational" ref_gov_area="dao_11c5e573_7072_4bbf_81c4_bd79b77ccba8" x="19.6" y="40" width="196" height="49" />
+		<Permission permission_ID="dao_a54c7fa1_74a6_4005_93dd_0b59f9c6f0d6" allowed_action="block user" permission_type="strategic" ref_gov_area="dao_11c5e573_7072_4bbf_81c4_bd79b77ccba8" x="19.6" y="94" width="77" height="49" />
+		<Permission permission_ID="dao_990ea5a9_c42d_420c_91db_b7e33ab921cc" allowed_action="Trigger dispute resolution" permission_type="operational" ref_gov_area="dao_11c5e573_7072_4bbf_81c4_bd79b77ccba8" x="19.6" y="148" width="182" height="49" />
+		<Permission permission_ID="dao_cc2ff6c5_3355_411f_bb6b_863b04f1592a" allowed_action="Oversee Dispute" permission_type="strategic" ref_gov_area="dao_11c5e573_7072_4bbf_81c4_bd79b77ccba8" x="19.6" y="202" width="105" height="49" />
+		<Permission permission_ID="dao_c470f504_977b_4dcf_873e_e3cc62cbf035" allowed_action="approve KYB" permission_type="operational" ref_gov_area="dao_11c5e573_7072_4bbf_81c4_bd79b77ccba8" x="19.6" y="256" width="91" height="49" />
+		<Permission permission_ID="dao_4603199e_f01e_4510_86b0_6048c8ca89c4" allowed_action="resolve dispute" permission_type="structural" ref_gov_area="dao_11c5e573_7072_4bbf_81c4_bd79b77ccba8" x="19.6" y="310" width="105" height="49" />
+		<Permission permission_ID="dao_65b4cd76_7ba3_4ca8_815b_eeeb86dd88b9" allowed_action="suspend DDMO" permission_type="structural" ref_gov_area="dao_db762579_2d4c_4f43_a5f6_32a2e683c4ec" x="14.4" y="40" width="84" height="49" />
+		<Permission permission_ID="dao_1672bb37_adfa_4ac5_ad7d_197e7ac55ce2" allowed_action="liquidate DDMO" permission_type="structural" ref_gov_area="dao_db762579_2d4c_4f43_a5f6_32a2e683c4ec" x="14.4" y="94" width="98" height="49" />
+		<Permission permission_ID="dao_dfc67591_2c76_4df5_8fd3_55cef73c456f" allowed_action="merge DDMO" permission_type="structural" ref_gov_area="dao_db762579_2d4c_4f43_a5f6_32a2e683c4ec" x="14.4" y="148" width="84" height="49" />
+		<Permission permission_ID="dao_d6f3c403_a499_488e_a967_590b26b87fb4" allowed_action="access data" permission_type="operational" ref_gov_area="dao_6e75c711_d47e_493d_a09e_d55cc78fccd1" x="21.6" y="40" width="91" height="49" />
+		<Permission permission_ID="dao_0552e0bf_1ff3_4dde_8a78_6e8195dd9b9c" allowed_action="update destination portal" permission_type="operational" ref_gov_area="dao_6e75c711_d47e_493d_a09e_d55cc78fccd1" x="21.6" y="94" width="175" height="49" />
+		<Permission permission_ID="dao_0edf210d_9220_4d09_b990_62025727e7d0" allowed_action="approve AI Recommendations" permission_type="operational" ref_gov_area="dao_6e75c711_d47e_493d_a09e_d55cc78fccd1" x="21.6" y="148" width="182" height="49" />
+		<Permission permission_ID="dao_29058c71_7448_45fd_871c_0aabef5313a7" allowed_action="update duration of user block" permission_type="strategic" ref_gov_area="dao_2b642545_de7f_4062_80a8_fedad5213b2c" x="25.900000000000002" y="40" width="203" height="49" />
+		<Permission permission_ID="dao_e2fecb93_8e55_49b7_8f4d_7dc47b50df01" allowed_action="update number of Council participants" permission_type="structural" ref_gov_area="dao_2b642545_de7f_4062_80a8_fedad5213b2c" x="25.900000000000002" y="94" width="259" height="49" />
+		<Permission permission_ID="dao_0308008d_63c1_4201_a0cf_a67e09e0eabb" allowed_action="Request DDMO Change" permission_type="structural" ref_gov_area="dao_8a8470fd_73d4_48a0_8c70_8e08b00f981c" x="13.3" y="40" width="133" height="49" />
+	</DAO>
+</DAO-ML_diagram>

@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as etree # ET
 from lxml import etree
 import xmlschema
-
+import networkx as nx
 
 class ConstraintValidator():
     def __init__(self, XMLFile, schemaFile):
@@ -158,6 +158,34 @@ class ConstraintValidator():
         return len(all_violations) == 0 # if no violations, then return True
 
 
+
+    #functions to check if some cyclic dependencies exists within the federation or aggregation relations in DAO Diagrams
+    def check_cyclic_dependencies(self, diagram, rel_name):
+        daos_and_loops = []
+        for dao in diagram.xpath('//DAO'):
+            print(f"CHECKING {rel_name} LOOPS IN DAO: {dao}")
+            dao_id = dao.get("DAO_ID")
+            graph = nx.DiGraph()
+            for elem in dao.xpath("./Role | ./Committee"):
+                # Retrieve the relation elements based on the relation name
+                element_type = elem.tag  # This will be either 'Role' or 'Committee'
+                is_role = element_type == "Role"
+                id = elem.get("role_ID") if is_role else elem.get("committee_ID")
+                print(f"CHECKING {rel_name} LOOPS IN ELEMENT: {id}")
+                relation = elem.xpath(f"{rel_name}/text()")
+                if relation:
+                    target = relation[0] # ID of the "neighbour"
+                    graph.add_edge(id, target)
+            cycles = [c for c in nx.simple_cycles(graph)]
+            if len(cycles) > 0: # ERROR
+                daos_and_loops.append((dao_id, cycles))
+        if len(daos_and_loops) > 0:
+            return [ \
+                f"\tDAO {dal[0]} has the following loop for the ''{rel_name}'': {", ".join(dal[1])}" \
+                for dal in daos_and_loops]
+        return True # no error
+                
+
     def validate_dao_ml_diagram(self):
         diagram_file = self.xmlname
         conditions =[]
@@ -170,6 +198,8 @@ class ConstraintValidator():
         conditions.append(self.compare_subsets(diagram,"IDs of control relations", '//Role/is_controlled_by/text()|//Committee/is_controlled_by/text()',"Role or Committee IDs", '//Role/@role_ID|//Committee/@committee_ID'))  
         conditions.append(self.check_relation_graphs(diagram,"aggregation_level", "aggregates"))
         conditions.append(self.check_relation_graphs(diagram,"federation_level", "federates_into"))
+        conditions.append(self.check_cyclic_dependencies(diagram, "aggregates"))
+        conditions.append(self.check_cyclic_dependencies(diagram, "federates_into"))        
         conditions.append(self.check_relations_in_same_DAO(diagram, early_return=False))
         for condition in conditions:
             if isinstance(condition, list):  # Check if the condition contains a list of errors
