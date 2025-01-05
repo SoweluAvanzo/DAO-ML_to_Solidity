@@ -12,16 +12,21 @@ class SimpleSolidityTranslator(Translator):
     def __init__(self, dao: DAO, role_declaration_policy = "index", solidity_version= "^0.8.0", daoOwner = True):
         self.context = TranslationContext(dao, role_declaration_policy, solidity_version, daoOwner)
         self.context.entity_to_data= {} # type_return_of(newEntityData)
-                    
         self.committee_permission_indices:dict[str, int]= {}
         self.context.role_declaration_policy = "index" if self.context.dao.dao_control_graph.graph_type != GraphType.LIST else "topological_ordering"
         self.role_to_final_index = {}
+        
+        for role in self.context.dao.roles.values():
+            role.role_name = self.preprocess_entity_name(role.role_name)
+        for committee in self.context.dao.committees.values():
+            committee.committee_description = self.preprocess_entity_name(committee.committee_description)
+        
 
 
     def translateDao(self) -> TranslatedSmartContract:
         lines:list[str] = []
 
-        DAO_mission_statement_comment = f"// @title {self.context.dao.dao_name.replace(" ", "_")} has the following mission: {self.context.dao.mission_statement}"
+        DAO_mission_statement_comment = f"// @title {self.preprocess_entity_name(self.context.dao.dao_name)} has the following mission: {self.context.dao.mission_statement}"
         lines.extend(self.generate_smart_contract_header(DAO_mission_statement_comment))
 
         lines.extend(self.generate_contract_declaration(self.context.dao.dao_name.replace(" ", "_")))
@@ -31,7 +36,7 @@ class SimpleSolidityTranslator(Translator):
         lines.extend(self.generate_functions())
         lines.append(self.generate_closure())
 
-        name = self.context.dao.dao_name.replace(" ", "_")
+        name = self.preprocess_entity_name(self.context.dao.dao_name)
         return TranslatedSmartContract(lines, name, testable=True)
     
 
@@ -41,7 +46,7 @@ class SimpleSolidityTranslator(Translator):
         # at first, translate all Committees
         ct = CommitteeTranslator(self.context)
         for c in self.context.dao.committees.values():
-            translated_committee = ct.translateCommittee(c, voting_permission_index=self.committee_permission_indices[c.committee_id], proposal_permission_index=self.committee_permission_indices[c.committee_id], optimized=False) 
+            translated_committee = ct.translateCommittee(c, voting_permission_index=self.committee_permission_indices[c.committee_description], proposal_permission_index=self.committee_permission_indices[c.committee_description], optimized=False) 
             all_smart_contracts.append(translated_committee)
             all_smart_contracts.append(self.generate_IPermissionManager_interface())        
         return all_smart_contracts
@@ -54,7 +59,7 @@ class SimpleSolidityTranslator(Translator):
         lines.append("interface IPermissionManager {")
         lines.append(f"    function isCommitteeMember(address user, uint committee) external view returns (uint);")
         lines.append("}")
-        return TranslatedSmartContract(lines, "IPermissionManager", folder="interfaces")
+        return TranslatedSmartContract(lines, "IPermissionManager", folder="interfaces", testable=True)
 
 
     def generate_smart_contract_header(self, title_comment = "") -> list[str]:
@@ -69,6 +74,9 @@ class SimpleSolidityTranslator(Translator):
     def generate_contract_declaration(self, contract_name) -> list[str]:
         return [f"contract {contract_name} is IPermissionManager " + "{"]
 
+    def preprocess_entity_name(self, entity_name:str) -> str:
+        return entity_name.replace(" ", "_").replace("/", "_").replace("\\", "_")
+
 
     def generate_roles(self) -> list[str]:
         lines:list[str] = []
@@ -81,17 +89,17 @@ class SimpleSolidityTranslator(Translator):
         if self.context.role_declaration_policy == "index":
             i=1
             for role in self.context.dao.roles.values():   
-                lines.append(f"    uint {role.role_id} = {i};")
+                lines.append(f"    uint {role.role_name} = {i};")
                 self.role_to_final_index[role.role_id] = i
                 self.context.entity_to_data[role.role_id] = newEntityData(final_id=role.role_id, name=role.role_name, index=i, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE)
                 i+=1
             lines.append(f"// committee declarations")
             
             for committee in self.context.dao.committees.values():
-                lines.append(f"    uint {committee.committee_id} = {i};")
+                lines.append(f"    uint {committee.committee_description} = {i};")
                 self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=committee.committee_id, name=committee.committee_description, index=i, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
                 #new committee permission indices insertion, which is used in the generation of the committee for handling the membership logic.
-                self.committee_permission_indices[committee.committee_id] = i
+                self.committee_permission_indices[committee.committee_description] = i
                 self.role_to_final_index[committee.committee_id] = i
                 i+=1
        
@@ -120,29 +128,27 @@ class SimpleSolidityTranslator(Translator):
                     self.role_to_final_index["NonMember"] = 0
                     x = 1
                     for role in self.context.dao.roles.values():
-                        if role.role_id not in topological_order:
-                            indexes[role.role_id] = x
+                        if role.role_name not in topological_order:
+                            indexes[role.role_name] = x
                             self.role_to_final_index[role.role_id] = x
                             self.context.entity_to_data[role.role_id] = newEntityData(final_id=role.role_id, name=role.role_name, index=indexes[role.role_id], original_id=role.role_id, entity_type=EntityTypeControllable.ROLE)
-                            print(f"inserted entity: {role.role_name} as entitydata")
                             x+=1
                     for committee in self.context.dao.committees.values():
-                        if committee.committee_id not in topological_order:
-                            indexes[committee.committee_id] = x
+                        if committee.committee_description not in topological_order:
+                            indexes[committee.committee_description] = x
                             self.role_to_final_index[committee.committee_id] = x
                             self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=committee.committee_id, name=committee.committee_description, index=indexes[committee.committee_id], original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
-                            print(f"inserted entity: {committee.committee_description} as entitydata")
                             x+=1
                     
                     top_indexes = {node: i+x for i, node in enumerate(topological_order)}
                     indexes.update(top_indexes)
                     lines.append(f"// role declarations")
                     for role in self.context.dao.roles.values():
-                        lines.append(f"    uint public {role.role_id} = {indexes[role.role_id]};")
+                        lines.append(f"    uint public {role.role_name} = {indexes[role.role_name]};")
                     lines.append(f"// committee declarations")
                     for committee in self.context.dao.committees.values():
-                        lines.append(f"    uint public {committee.committee_id} = {indexes[committee.committee_id]};")
-                        self.committee_permission_indices[committee.committee_id] = indexes[committee.committee_id]
+                        lines.append(f"    uint public {committee.committee_description} = {indexes[committee.committee_description]};")
+                        self.committee_permission_indices[committee.committee_description] = indexes[committee.committee_description]
                        
                     # if self.context.daoOwner == True:
                     #     lines.append(f"    uint public {self.context.dao.dao_name.replace(" ", "_")}Owner = {len(indexes)};")
@@ -163,7 +169,7 @@ class SimpleSolidityTranslator(Translator):
 
     def generate_constructor(self) -> list[str]:
         lines:list[str] = []
-        committee_list_param = [f"address _{x}" for x in [committee.committee_id for committee in self.context.dao.committees.values()] ]
+        committee_list_param = [f"address _{x}" for x in [committee.committee_description for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
         is_last = "" if committee_address_list == [] else ","
         lines.append(f"    constructor(string memory _name, address _owner{is_last} {committee_address_list}) " + "{")
@@ -171,15 +177,22 @@ class SimpleSolidityTranslator(Translator):
         if self.context.daoOwner == True:
             lines.append(f"        roles[_owner] = {self.context.dao.dao_name.replace(" ", "_")}Owner;")
         lines.append(f"//assign roles to committees")
-        lines.extend(f"roles[_{committee.committee_id}] = {committee.committee_id}; \n"  for committee in self.context.dao.committees.values())
+        lines.extend(f"roles[_{committee.committee_description}] = {committee.committee_description}; \n"  for committee in self.context.dao.committees.values())
         if self.context.role_declaration_policy == "index":
             for edge in self.context.dao.dao_control_graph.control_graph.edges:
-                lines.append(f"        canControl[{edge[1]}][{edge[0]}] = true;")
+                controller = self.context.dao.committees[edge[1]].committee_description if edge[1] in self.context.dao.committees else self.context.dao.roles[edge[1]].role_name
+                controlled = self.context.dao.committees[edge[0]].committee_description if edge[0] in self.context.dao.committees else self.context.dao.roles[edge[0]].role_name
+                
+                lines.append(f"        canControl[{controller}][{controlled}] = true;")
                 #voting and proposal right assignment
             lines.append("\n//Assigning voting and proposal rights to roles and committees. 1 stands for voting rights, 2 for proposal.")
             for entity,target_committee in self.context.dao.role_and_committee_voting_right_dict.items():
+                entity = self.context.dao.committees[entity].committee_description if entity in self.context.dao.committees else self.context.dao.roles[entity].role_name
+                target_committee = self.context.dao.committees[target_committee].committee_description
                 lines.append(f"        committeeMemberships[{entity}][{target_committee}] = 1;")
             for entity,target_committee in self.context.dao.role_and_committee_proposal_right_dict.items():
+                entity = self.context.dao.committees[entity].committee_description if entity in self.context.dao.committees else self.context.dao.roles[entity].role_name
+                target_committee = self.context.dao.committees[target_committee].committee_description
                 lines.append(f"        committeeMemberships[{entity}][{target_committee}] = 2;")        
         lines.append("    }")          
         return lines
@@ -237,7 +250,7 @@ class SimpleSolidityTranslator(Translator):
                 self.context.dao.committees.values()
             ]:
             for permissions_holder in permissions_holders_collection: # Role/Committee
-                holder_id = permissions_holder.committee_id if type(permissions_holder) == Committee else permissions_holder.role_id # NOTE: dopo il refactoring, questa riga sara' soltanto "permissions_holder.id"
+                holder_id = permissions_holder.committee_description if type(permissions_holder) == Committee else permissions_holder.role_name # NOTE: dopo il refactoring, questa riga sara' soltanto "permissions_holder.id"
                 for permission in permissions_holder.permissions:
                     if permission.voting_right == False and permission.proposal_right == False:
                         if isinstance(permission, Permission):  # Check if permission is an instance of Permission class
@@ -286,9 +299,9 @@ class SimpleSolidityTranslator(Translator):
         # the roles's hierarchy") ?
         role_ids = []
         for role in self.context.dao.roles.values():
-            role_ids.append(role.role_id)
+            role_ids.append(role.role_name)
         for committee in self.context.dao.committees.values():
-            role_ids.append(committee.committee_id)
+            role_ids.append(committee.committee_description)
 
         lines:list[str] = []
         if self.context.role_declaration_policy == "topological_ordering":
@@ -341,11 +354,11 @@ class SimpleSolidityTranslator(Translator):
         for role in self.context.dao.roles.values():
             for perm in role.permissions:
                 if perm.allowed_action == permission.allowed_action:
-                    role_ids.append(role.role_id)
+                    role_ids.append(role.role_name)
         for committee in self.context.dao.committees.values():
             for perm in committee.permissions:
                 if perm.allowed_action == permission.allowed_action:
-                    role_ids.append(committee.committee_id)
+                    role_ids.append(committee.committee_description)
         return role_ids
 
     def generate_closure(self):
