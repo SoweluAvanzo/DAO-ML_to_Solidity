@@ -80,8 +80,6 @@ class SimpleSolidityTranslator(Translator):
 
     def generate_roles(self) -> list[str]:
         lines:list[str] = []
-        lines.append("    address public creator;")
-        lines.append("    string public name;")
         lines.append(f"// role declarations")
         #chekcs the role declaration policy and adopts the appropriate translation policy
         lines.append(f"    uint NonMember = 0;")
@@ -172,8 +170,7 @@ class SimpleSolidityTranslator(Translator):
         committee_list_param = [f"address _{x}" for x in [committee.committee_description for committee in self.context.dao.committees.values()] ]
         committee_address_list = ', '.join(committee_list_param)
         is_last = "" if committee_address_list == [] else ","
-        lines.append(f"    constructor(string memory _name, address _owner{is_last} {committee_address_list}) " + "{")
-        lines.append("        name = _name;")
+        lines.append(f"    constructor( address _owner{is_last} {committee_address_list}) " + "{")
         if self.context.daoOwner == True:
             lines.append(f"        roles[_owner] = {self.context.dao.dao_name.replace(" ", "_")}Owner;")
         lines.append(f"//assign roles to committees")
