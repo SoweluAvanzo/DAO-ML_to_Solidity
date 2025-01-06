@@ -103,11 +103,11 @@ class SimpleSolidityTranslator(Translator):
        
             #in case a topological ordering of node is impossible, the control relations are declared as a nested mapping
             lines.append("    // Mapping of roles to the set of roles they can control")
-            lines.append("    mapping(uint => mapping(uint => bool)) public canControl;")
+            lines.append("    mapping(uint => mapping(uint => bool)) public controlRelations;")
             lines.append("    // Modifier to check if the caller has the permission to execute the function")
-            lines.append("        modifier onlyController(address controller_address, address controlled_address) {")
+            lines.append("        modifier controlledBy(address controller_address, address controlled_address) {")
             lines.append("            require(")
-            lines.append("              canControl[roles[controller_address]][roles[controlled_address]] || (roles[controller_address] != NonMember && roles[controlled_address] == NonMember),")
+            lines.append(f"              controlRelations[roles[controller_address]][roles[controlled_address]] || (roles[controller_address] == {self.context.dao.owner_role.role_name} && roles[controlled_address] == NonMember),")
             lines.append("              \"cannot execute the requested action, due to lack of authorization.\"")
             lines.append("            );")
             lines.append("            _;")
@@ -162,7 +162,7 @@ class SimpleSolidityTranslator(Translator):
         lines.append("    mapping(address => uint) roles;")
         #insert check that these functions are needed
         lines.append("    event RoleRevoked(address indexed from, address member);")
-        lines.append("    event UserRoleAssigned(address indexed member, uint role);")       
+        lines.append("    event RoleAssigned(address indexed member, uint role);")       
         return lines
 
     def generate_constructor(self) -> list[str]:
@@ -180,7 +180,7 @@ class SimpleSolidityTranslator(Translator):
                 controller = self.context.dao.committees[edge[1]].committee_description if edge[1] in self.context.dao.committees else self.context.dao.roles[edge[1]].role_name
                 controlled = self.context.dao.committees[edge[0]].committee_description if edge[0] in self.context.dao.committees else self.context.dao.roles[edge[0]].role_name
                 
-                lines.append(f"        canControl[{controller}][{controlled}] = true;")
+                lines.append(f"        controlRelations[{controller}][{controlled}] = true;")
                 #voting and proposal right assignment
             lines.append("\n//Assigning voting and proposal rights to roles and committees. 1 stands for voting rights, 2 for proposal.")
             for entity,target_committee in self.context.dao.role_and_committee_voting_right_dict.items():
@@ -211,7 +211,7 @@ class SimpleSolidityTranslator(Translator):
     def generate_can_control_function(self) -> list[str]:
         lines = []
         lines.append("function can_control(address _controller, address _controlled) external view returns (bool) {")
-        lines.append("    return canControl[roles[_controller]][roles[_controlled]];")
+        lines.append("    return controlRelations[roles[_controller]][roles[_controlled]];")
         lines.append("}")
         return lines
 
@@ -278,11 +278,12 @@ class SimpleSolidityTranslator(Translator):
     def generate_role_revoke_function(self) -> list[str]:
         lines:list[str] = []
         if self.context.role_declaration_policy == "topological_ordering":
-            lines.append("    function revokeRole(address member) public {" )
+            lines.append("function revokeRole(address member) public {" )
             lines.append('        require(roles[msg.sender] > roles[member], "cannot revoke superior roles");')
         elif self.context.role_declaration_policy == "index":
-            lines.append("    function revokeRole(address member) public onlyController(msg.sender, member) {")
-            lines.append("        // Revoke the role")
+            lines.append("function revokeRole(address member) public controlledBy(msg.sender, member) {")
+            lines.append("    require(controlRelations[roles[msg.sender]][roles[member]] == true, \"cannot revoke superior roles\");")
+            lines.append("    // Revoke the role")
         lines.append("        roles[member] = NonMember;")
         lines.append("        emit RoleRevoked(msg.sender, member); ")
         lines.append("    }")
@@ -310,10 +311,10 @@ class SimpleSolidityTranslator(Translator):
             lines.append(self.generate_access_control(role_ids, message))
 
         elif self.context.role_declaration_policy == "index":
-            lines.append("function assignRole(address member, uint role) public onlyController(msg.sender, member) {")
-            lines.append("require(canControl[roles[msg.sender]][role]== true, \"cannot assign superior roles\");")
+            lines.append("function assignRole(address member, uint role) public controlledBy(msg.sender, member) {")
+            lines.append("require(controlRelations[roles[msg.sender]][role]== true, \"cannot assign superior roles\");")
         lines.append("    roles[member] = role;")
-        lines.append("emit UserRoleAssigned(member, role);" )
+        lines.append("emit RoleAssigned(member, role);" )
         lines.append("}")
         return lines
    
