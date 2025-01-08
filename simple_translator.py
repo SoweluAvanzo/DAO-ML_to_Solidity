@@ -75,7 +75,7 @@ class SimpleSolidityTranslator(Translator):
         return [f"contract {contract_name} is IPermissionManager " + "{"]
 
     def preprocess_entity_name(self, entity_name:str) -> str:
-        return entity_name.replace(" ", "_").replace("/", "_").replace("\\", "_")
+        return entity_name.replace(" ", "_").replace("/", "_").replace("\\", "_").replace("(", "").replace(")", "").replace(":", "").replace(";", "").replace(",", "").replace(".", "").replace("!", "").replace("?", "").replace("'", "").replace("\"", "").replace("’", "").replace("‘", "").replace("“", "").replace("”", "").replace("–", "").replace("-", "").replace("—", "").replace("–", "").replace("—", "")
 
 
     def generate_roles(self) -> list[str]:
@@ -102,12 +102,10 @@ class SimpleSolidityTranslator(Translator):
                 i+=1
        
             #in case a topological ordering of node is impossible, the control relations are declared as a nested mapping
-            lines.append("    // Mapping of roles to the set of roles they can control")
             lines.append("    mapping(uint => mapping(uint => bool)) public controlRelations;")
-            lines.append("    // Modifier to check if the caller has the permission to execute the function")
-            lines.append("        modifier controlledBy(address controller_address, address controlled_address) {")
+            lines.append("        modifier controlledBy(uint controller_value, uint controlled_value) {")
             lines.append("            require(")
-            lines.append(f"              controlRelations[roles[controller_address]][roles[controlled_address]] || (roles[controller_address] == {self.context.dao.owner_role.role_name} && roles[controlled_address] == NonMember),")
+            lines.append(f"              controlRelations[controller_value][controlled_value],")
             lines.append("              \"cannot execute the requested action, due to lack of authorization.\"")
             lines.append("            );")
             lines.append("            _;")
@@ -281,11 +279,14 @@ class SimpleSolidityTranslator(Translator):
             lines.append("function revokeRole(address member) public {" )
             lines.append('        require(roles[msg.sender] > roles[member], "cannot revoke superior roles");')
         elif self.context.role_declaration_policy == "index":
-            lines.append("function revokeRole(address member) public controlledBy(msg.sender, member) {")
-            lines.append("    require(controlRelations[roles[msg.sender]][roles[member]] == true, \"cannot revoke superior roles\");")
+            lines.append("function revokeRole(address member) public controlledBy(roles[msg.sender], roles[member]) {")
+            lines.append("    require(member != address(0),\" invalid member address \");" )
+            lines.append("    uint current_role_id = roles[member];")
+            lines.append("    //Ensure the member has an assigned role (not already a NonMember)")
+            lines.append("    require(current_role_id != NonMember, \"Role must be assigned to revoke\");")
             lines.append("    // Revoke the role")
-        lines.append("        roles[member] = NonMember;")
-        lines.append("        emit RoleRevoked(msg.sender, member); ")
+        lines.append("    roles[member] = NonMember;")
+        lines.append("    emit RoleRevoked(msg.sender, member); ")
         lines.append("    }")
         return lines
     
@@ -303,7 +304,8 @@ class SimpleSolidityTranslator(Translator):
 
         lines:list[str] = []
         if self.context.role_declaration_policy == "topological_ordering":
-            lines.append("    function assignRole(address member, uint role) public {")
+            lines.append("    function assignRole(address member, uint new_role_id) public controlledBy(roles[msg.sender], new_role_id) {")
+            lines.append("    require(member != address(0),\" invalid member address \");" )
             lines.append("        require(roles[msg.sender] > role, \"cannot assign superior roles\");")
             message = "role doesn't exist, or it is the non-member role" 
             if self.context.daoOwner == True:
@@ -311,10 +313,17 @@ class SimpleSolidityTranslator(Translator):
             lines.append(self.generate_access_control(role_ids, message))
 
         elif self.context.role_declaration_policy == "index":
-            lines.append("function assignRole(address member, uint role) public controlledBy(msg.sender, member) {")
-            lines.append("require(controlRelations[roles[msg.sender]][role]== true, \"cannot assign superior roles\");")
-        lines.append("    roles[member] = role;")
-        lines.append("emit RoleAssigned(member, role);" )
+            lines.append("function assignRole(address member, uint new_role_id) public controlledBy(roles[msg.sender], new_role_id) {")
+            lines.append("    require(member != address(0),\" invalid member address \");" )
+            lines.append("    uint current_role_id = roles[member];")
+            lines.append("    // Ensure the member is either a NonMember or the caller controls the current role")
+            lines.append("    require(")
+            lines.append("       current_role_id == NonMember || controlRelations[roles[msg.sender]][current_role_id],")
+            lines.append("       \"Cannot assign role: caller lacks control over the member's current role\"")
+            lines.append("      );")
+            lines.append("    // Assign the new role")
+            lines.append("    roles[member] = new_role_id;")
+            lines.append("    emit RoleAssigned(member, new_role_id);")
         lines.append("}")
         return lines
    
