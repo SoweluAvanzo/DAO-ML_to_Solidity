@@ -1,6 +1,6 @@
 
 from collections.abc import Iterable
-import output.BaseOutput as bo
+import output.base_output as bo
 import files.file_utils as fu
 
 class TextFileOutput(bo.BaseOutput):
@@ -40,10 +40,10 @@ class TextFileOutput(bo.BaseOutput):
             return True
         return False
     
-    def to_file(self, lines, folder_path, filename, extension):
+    def to_file(self, lines, folder_path, filename, extension, mode='w'):
         if folder_path is None:
             folder_path = fu.get_base_folder()
         else:
             fu.check_and_make_folder(folder_path)
         full_path = fu.concat_folder_filename(folder_path, f"{filename}.{extension}")
-        return self.to_output(lines, full_path)
+        return self.to_output(lines, full_path, {"mode": mode})
