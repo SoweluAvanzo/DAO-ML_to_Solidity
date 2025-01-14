@@ -164,6 +164,9 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# JavaScript
+node_modules
+node_modules/
 
 # nostre
 *_properties.txt
@@ -175,5 +178,4 @@ test/
 test/*
 sim/
 sim/*
-
 
