@@ -1,7 +1,7 @@
 
 from collections.abc import Iterable
-import output.base_output as bo
-import files.file_utils as fu
+import src.output.base_output as bo
+import src.files.file_utils as fu
 
 class TextFileOutput(bo.BaseOutput):
     def __init__(self, base_destination=None):

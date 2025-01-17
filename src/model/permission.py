@@ -1,4 +1,4 @@
-import  model.base_entity as base_entity
+import src.model.base_entity as base_entity
 
 class Permission(base_entity.BaseEntity):
     def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None, voting_right = False, proposal_right = False):

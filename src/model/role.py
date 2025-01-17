@@ -1,6 +1,6 @@
-import model.base_entity as base_entity
-import model.permission as permission
-import model.committee as committee
+import src.model.base_entity as base_entity
+import src.model.permission as permission
+import src.model.committee as committee
 
 class Role(base_entity.BaseEntity):
     def __init__(self, role_id, role_name, role_assignment_method, n_agent_min, n_agent_max, agent_type):

@@ -1,9 +1,11 @@
-import  model.base_entity as base_entity
-import  model.permission as permission
-import  model.committee as committee
-import  model.role as role
-import  model.control_graph_generic as control_graph_generic
-import  model.enums.user_functionalities_group_size as user_functionalities_group_size
+import src.model.base_entity as base_entity_module
+import src.model.permission as permission_module
+import src.model.committee as committee_module
+import src.model.role as role_module
+import src.control_graph.control_graph_generic as control_graph_generic_module
+import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
+
+
 class DAOMetadata:
     def __init__(self):
         self.user_functionalities_group_size = None
@@ -11,7 +13,7 @@ class DAOMetadata:
 
     def save_user_functionalities_group_size(self, roles, committees):
         self.size_user_functionalities_group = len(roles) + len(committees)
-        self.user_functionalities_group_size = user_functionalities_group_size.UserFunctionalitiesGroupSize.from_size(self.size_user_functionalities_group)
+        self.user_functionalities_group_size = user_functionalities_group_size_module.UserFunctionalitiesGroupSize.from_size(self.size_user_functionalities_group)
     
     def toJSON(self):
         return {
@@ -19,16 +21,16 @@ class DAOMetadata:
             "size_user_functionalities_group": self.size_user_functionalities_group
         }
 
-class DAO(base_entity.BaseEntity):
+class DAO(base_entity_module.BaseEntity):
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
         super().__init__(dao_id)
         self.dao_name = dao_name
         self.mission_statement = mission_statement
         self.hierarchical_inheritance = hierarchical_inheritance
-        self.roles: dict[str, role.Role] = {}
-        self.committees: dict[str, committee.Committee] = {}
-        self.permissions: dict[str, permission.Permission] = {}
-        self.dao_control_graph: control_graph_generic.ControlGraphGeneric = None
+        self.roles: dict[str, role_module.Role] = {}
+        self.committees: dict[str, committee_module.Committee] = {}
+        self.permissions: dict[str, permission_module.Permission] = {}
+        self.dao_control_graph: control_graph_generic_module.ControlGraphGeneric = None
         self.metadata = DAOMetadata()
         self.assignment_conditions: dict[str, str] = {} # Role
         self.voting_conditions: dict[str, str]  = {} # Committee
@@ -38,14 +40,14 @@ class DAO(base_entity.BaseEntity):
         self.role_and_committee_voting_right_dict = {}
         self.role_and_committee_proposal_right_dict = {}
     
-    def add_role(self, role):
-        self.roles[role.id] = role
+    def add_role(self, role: role_module.Role):
+        self.roles[role.get_id()] = role
 
-    def add_committee(self, committee):
-        self.committees[committee.id] = committee
+    def add_committee(self, committee: committee_module.Committee):
+        self.committees[committee.get_id()] = committee
 
-    def add_permission(self, permission):
-        self.permissions[permission.id] = permission
+    def add_permission(self, permission: permission_module.Permission):
+        self.permissions[permission.get_id()] = permission
 
     def __str__(self):
         parts = [
