@@ -402,7 +402,7 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(" require(roleIds.length == assignmentConditionAddresses.length, \"Role ID and assignment condition count mismatch\"); \n")
         lines.append(self.generate_role_permission_mapping())
         for committee in self.context.dao.committees.values():
-            lines.append(f"         roles[_{committee.committee_description.replace(" ","_")}] = {committee.committee_description.replace(" ","_")}; \n" )
+            lines.append(f"         roles[_{committee.committee_description.replace(' ','_')}] = {committee.committee_description.replace(' ','_')}; \n" )
         if self.context.daoOwner:
             #lines.append(f"        roles[msg.sender] = {self.context.dao.dao_name}Owner;")
             lines.append(f"        roles[msg.sender] = all_roles[{len(self.context.dao.roles)}]; // {self.context.dao.dao_name}Owner")
