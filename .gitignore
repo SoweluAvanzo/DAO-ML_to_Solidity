@@ -176,6 +176,7 @@ translated/*
 out
 test/
 test/*
+*/test/*
 sim/
 sim/*
 
