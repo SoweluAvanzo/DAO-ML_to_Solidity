@@ -13,5 +13,5 @@ class FileInput(ib.InputBase):
             return open(self.filepath, 'r')
         except Exception as err :
             print(err)
-            return None
+            return None                
         
