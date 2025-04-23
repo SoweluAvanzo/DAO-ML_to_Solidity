@@ -24,7 +24,7 @@ class FileManager2(om.OutputManager):
         self.text_file_output.to_file(filename, lines, extension, self.folder_path)
         return True
 
-    def save_from_template(self, data_dict, filename_template, filename_output, extension_template='jinja', extension_output='js') -> bool:
+    def save_into_template(self, data_dict, filename_template, filename_output, extension_template='jinja', extension_output='js') -> bool:
         lines = data_dict['lines'] # self.template_renderer.render_template(data_dict, filename_template, extension_template, self.folder_path)
         if lines == None:
             raise Exception(f"None lines while rendering template named: '{filename_template}'.")
