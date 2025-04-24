@@ -4,9 +4,10 @@ class GeneratorBase():
     @deprecated
     '''
 
-    def __init__(self):
+    def __init__(self, n:int):
+        self.n = n
+        self.num = 0
         pass
-
 
     def __iter__(self):
         return self

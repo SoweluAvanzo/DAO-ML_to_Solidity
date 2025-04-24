@@ -4,8 +4,8 @@ import src.output.base_output as bo
 import src.files.file_utils as fu
 
 class TextFileOutput(bo.BaseOutput):
-    def __init__(self, base_destination=None):
-        self.base_destination = base_destination
+    def __init__(self, key:str, base_destination=None):
+        super().__init__(key, base_destination)
 
     def to_output(self, what, destination:str=None, additional_data=None) -> bool:
         if destination is None:
