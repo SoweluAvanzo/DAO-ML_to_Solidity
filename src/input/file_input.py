@@ -1,8 +1,8 @@
 import src.input.input_base as ib
 
 class FileInput(ib.InputBase):
-    def __init__(self, filepath):
-        super().__init__()
+    def __init__(self, key:str, filepath):
+        super().__init__(key)
         self.filepath = filepath
         self.file = None
     

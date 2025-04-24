@@ -1,4 +1,8 @@
-class InputBase:
+import src.pipeline.pipeline_item as pi
+
+class InputBase(pi.PipelineItem):
+    def __init__(self, key:str):
+        super().__init__(key)
 
     def get_input(self) -> list:
         '''
@@ -16,3 +20,6 @@ class InputBase:
         Returns the input as a stream, an iterable of strings
         '''
         return None
+        
+    def run(self, input:dict[str, any]) -> any:
+        return self.get_input()
