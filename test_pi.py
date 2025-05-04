@@ -46,10 +46,17 @@ class PIMath(pip.PipelineItem):
         super().__init__(key, dependencies)
         self.scalar=scalar
         self.isAddition=isAddition
+
     def run(self, input):
-        val = input[self.dependencies[0]] # input['value'] if 'value' in input else 0
-        print(f"{ 'adding' if self.isAddition else 'multiplying'} {val} with {self.scalar}")
-        return self.scalar + val if self.isAddition else self.scalar * val
+        if self.isAddition:
+            partial = self.scalar
+            for  dep in self.dependencies:
+                input_data = input[dep] if dep in input else 0
+                partial += input_data
+            return partial
+        #print(f"{ 'adding' if self.isAddition else 'multiplying'} {val} with {self.scalar}")
+        return self.scalar * input[self.dependencies[0]] # input['value'] if 'value' in input else 0
+
     #def __repr__(self):
     def repr_inner(self):
         #return """ "val": {0}""".format(str(self.val))
@@ -70,7 +77,10 @@ class TD:
 class TestData(Enum):
         START = TD("START", "let's begin")
         C1 = TD("C1", 10)
-        V1d= TD("V1",5)
+        C2 = TD("C2", 8)
+        M1= TD("M1",5)
+        M2= TD("M2",3)
+        Neuron1 = TD("Neuron1", 100000)
         # V2d = TD("V2",7)
 
 if __name__ == "__main__":
@@ -88,8 +98,18 @@ if __name__ == "__main__":
 
     pi = PIInt(TestData.C1.value.k, [TestData.START.value.k], TestData.C1.value.d)
     pm.addItem(pi)
+    pi = PIMath(TestData.M1.value.k, [TestData.C1.value.k], TestData.M1.value.d, False)
+    pm.addItem(pi)
     
-    pi = PIPrinter("echo", [TestData.C1.value.k], None, True)
+    pi = PIInt(TestData.C2.value.k, [TestData.START.value.k], TestData.C2.value.d)
+    pm.addItem(pi)
+    pi = PIMath(TestData.M2.value.k, [TestData.C2.value.k], TestData.M2.value.d, False)
+    pm.addItem(pi)
+
+    pi = PIMath(TestData.Neuron1.value.k, [TestData.M1.value.k,TestData.M2.value.k], TestData.Neuron1.value.d, True)
+    pm.addItem(pi)
+
+    pi = PIPrinter("echo", [TestData.Neuron1.value.k], None, True)
     pm.addItem(pi)
 
     pm.runPipeline()
