@@ -32,6 +32,7 @@ GOV: 'GovernanceArea';
 ASSOCIATION: 'associated_to';
 CONTROL: 'is_controlled_by';
 AGGREGATES: 'aggregates';
+FEDERATES: 'federates_into';
 
 // Lexer attribute rules
 DAOID : 'DAO_ID';
@@ -45,11 +46,16 @@ COMMITTEEID : 'committee_ID';
 COMMITTEEDESCRIPTION : 'committee_description';
 NAGENTMIN : 'n_agent_min';
 NAGENTMAX : 'n_agent_max';
-APPOINTMENTMETHOD : 'appointment_method';
+DMMETHOD : 'decision_making_method';
+VOTINGCONDITION : 'voting_condition';
+PROPOSALCONDITION : 'proposal_condition';
 PERMISSIONID : 'permission_ID';
+REF_GOV_AREA : 'ref_gov_area';
 ALLOWEDACTION : 'allowed_action';
 AGENTTYPE: 'agent_type';
 PERMISSIONTYPE : 'permission_type';
+FEDERATIONLEVEL : 'federation_level';
+AGGREGATIONLEVEL : 'aggregation_level';
 
 CLOSE         : '>'  -> popMode;
 SPECIAL_CLOSE : '?>' -> popMode; // close <?xml...?>

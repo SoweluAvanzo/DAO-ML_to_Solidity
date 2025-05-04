@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+__pycache__/*
 */__pycache__
 __pycache__
 *.py[cod]
@@ -163,7 +164,20 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# javascript
+node_modules
+node_modules/
 
-#
+# nostre
 *_properties.txt
 *.txt
+translated/
+translated/*
+out
+test/
+test/*
+*/test/*
+sim/
+sim/*
+
+

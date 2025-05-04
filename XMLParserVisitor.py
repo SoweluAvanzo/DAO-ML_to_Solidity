@@ -1,4 +1,4 @@
-# Generated from XMLParser.g4 by ANTLR 4.13.1
+# Generated from XMLParser.g4 by ANTLR 4.13.0
 from antlr4 import *
 if "." in __name__:
     from .XMLParser import XMLParser
@@ -84,8 +84,23 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#federates_into.
+    def visitFederates_into(self, ctx:XMLParser.Federates_intoContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#reference.
     def visitReference(self, ctx:XMLParser.ReferenceContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#comments_and_stuff.
+    def visitComments_and_stuff(self, ctx:XMLParser.Comments_and_stuffContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#set_of_attributes.
+    def visitSet_of_attributes(self, ctx:XMLParser.Set_of_attributesContext):
         return self.visitChildren(ctx)
 
 
@@ -124,6 +139,16 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#n_agent_min.
+    def visitN_agent_min(self, ctx:XMLParser.N_agent_minContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#n_agent_max.
+    def visitN_agent_max(self, ctx:XMLParser.N_agent_maxContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#agent_type.
     def visitAgent_type(self, ctx:XMLParser.Agent_typeContext):
         return self.visitChildren(ctx)
@@ -139,18 +164,28 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by XMLParser#n_agent_min.
-    def visitN_agent_min(self, ctx:XMLParser.N_agent_minContext):
+    # Visit a parse tree produced by XMLParser#voting_condition.
+    def visitVoting_condition(self, ctx:XMLParser.Voting_conditionContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by XMLParser#n_agent_max.
-    def visitN_agent_max(self, ctx:XMLParser.N_agent_maxContext):
+    # Visit a parse tree produced by XMLParser#proposal_condition.
+    def visitProposal_condition(self, ctx:XMLParser.Proposal_conditionContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by XMLParser#appointment_method.
-    def visitAppointment_method(self, ctx:XMLParser.Appointment_methodContext):
+    # Visit a parse tree produced by XMLParser#decision_making_method.
+    def visitDecision_making_method(self, ctx:XMLParser.Decision_making_methodContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#aggregation_level.
+    def visitAggregation_level(self, ctx:XMLParser.Aggregation_levelContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#federation_level.
+    def visitFederation_level(self, ctx:XMLParser.Federation_levelContext):
         return self.visitChildren(ctx)
 
 
@@ -166,6 +201,11 @@ class XMLParserVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLParser#permission_type.
     def visitPermission_type(self, ctx:XMLParser.Permission_typeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#ref_gov_area.
+    def visitRef_gov_area(self, ctx:XMLParser.Ref_gov_areaContext):
         return self.visitChildren(ctx)
 
 

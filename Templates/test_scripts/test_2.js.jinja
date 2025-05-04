@@ -1,0 +1,103 @@
+
+
+// We import Chai to use its asserting functions here.
+//parameters: DAO_name, addresses_list, addresses, owner_role_value, role_value, role_address, role_name
+const {{ "{" }} expect {{ "}" }} = require("chai");
+
+const {{ "{" }}
+  loadFixture,
+{{ "}" }} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+
+describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
+  let addresses = null;
+  /* let entityByValue = null; */
+  let addressesByEntityValue = null;
+
+  async function deployTokenFixture() {{ "{" }}
+    const [owner {% for role_address in addresses_list %} , {{role_address}} {% endfor %} ] = await ethers.getSigners();
+    const {{DAO_name}} = await ethers.deployContract("{{DAO_name}}");
+    await {{DAO_name}}.waitForDeployment();
+    
+    return {{ "{" }} {{DAO_name}}, owner {% for role_address in addresses_list %} , {{role_address}} {% endfor %} {{ "}" }};
+  {{ "}" }}
+
+  describe("Deployment", function () {{ "{" }}
+    it("Should set the right owner", async function () {{ "{" }}
+      const {{ "{" }} {{DAO_name}}, owner {{ "}" }} = await loadFixture(deployTokenFixture);
+      expect(await {{DAO_name}}.hasRole(owner.address)).to.equal({{owner_role_value}});
+    {{ "}" }});
+
+  {{ "}" }});
+
+    
+    
+  describe("Control relations", function () {{ "{" }}
+    
+    
+    
+    before(async function () {{ "{" }} 
+       
+      
+      let tx = null;
+       
+
+      let {{ "{" }} {{DAO_name}}, owner {% for role_address in addresses_list %} , {{role_address}} {% endfor %} {{ "}" }} = await loadFixture(deployTokenFixture);
+      addresses = [owner {% for role_address in addresses_list %} , {{role_address}} {% endfor %} ];
+
+      //entityByValue = new Map();
+      addressesByEntityValue = new Map();
+
+      {% for entity_value, address in addressesByEntityValue.items() %}
+      addressesByEntityValue.set({{entity_value}}, {{address}});
+      {% endfor %}
+
+
+      let ownerAddr = {{DAO_name}}.connect(owner);
+      {% for role_address in addresses_list %}
+        let {{ role_address }}Connect = {{DAO_name}}.connect({{role_address}});
+       
+      // addresses_by_entity.set( role_value, role_address); // role_value is the role role_name
+      {% endfor %}
+      // TODO: Add members, one per each role and committee (therefore, assigning a role/committee to each member)
+
+      const assignRolesPromises = addresses.map(
+        (addr, index) => {{ "{" }}
+          return new Promise( (resolve, reject)  => {{ "{" }}
+            
+            let txPromise = ownerAddr.assignRole(addr.address, addressesByEntityValue.get(addr.address));
+            
+            return txPromise.then( (txAR) => {{ "{" }}
+            
+              Promise.resolve(txAR.wait()).then(
+                (txWaitResult) => {{ "{" }}
+                  resolve( {{ "{" }} "address": addr.address, "tx": txWaitResult, "indexAddress": index{{ "}" }} ); // FINALMENTE QUESTO assignRole E' FINITO!
+                {{ "}" }}
+              ).catch( errTX => reject(errTX) );
+            
+            {{ "}" }}).catch( (errAssignRole) =>{{ "{" }}
+              reject(errAssignRole);
+            {{ "}" }});
+            
+          {{ "}" }});
+        {{ "}" }}
+      );
+
+      const txAll = await Promise.allSettled(
+        assignRolesPromises
+      );
+
+      const failedAssignmentTx = txAll.filter((txAssignmentPromiseState, index) => txAssignmentPromiseState.status == 'rejected');
+      const emptyArrayOfFailures = [];
+      expect(failedAssignmentTx).deep.equal(emptyArrayOfFailures);
+
+    {{ "}" }} ); // end of BEFORE
+
+it("Control relations should reflect the organizational structure of the DAO.", async function () {
+{%for control_relation in control_relation_results%}
+  expect(await {{DAO_name}}.canControl({{control_relation[0]}}, {{control_relation[1]}}).to.equal( {%if control_relation[2] %} true  {%else%} false {%endif%}));
+{%endfor%}
+  }); // end of it "Roles should not be able to assign the roles they don't control"
+    
+  {{ "}" }}); // end of describe "Control relations"
+
+{{ "}" }}); // end of describe "__DAO__ Permission Manager contract"

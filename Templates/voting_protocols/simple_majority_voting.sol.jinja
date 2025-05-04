@@ -1,0 +1,80 @@
+// SPDX-License-Identifier: MIT
+pragma solidity {{solidity_version}};
+
+// @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
+
+{% for import in imports %}
+{{ import }}
+{% endfor %}
+
+contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction{{inherited_contracts}} {
+    
+    // State variables
+    {{state_var_declarations}}
+
+    // Constructor
+    constructor(IVotes _token{{constructor_parameters}})
+        Governor("{{contract_name}}")
+        GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
+        GovernorVotes(_token)
+        GovernorVotesQuorumFraction(0)
+    {
+        {{constructor_actions}}
+    }
+
+    function castVote(uint256 proposalId, uint8 support)
+        public
+        override
+        returns (uint256)
+    {
+        {{vote_requirement}}
+        return super.castVote(proposalId, support);
+    }
+
+    // Override proposal logic to include permission check before proposing
+    function propose(address[] memory targets, uint256[] memory values, bytes[] memory calldatas, string memory description)
+        public
+        override
+        returns (uint256)
+    {
+        {{proposal_requirement}}
+        return super.propose(targets, values, calldatas, description);
+    }
+
+    function votingDelay()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.votingDelay();
+    }
+
+    function votingPeriod()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.votingPeriod();
+    }
+
+    function quorum(uint256 blockNumber)
+        public
+        view
+        override(Governor, GovernorVotesQuorumFraction)
+        returns (uint256)
+    {
+        return super.quorum(blockNumber);
+    }
+
+    function proposalThreshold()
+        public
+        view
+        override(Governor, GovernorSettings)
+        returns (uint256)
+    {
+        return super.proposalThreshold();
+    }
+    
+}

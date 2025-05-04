@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--Created with Liquid Studio (https://www.liquid-technologies.com)-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+ <!-- Global Type Definitions -->
+  <xs:complexType name="relation">
+    <xs:simpleContent>
+      <xs:extension base="xs:IDREFS">
+        <xs:anyAttribute namespace="##any" processContents="skip" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+<!-- DAO-ML Diagram -->
+<xs:element name="DAO-ML_diagram">
+<xs:complexType>
+<xs:sequence>
+<!-- DAO Element -->
+<xs:element name="DAO" minOccurs="1" maxOccurs="unbounded">
+<xs:complexType>
+<xs:choice minOccurs="0" maxOccurs="unbounded">
+<!-- Role Element -->
+<xs:element name="Role" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:choice minOccurs="0" maxOccurs="unbounded">
+<xs:element name="is_controlled_by" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="associated_to" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="aggregates" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="federates_into" type="relation" minOccurs="0" maxOccurs="unbounded" />
+</xs:choice>
+<xs:attribute name="role_ID" type="xs:ID" use="required" />
+<xs:attribute name="role_name" type="xs:string" use="required" />
+<xs:attribute name="role_assignment_method" type="xs:string" use="optional" />
+<xs:attribute name="n_agent_min" type="xs:int" use="optional" />
+<xs:attribute name="n_agent_max" type="xs:int" use="optional" />
+<xs:attribute name="agent_type" use="optional">
+<xs:simpleType>
+<xs:restriction base="xs:string">
+<xs:enumeration value="human" />
+<xs:enumeration value="autonomous_agent" />
+</xs:restriction>
+</xs:simpleType>
+</xs:attribute>
+<xs:attribute name="aggregation_level" type="xs:int" use="required"/>
+<xs:attribute name="federation_level" type="xs:int" use="required"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
+</xs:complexType>
+</xs:element>
+<!-- Committee Element -->
+<xs:element name="Committee" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:choice minOccurs="0" maxOccurs="unbounded">
+<xs:element name="is_controlled_by" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="associated_to" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="aggregates" type="relation" minOccurs="0" maxOccurs="unbounded" />
+<xs:element name="federates_into" type="relation" minOccurs="0" maxOccurs="unbounded" />
+</xs:choice>
+<xs:attribute name="committee_ID" type="xs:ID" use="required" />
+<xs:attribute name="committee_description" type="xs:string" use="required"/>
+<xs:attribute name="voting_condition" type="xs:string" use="optional"/>
+<xs:attribute name="proposal_condition" type="xs:string" use="optional"/>
+<xs:attribute name="decision_making_method" type="xs:string" use="optional"/>
+<xs:attribute name="aggregation_level" type="xs:int"/>
+<xs:attribute name="federation_level" type="xs:int"/>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
+</xs:complexType>
+</xs:element>
+  <!-- GovernanceArea Element -->
+<xs:element name="GovernanceArea" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:attribute name="gov_area_ID" type="xs:ID" use="required"/>
+<xs:attribute name="gov_area_description" type="xs:string" use="required" />
+<xs:attribute name="implementation" use="required">
+<xs:simpleType>
+<xs:restriction base="xs:string">
+<xs:enumeration value="on-chain"/>
+<xs:enumeration value="hybrid"/>
+<xs:enumeration value="off-chain"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:attribute>
+<xs:anyAttribute namespace="##any" processContents="skip"/>
+</xs:complexType>
+</xs:element>
+<!-- Permission Element -->
+<xs:element name="Permission" minOccurs="0" maxOccurs="unbounded">
+<xs:complexType>
+<xs:attribute name="permission_ID" type="xs:ID" use="required" />
+<xs:attribute name="allowed_action" type="xs:string" use="required" />
+<xs:attribute name="permission_type" use="required">
+<xs:simpleType>
+<xs:restriction base="xs:string">
+<xs:enumeration value="structural" />
+<xs:enumeration value="strategic" />
+<xs:enumeration value="operational" />
+</xs:restriction>
+</xs:simpleType>
+</xs:attribute>
+<xs:attribute name="ref_gov_area" type="xs:IDREF" use="optional" />
+<xs:anyAttribute namespace="##any" processContents="skip"/>
+</xs:complexType>
+</xs:element>
+</xs:choice>
+<xs:attribute name="DAO_ID" type="xs:ID" use="required" />
+<xs:attribute name="DAO_name" type="xs:string" use="required" />
+<xs:attribute name="mission_statement" type="xs:string" />
+<xs:attribute name="hierarchical_inheritance" type="xs:boolean" use="required" />
+<xs:anyAttribute namespace="##any" processContents="skip"/>
+</xs:complexType>
+</xs:element>
+</xs:sequence>
+<xs:attribute name="name" type="xs:string" use="required" />
+<xs:attribute name="uniqueID" type="xs:ID" use="required" />
+<xs:anyAttribute namespace="##any" processContents="skip"/>
+</xs:complexType>
+</xs:element>
+</xs:schema>
+
