@@ -84,6 +84,11 @@ class PipelineManager:
     
     def addItem(self, item: pi.PipelineItem):
         self.items[item.key] = item
+
+    def removeItem(self, key: str):
+        if key not in self.items:
+            return
+        del self.items[key]
     
     def getItem(self, key:str)-> pi.PipelineItem:
         for item in self.items:

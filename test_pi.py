@@ -78,9 +78,13 @@ class TestData(Enum):
         START = TD("START", "let's begin")
         C1 = TD("C1", 10)
         C2 = TD("C2", 8)
-        M1= TD("M1",5)
-        M2= TD("M2",3)
+        C3 = TD("C3", 7)
+        M1 = TD("M1",5)
+        M2 = TD("M2",3)
+        M3 = TD("M4", 8)
         Neuron1 = TD("Neuron1", 100000)
+        Neuron2 = TD("Neuron2", -1000)
+        Neuron3 = TD("Neuron3", 0)
         # V2d = TD("V2",7)
 
 if __name__ == "__main__":
@@ -92,7 +96,21 @@ if __name__ == "__main__":
     print("AAAAAAAAAAAAAA")
 
     pm = pmp.PipelineManager()
-    
+
+    print("\n\n 1) EMPTY")
+    pm.runPipeline()
+    print("DONE")
+
+    key_p = "just a printer"
+    pi = PIPrinter(key_p,  [], key_p)
+    print("\n\n 2) JUST ONE PRINT")
+    pm.addItem(pi)
+    pm.runPipeline()
+    print("done ... removing")
+    pm.removeItem(key_p)
+    print("DONE")
+
+    print("\n\n 3) diamond - neuron graph")
     pi = PIPrinter(TestData.START.value.k, [], TestData.START.value.d)
     pm.addItem(pi)
 
@@ -106,14 +124,56 @@ if __name__ == "__main__":
     pi = PIMath(TestData.M2.value.k, [TestData.C2.value.k], TestData.M2.value.d, False)
     pm.addItem(pi)
 
-    pi = PIMath(TestData.Neuron1.value.k, [TestData.M1.value.k,TestData.M2.value.k], TestData.Neuron1.value.d, True)
-    pm.addItem(pi)
+    neuron1 = PIMath(TestData.Neuron1.value.k, [TestData.M1.value.k,TestData.M2.value.k], TestData.Neuron1.value.d, True)
+    pm.addItem(neuron1)
 
-    pi = PIPrinter("echo", [TestData.Neuron1.value.k], None, True)
+    k_echo_n1 = "k_echo_n1"
+    pi = PIPrinter(k_echo_n1, [TestData.Neuron1.value.k], None, True)
     pm.addItem(pi)
 
     pm.runPipeline()
 
-
-    print("BBBBBBBBBBBBBB")
+    print("\n\n BBBBBBBBBBBBBB")
     
+
+    print("\n\n 4) another neuron adjacent to the previous one")
+
+    pi = PIInt(TestData.C3.value.k, [], TestData.C3.value.d)
+    pm.addItem(pi)
+    pi = PIMath(TestData.M3.value.k, [TestData.C3.value.k], TestData.M3.value.d, False)
+    pm.addItem(pi)
+    neuron2 = PIMath(TestData.Neuron2.value.k, [TestData.M3.value.k], TestData.Neuron2.value.d, True)
+    pm.addItem(neuron2)
+
+    neuron3 = PIMath(TestData.Neuron3.value.k, [TestData.Neuron1.value.k,TestData.Neuron2.value.k], TestData.Neuron3.value.d, True)
+    pm.addItem(neuron3)
+
+    k_echo_n3 = "echo neuron 3"
+    pi = PIPrinter(k_echo_n3, [TestData.Neuron3.value.k], None, True)
+    pm.addItem(pi)
+
+    pi = PIPrinter("ciao printer", [TestData.START.value.k], "ciao", False)
+    pm.addItem(pi)
+    k_echo_2 = "k_echo_2"
+    pi = PIPrinter(\
+        k_echo_2, \
+        [k_echo_n1, TestData.Neuron1.value.k, TestData.Neuron2.value.k, TestData.Neuron3.value.k, k_echo_n3], \
+        "WEIRD PRINTER", False)
+    pm.addItem(pi)
+
+    pm.runPipeline()
+
+    print("\n\n CCCCCCCCCCCCCC")
+
+
+    print("\n\n 5) just waiting neuron 2 for a node (like a neuron 4) injecting a constant in neuron 3")
+
+    c_after_n3 = "const after n2"
+    pi = PIInt(c_after_n3, [TestData.Neuron2.value.k], 400000)
+    pm.addItem(pi)
+    neuron3.addDependency(c_after_n3)
+
+    pm.runPipeline()
+
+    print("\n\n DDDDDDDD")
+
