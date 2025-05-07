@@ -8,5 +8,5 @@ class BaseOutput(pi.PipelineItem):
     def to_output(self, what, destination:str=None, additional_data=None) -> bool:
         return False
 
-    def run(self, input:dict[str, any]) -> any:
-        return self.to_output(input)
+    def run(self, inputs):
+        return self.to_output(inputs)

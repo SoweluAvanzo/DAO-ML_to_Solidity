@@ -7,5 +7,5 @@ class ValidatorBase(pi.PipelineItem):
     def validate(self, input:any) -> bool:
         return False
     
-    def run(self, input:dict[str, any]) -> any:
-        return self.validate(input)
+    def run(self, inputs):
+        return self.validate(inputs)
