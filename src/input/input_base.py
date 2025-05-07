@@ -21,5 +21,5 @@ class InputBase(pi.PipelineItem):
         '''
         return None
         
-    def run(self, input:dict[str, any]) -> any:
+    def run(self, inputs:dict[str, any]) -> any:
         return self.get_input()
