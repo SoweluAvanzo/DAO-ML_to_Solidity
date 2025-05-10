@@ -4,7 +4,7 @@ class ValidatorBase(pi.PipelineItem):
     def __init__(self, key:str):
         super().__init__(key)
 
-    def validate(self, input:any) -> bool:
+    def validate(self, input:dict) -> bool:
         return False
     
     def run(self, inputs):
