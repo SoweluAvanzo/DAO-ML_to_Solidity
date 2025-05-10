@@ -14,11 +14,11 @@ class JSONDiagramGenerator(DiagramGeneratorBase):
         obj = json.loads(input.get_input())
         return self.generate_diagram_from(obj)
 
-    def generate_diagram_from(self, apparently_diagram_json: dict[str, any]):
+    def generate_diagram_from(self, apparently_diagram_json: dict):
         # TODO
         return apparently_diagram_json
     
-    def generate_DAO_from(self, apparently_diagram_json: dict[str, any]) -> DAO:
+    def generate_DAO_from(self, apparently_diagram_json: dict) -> DAO:
         # TODO
         return None
     # TODO EVERYTHING ELSE ....

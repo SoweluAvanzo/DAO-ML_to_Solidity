@@ -9,7 +9,15 @@ class PIPrinter(pip.PipelineItem):
 
     def run(self, inputs):
         t = inputs[self.dependencies[0]] if self.from_input else self.text
-        print(f"printing: {t}")
+        if isinstance(t, list):
+            print(f"printing array:")
+            for x in t:
+                print(x)
+        elif isinstance(t, str):
+            print(f"printing: {t}")
+        else:
+            print(f"printing non-str, non-list:")
+            print(t)
         return inputs
 
     def repr_inner(self):

@@ -3,7 +3,7 @@ from typing import List, Dict
 class PipelineItem:
     def __init__(self, key: str, dependencies=None):
         self.key = key
-        self.dependencies: List[str] = dependencies
+        self.dependencies: List[str] = [] if dependencies is None else dependencies
 
     def run(self, inputs: Dict[str, any]):  # input:dict[str, any]) -> any:
         print(f"ERROR: PipelineItem has not implemented the run method. Key:")

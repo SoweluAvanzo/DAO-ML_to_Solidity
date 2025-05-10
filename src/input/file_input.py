@@ -7,10 +7,12 @@ class FileInput(ib.InputBase):
         self.file = None
     
     def open_file(self):
-        if self.file is not None: # TODO: how to check for closed files?
+        if not (self.file is None): # TODO: how to check for closed files?
             return self.file
         try:
-            return open(self.filepath, 'r')
+            f = open(self.filepath, 'r')
+            self.file = f
+            return f
         except Exception as err :
             print(err)
             return None                
