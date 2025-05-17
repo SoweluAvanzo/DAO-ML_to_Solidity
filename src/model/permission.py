@@ -20,3 +20,6 @@ class Permission(base_entity.BaseEntity):
         obj["voting_right"] = self.voting_right
         obj["proposal_right"] = self.proposal_right
         return obj
+    
+    def __repr__(self):
+        return self.toJSON()
