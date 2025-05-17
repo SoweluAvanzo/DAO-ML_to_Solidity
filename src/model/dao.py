@@ -20,6 +20,9 @@ class DAOMetadata:
             "user_functionalities_group_size": self.user_functionalities_group_size,
             "size_user_functionalities_group": self.size_user_functionalities_group
         }
+    
+    def __repr__(self):
+        return self.toJSON()
 
 class DAO(base_entity_module.BaseEntity):
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
@@ -87,3 +90,5 @@ class DAO(base_entity_module.BaseEntity):
         obj["conditions"] = self.conditions
         return obj
 
+    def __repr__(self):
+        return self.toJSON()

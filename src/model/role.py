@@ -75,3 +75,6 @@ class Role(base_entity.BaseEntity):
         obj["aggregated"] =  [ agg.get_id() for agg in self.aggregated ]
         obj["federated_committees"] = [c.id for c in self.federated_committees] 
         return obj
+
+    def __repr__(self):
+        return self.toJSON()
