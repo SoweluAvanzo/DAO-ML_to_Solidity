@@ -2,10 +2,11 @@
 from collections.abc import Iterable
 import src.output.base_output as bo
 import src.files.file_utils as fu
+import src.pipeline.pipeline_item as pi
 
 class TextFileOutput(bo.BaseOutput):
-    def __init__(self, key:str, base_destination=None):
-        super().__init__(key, base_destination)
+    def __init__(self, pipeline_item_data: pi.PIData, base_destination=None):
+        super().__init__(pipeline_item_data, base_destination)
 
     def to_output(self, what, destination:str=None, additional_data=None) -> bool:
         if destination is None:

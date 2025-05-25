@@ -1,8 +1,9 @@
 import src.input.input_base as ib
+import src.pipeline.pipeline_item as pi
 
 class FileInput(ib.InputBase):
-    def __init__(self, key:str, filepath):
-        super().__init__(key)
+    def __init__(self, pipeline_item_data: pi.PIData, filepath):
+        super().__init__(pipeline_item_data)
         self.filepath = filepath
         self.file = None
     

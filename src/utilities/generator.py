@@ -3,7 +3,6 @@ class GeneratorBase():
     '''
     @deprecated
     '''
-
     def __init__(self, n:int):
         self.n = n
         self.num = 0
@@ -18,7 +17,6 @@ class GeneratorBase():
     # Python 3 compatibility
     def __next__(self):
         return self.next()
-
 
     def next(self):
         if self.num < self.n:

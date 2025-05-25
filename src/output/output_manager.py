@@ -8,8 +8,8 @@ import src.pipeline.pipeline_item as pi
 # 2.2) TemplateRenderer -> accetta dei dati in un dizionario, popola un template (in Jinja) e restituisce le righe (po: crea il file (usa un TextFileOutput))
 
 class OutputManager(pi.PipelineItem):
-    def __init__(self, key:str, preferential_output: b_o.BaseOutput):
-        super().__init__(key)
+    def __init__(self, pipeline_item_data: pi.PIData, preferential_output: b_o.BaseOutput):
+        super().__init__(pipeline_item_data)
         self.preferential_output = preferential_output
 
     def to_output(self, what, destination:str=None, additional_data=None) -> bool:

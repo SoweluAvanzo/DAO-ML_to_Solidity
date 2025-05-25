@@ -14,7 +14,7 @@ def newEmptyDependencyOutputData(done=False, data=None): # -> list[bool, any]:
     return [done, data]
 class PipelineNode(pi.PipelineItem):
     def __init__(self, pipelineManager, item: pi.PipelineItem):
-        super().__init__("", None)
+        super().__init__(pi.PIData(item.get_key(), None))
         self.pipelineManager=pipelineManager
         self.item = item
         self.status_run = NodeRunStatus.NEVER_RUN
@@ -25,7 +25,7 @@ class PipelineNode(pi.PipelineItem):
         return self.item
 
     def getDependencies(self):
-        return self.item.dependencies
+        return self.item.get_dependencies()
 
     def getDependants(self):
         return self.dependants
@@ -33,11 +33,11 @@ class PipelineNode(pi.PipelineItem):
     def addDependant(self, newDependant:any):
         if not isinstance(newDependant, PipelineNode):
             raise TypeError(f"Provided dependant is not a PipelineNode, but a {type(newDependant)}")
-        item_dependant = newDependant.getItem()
-        key = item_dependant.key
+        item_dependant:pi.PipelineItem = newDependant.getItem()
+        key = item_dependant.get_key()
         self.dependants[key] = newDependant
         # self.dependency_outputs[key] = newEmptyDependencyOutputData()
-        newDependant.dependency_inputs[self.item.key] = newEmptyDependencyOutputData()
+        newDependant.dependency_inputs[self.item.get_key()] = newEmptyDependencyOutputData()
     
     def getInputForRun(self): # ->dict[str,any]:
         return { ite[0]: ite[1][1] for ite in self.dependency_inputs.items()}
@@ -48,13 +48,13 @@ class PipelineNode(pi.PipelineItem):
         """
         if self.status_run != NodeRunStatus.NEVER_RUN:
             return False
-        for dep in self.item.dependencies:
+        for dep in self.item.get_dependencies():
             if (dep not in self.dependency_inputs) or (not self.dependency_inputs[dep][0]): # are all dependencies satisfied? if not -> can't run
                 return False
         return True
     
     def addInput(self, input_value: any, dependency_job: pi.PipelineItem):
-        key = dependency_job.key
+        key = dependency_job.get_key()
         output_data = None
         if key in self.dependency_inputs:# if the data is already present, then update the "completed" value (the boolean value, first item of the array)
             output_data = self.dependency_inputs[key]
@@ -83,7 +83,7 @@ class PipelineManager:
         self.items:dict[str, pi.PipelineItem] = {}
     
     def addItem(self, item: pi.PipelineItem):
-        self.items[item.key] = item
+        self.items[item.get_key()] = item
 
     def removeItem(self, key: str):
         if key not in self.items:
@@ -91,29 +91,26 @@ class PipelineManager:
         del self.items[key]
     
     def getItem(self, key:str)-> pi.PipelineItem:
-        for item in self.items:
-            if item.key == key:
-                return item
-        return None
+        return self.items[key]
 
     def runPipeline(self) -> any:
         #setup the data structures
         items_as_list = list(self.items.values())
-        nodes = { item.key: PipelineNode(self, item) for item in items_as_list }
+        nodes = { item.get_key(): PipelineNode(self, item) for item in items_as_list }
         roots = []
         # setup dependendants
         for item in items_as_list:
-            key = item.key
+            key = item.get_key()
             current_node = nodes[key]
-            if item.dependencies != None and (len(item.dependencies) > 0):
-                for d in item.dependencies:
+            if item.get_dependencies() != None and (len(item.get_dependencies()) > 0):
+                for d in item.get_dependencies():
                     if d not in nodes:
                         print(f"ERROR: dependency {d} does not exist")
                     else:
                         n = nodes[d]
                         n.addDependant(current_node)
             else:
-                n = nodes[item.key]
+                n = nodes[item.get_key()]
                 roots.append(n)
                 n.status_run = NodeRunStatus.QUEUED
         job_queues = deque(roots) # a.k.a. "frontier" ; single thread -> only one item at a time can run
@@ -130,7 +127,7 @@ class PipelineManager:
                 if len(job.getDependants()) > 0:
                     for dependant_node in job.getDependants().values():
                         item_dependant = dependant_node.item
-                        dep_key = item_dependant.key
+                        dep_key = item_dependant.get_key()
                         dependant_node.addInput(output, job.item)
                         if dependant_node.status_run == NodeRunStatus.NEVER_RUN and dependant_node.canRun():
                             # add to queue
