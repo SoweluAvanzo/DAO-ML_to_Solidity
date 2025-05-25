@@ -1,11 +1,10 @@
 import time
 
-import src.pipeline.pipeline_item as pip
+import src.pipeline.pipeline_item as pi
 
-
-class PISleep(pip.PipelineItem):
-    def __init__(self, key, dependencies=None, milliseconds=0):
-        super().__init__(key, dependencies)
+class PISleep(pi.PipelineItem):
+    def __init__(self, pipeline_item_data: pi.PIData, milliseconds=0):
+        super().__init__(pipeline_item_data)
         self.milliseconds = milliseconds
 
     def run(self, inputs):
@@ -13,4 +12,7 @@ class PISleep(pip.PipelineItem):
         return inputs
 
     def repr_inner(self):
-        return """ "milliseconds": {0}""".format(str(self.milliseconds))
+        return \
+            """
+                "milliseconds": {0}
+            """.format(str(self.milliseconds))
