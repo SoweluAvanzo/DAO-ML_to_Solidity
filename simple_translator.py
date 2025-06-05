@@ -170,7 +170,7 @@ class SimpleSolidityTranslator(Translator):
         is_last = "" if committee_address_list == [] else ","
         lines.append(f"    constructor( address _owner{is_last} {committee_address_list}) " + "{")
         if self.context.daoOwner == True:
-            lines.append(f"        roles[_owner] = {self.context.dao.dao_name.replace(" ", "_")}Owner;")
+            lines.append(f"        roles[_owner] = {self.context.dao.dao_name.replace(' ', '_')}Owner;")
         lines.append(f"//assign roles to committees")
         lines.extend(f"roles[_{committee.committee_description}] = {committee.committee_description}; \n"  for committee in self.context.dao.committees.values())
         if self.context.role_declaration_policy == "index":

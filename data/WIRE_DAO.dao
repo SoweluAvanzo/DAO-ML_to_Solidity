@@ -36,7 +36,7 @@
 			<associated_to _id="dao_3e4c443c_6b75_4a19_b3f7_d7009a23c589">dao_0e1f9ece_7db2_465a_b3f9_1c29563b554f</associated_to>
 		</Role>
 		<GovernanceArea gov_area_ID="dao_01b3230e_0ec8_4db5_8849_89ab11003c14" gov_area_description="DAO Upgrades" implementation="on-chain" x="384.30894305085314" y="155.0761508541478" width="193.2" height="114" />
-		<Committee committee_ID="dao_2b96e2fe_efab_4b25_b22c_de7800896c35" committee_description="The Consortium" decision_making_method="simple_majority" aggregation_level="0" federation_level="0" x="429.08681067328706" y="368.3750109735781" width="112" height="49">
+		<Committee committee_ID="dao_2b96e2fe_efab_4b25_b22c_de7800896c35" committee_description="The Consortium" decision_making_method="simple_majority_voting" aggregation_level="0" federation_level="0" x="429.08681067328706" y="368.3750109735781" width="112" height="49">
 			<associated_to _id="dao_02d2c502_5348_4f31_9ed3_f2b793a8b78d">dao_df1d9018_d5c8_45a2_94c8_db8ce01cb59f</associated_to>
 			<associated_to _id="dao_c8718cf5_ffc3_4b78_bbb7_07b2385d00cd">dao_47294c16_54ee_442a_aaa1_c64cf100fc10</associated_to>
 			<associated_to _id="dao_b1baeadc_b724_4279_9522_3ed0e04890cd">dao_fc167012_9b0c_4ab5_8af3_14cee5a3555b</associated_to>
