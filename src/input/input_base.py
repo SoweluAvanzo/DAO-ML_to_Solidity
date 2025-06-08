@@ -3,6 +3,7 @@ import src.pipeline.pipeline_item as pi
 class InputBase(pi.PipelineItem):
     def __init__(self, pipeline_item_data: pi.PIData):
         super().__init__(pipeline_item_data)
+        self.input_for_run = None
 
     def get_input(self) -> list:
         '''
@@ -22,4 +23,7 @@ class InputBase(pi.PipelineItem):
         return None
         
     def run(self, inputs:dict) -> any:
-        return self.get_input()
+        self.input_for_run = inputs
+        input_got = self.get_input()
+        self.input_for_run = None
+        return input_got

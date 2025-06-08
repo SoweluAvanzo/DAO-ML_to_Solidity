@@ -9,6 +9,7 @@ from src.input.input_base import InputBase
 from src.input.xml_file_input import TextFileInputXML
 from src.diagram_generator.diagram_generator_base import DiagramGeneratorBase
 
+# @deprecated
 class XMLDiagramGenerator(DiagramGeneratorBase):
     def __init__(self, xml_schema:str|xmlschema.XMLSchema):
         self.xml_schema = None

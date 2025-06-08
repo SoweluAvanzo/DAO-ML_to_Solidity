@@ -61,8 +61,7 @@ class XMLDaoValidator(bv.BaseValidator):
         return False
 
 class ConstraintValidator():
-    def __init__(self, XMLFile, schemaFile):
-        self.xmlname = XMLFile
+    def __init__(self, schemaFile):
         self.schemafile = schemaFile
 
     #diagram validation functions for the two DAOMod diagram types
@@ -258,20 +257,22 @@ class ConstraintValidator():
         conditions.append(self.check_cyclic_dependencies(diagram, "aggregates"))
         conditions.append(self.check_cyclic_dependencies(diagram, "federates_into"))        
         conditions.append(self.check_relations_in_same_DAO(diagram, early_return=False))
+        i = 0
         for condition in conditions:
             if isinstance(condition, list):  # Check if the condition contains a list of errors
                 for sub_index, sub_condition in enumerate(condition):
-                    print(f"Error at condition {conditions.index(condition)}, sub-condition {sub_index}")
+                    print(f"Error at condition {i}, sub-condition {sub_index}")
                     print(sub_condition)
                     raise Exception(
-                        f"Invalid diagram {diagram_file}, condition {conditions.index(condition)}, sub-condition {sub_index} failed: {sub_condition}"
+                        f"Invalid diagram {diagram_file}, condition {i}, sub-condition {sub_index} failed: {sub_condition}"
                     )
             elif condition != True:
-                print(f"Error at condition {conditions.index(condition)}")
+                print(f"Error at condition {i}")
                 print(condition)
                 raise Exception(
-                    f"Invalid diagram {diagram_file}, condition {conditions.index(condition)} failed: {condition}"
+                    f"Invalid diagram {diagram_file}, condition {i} failed: {condition}"
                 )
+            i += 1
 
         print(f"All conditions are valid for the diagram {diagram_file}")
         return True
