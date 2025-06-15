@@ -9,7 +9,7 @@ class PIPrinter(pi.PipelineItem):
         self.from_input = from_input
 
     def run(self, inputs):
-        t = inputs[self.get_dependencies()[0]] if self.from_input else self.text
+        t = self.get_ith_input(inputs, 0) if self.from_input else self.text
         is_string = u.is_string_or_list(t)
         if is_string :
             print(f"printing: {t}")

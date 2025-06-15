@@ -12,6 +12,8 @@ import src.pipeline.pipeline_item as pi
 
 DEFAULT_XML_SCHEMA = "data/XSD_DAO_ML.xsd"
 
+
+# TODO: PUT THE ALREADY-READ-XML-(string) INTO THE CONSTRUCTOR !!!!!!!!!!!
 class XMLDaoValidator(bv.BaseValidator):
     def __init__(self, pipeline_item_data: pi.PIData, xml_schema_filepath: str, constraint_validator=None):
         super().__init__(pipeline_item_data)
@@ -19,28 +21,48 @@ class XMLDaoValidator(bv.BaseValidator):
         self.constraint_validator = constraint_validator
     
     def validate(self, input:str) -> bool:
+        # if the input is a list/array, then collapse it to form a single string
+        input_string=None
+        if isinstance(input, list):
+            input_string = "\n".join(input)
+            input = input_string
         # check if the input is a file or a string-of-already-read-file
         if not isinstance(input, str):
-            raise Exception(f"input is not a string: {input.__class__.__name__}")
+            error_text = f"input is not a string: {input.__class__.__name__}"
+            print(error_text)
+            raise Exception(error_text)
         tree_root = None
+        # try to obtain a parsed object of the XML file from the input:
+        # is the input the file path, a File or the actual already-read content?
         if os.path.isfile(input):
             with open(input, 'r') as file_xml:
                 tree_root = etree.parse(StringIO(file_xml))
+                input_string = ''.join(tree_root.itertext())
         elif (isinstance(input, TextIOBase) or \
             isinstance(input, BufferedIOBase) or \
             isinstance(input, RawIOBase) or \
             isinstance(input, IOBase) \
             ):
-                tree_root = etree.parse(StringIO(input))
+                tree_root = etree.parse(input)
+                input_string = ''.join(tree_root.itertext())
         else:
+            input_string = input
             parser = etree.XMLParser(ns_clean=True, remove_comments=True, remove_blank_text=True)
             tree_root = etree.fromstring(input, parser)
 
-        xml_s_fp = DEFAULT_XML_SCHEMA if self.xml_schema_filepath is None else self.xml_schema_filepath
-        cv = ConstraintValidator(xml_s_fp) if self.constraint_validator is None else self.constraint_validator
+        xml_schema_fp = DEFAULT_XML_SCHEMA if self.xml_schema_filepath is None else self.xml_schema_filepath
+        cv = ConstraintValidator(xml_schema_fp, input_string) if self.constraint_validator is None else self.constraint_validator
         
-        etree.tostring(tree_root)
-        print(tree_root.__class__.__name__)
+        errors_ok = cv.validate_dao_ml_diagram(tree_root)
+        ok:bool = errors_ok[0]
+        errors:list[str] = errors_ok[1]
+
+        return {
+            "validation_result": ok,
+            "errors": errors,
+            "tree_parsed": tree_root,
+            "input_string": input_string
+        }
 
         # TODO: RIFATTORIZZARE IL ConstraintValidator COSI' CHE PRENDA SOLO IL tree_root COME INPUT
 
@@ -61,24 +83,23 @@ class XMLDaoValidator(bv.BaseValidator):
         return False
 
 class ConstraintValidator():
-    def __init__(self, schemaFile):
+    def __init__(self, schemaFile, file_content):
         self.schemafile = schemaFile
+        self.file_content = file_content
 
     #diagram validation functions for the two DAOMod diagram types
-    def validate_against_schema(self):
-        file_name = self.xmlname
+    def validate_against_schema(self, diagram):
         schema_name = self.schemafile
-        try: 
-            diagram_xml = etree.parse(file_name)
+        try:
             validation = xmlschema.XMLSchema(schema_name)    
-            if validation.is_valid(diagram_xml):
+            if validation.is_valid(diagram):
                 print(f'The XML file structure complies with the DAO-ML schema')
                 return True
             else:
                 # Validate the XML file and collect errors
-                errors = list(validation.iter_errors(file_name))
+                errors = list(validation.iter_errors("file_name AAAAAAAAAAAAAAAAHHHs"))
                 error_output = []
-                print(f'The XML file is not valid. Found {len(errors)} error(s):')
+                
                 for error in errors:
                     #append error name
                     error_output.append(f"- {error} \n")
@@ -242,37 +263,42 @@ class ConstraintValidator():
         return True # no error
                 
 
-    def validate_dao_ml_diagram(self):
-        diagram_file = self.xmlname
+    def validate_dao_ml_diagram(self, diagram=None):
+        print("starting validate_dao_ml_diagram")
+        #diagram_file = self.xmlname
         conditions =[]
-
-        diagram = etree.parse(diagram_file)
-        conditions.append(self.validate_against_schema())
-        conditions.append(self.compare_subsets(diagram,"IDs that roles or committees are associated to", '//Role/associated_to/text()| //Committee/associated_to/text()',"Permission or Governance Area IDs", '//Permission/@permission_ID') )   
-        conditions.append(self.compare_subsets(diagram,"IDs of elements that roles aggregate into", '//Role/aggregates/text()',"Roles' IDs", '//Role/@role_ID'))    
-        conditions.append(self.compare_subsets(diagram,"IDs of elements that committees aggregate into", '//Committee/aggregates/text()',"Committee' IDs", '//Committee/@committee_ID'))
-        conditions.append(self.compare_subsets(diagram,"IDs of control relations", '//Role/is_controlled_by/text()|//Committee/is_controlled_by/text()',"Role or Committee IDs", '//Role/@role_ID|//Committee/@committee_ID'))  
-        conditions.append(self.check_relation_graphs(diagram,"aggregation_level", "aggregates"))
-        conditions.append(self.check_relation_graphs(diagram,"federation_level", "federates_into"))
-        conditions.append(self.check_cyclic_dependencies(diagram, "aggregates"))
-        conditions.append(self.check_cyclic_dependencies(diagram, "federates_into"))        
-        conditions.append(self.check_relations_in_same_DAO(diagram, early_return=False))
+        #if diagram is None:
+        #    diagram = etree.parse(diagram_file)
+        conditions.append(lambda s,d : s.validate_against_schema(d))
+        conditions.append(lambda s,d : s.compare_subsets(d,"IDs that roles or committees are associated to", '//Role/associated_to/text()| //Committee/associated_to/text()',"Permission or Governance Area IDs", '//Permission/@permission_ID') )   
+        conditions.append(lambda s,d : s.compare_subsets(d,"IDs of elements that roles aggregate into", '//Role/aggregates/text()',"Roles' IDs", '//Role/@role_ID'))    
+        conditions.append(lambda s,d : s.compare_subsets(d,"IDs of elements that committees aggregate into", '//Committee/aggregates/text()',"Committee' IDs", '//Committee/@committee_ID'))
+        conditions.append(lambda s,d : s.compare_subsets(d,"IDs of control relations", '//Role/is_controlled_by/text()|//Committee/is_controlled_by/text()',"Role or Committee IDs", '//Role/@role_ID|//Committee/@committee_ID'))  
+        conditions.append(lambda s,d : s.check_relation_graphs(d,"aggregation_level", "aggregates"))
+        conditions.append(lambda s,d : s.check_relation_graphs(d,"federation_level", "federates_into"))
+        conditions.append(lambda s,d : s.check_cyclic_dependencies(d, "aggregates"))
+        conditions.append(lambda s,d : s.check_cyclic_dependencies(d, "federates_into"))        
+        conditions.append(lambda s,d : s.check_relations_in_same_DAO(d, early_return=False))
         i = 0
-        for condition in conditions:
+        error_texts = []
+        print(f"validate_dao_ml_diagram with {len(conditions)} conditions")
+        for condition_lambda in conditions:
+            print(f"running condition lambda # {i}")
+            condition = condition_lambda(self, diagram)
             if isinstance(condition, list):  # Check if the condition contains a list of errors
                 for sub_index, sub_condition in enumerate(condition):
                     print(f"Error at condition {i}, sub-condition {sub_index}")
+                    error_text = f"Invalid diagram diagram_file, condition {i}, sub-condition {sub_index} failed: {sub_condition}"
                     print(sub_condition)
-                    raise Exception(
-                        f"Invalid diagram {diagram_file}, condition {i}, sub-condition {sub_index} failed: {sub_condition}"
-                    )
+                    #raise Exception(error_text)
+                    error_texts.append(error_text)
             elif condition != True:
                 print(f"Error at condition {i}")
+                error_text = f"Invalid diagram diagram_file, condition {i} failed: {condition}"
                 print(condition)
-                raise Exception(
-                    f"Invalid diagram {diagram_file}, condition {i} failed: {condition}"
-                )
+                #raise Exception(error_text)
+                error_texts.append(error_text)
             i += 1
 
-        print(f"All conditions are valid for the diagram {diagram_file}")
-        return True
+        #print(f"All conditions are valid for the diagram {diagram_file}")
+        return (True, None) if len(error_texts) <= 0 else (False, error_texts) 

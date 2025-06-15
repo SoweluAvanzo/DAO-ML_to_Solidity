@@ -8,4 +8,4 @@ class BaseGenerator(pi.PipelineItem):
         return None
 
     def run(self, inputs):
-        return self.generate(inputs[self.get_dependencies()[0]])
+        return self.generate(self.get_ith_input(inputs, 0))
