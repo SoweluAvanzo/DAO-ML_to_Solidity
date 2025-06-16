@@ -62,25 +62,7 @@ class XMLDaoValidator(bv.BaseValidator):
             "errors": errors,
             "tree_parsed": tree_root,
             "input_string": input_string
-        }
-
-        # TODO: RIFATTORIZZARE IL ConstraintValidator COSI' CHE PRENDA SOLO IL tree_root COME INPUT
-
-        # condition_validator = ConstraintValidator(xml_file, )
-        # condition_validator.validate_dao_ml_diagram()
-        # input_stream = FileStream(xml_file)
-        # lexer = XMLLexer(input_stream)
-        # stream = CommonTokenStream(lexer)
-        # parser = XMLParser(stream)
-        # tree = parser.document()
-
-        # visitor = DAOVisitor2()
-
-        # # PARTE 2) Dato l'input, CREARE ISTANZA DI "DiagramManager"
-        # diagram_manager = DiagramManager()
-        # visitor.parseDiagramTree(tree, diagram_manager)
-
-        return False
+        }        
 
 class ConstraintValidator():
     def __init__(self, schemaFile, file_content):
@@ -93,11 +75,11 @@ class ConstraintValidator():
         try:
             validation = xmlschema.XMLSchema(schema_name)    
             if validation.is_valid(diagram):
-                print(f'The XML file structure complies with the DAO-ML schema')
+                print(f'The XML file structure complies with the schema: {schema_name}')
                 return True
             else:
                 # Validate the XML file and collect errors
-                errors = list(validation.iter_errors("file_name AAAAAAAAAAAAAAAAHHHs"))
+                errors = list(validation.iter_errors(self.file_content))
                 error_output = []
                 
                 for error in errors:

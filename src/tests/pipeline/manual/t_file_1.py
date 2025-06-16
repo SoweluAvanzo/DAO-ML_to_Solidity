@@ -6,16 +6,18 @@ import src.input.txt_file_input as tfi
 import src.input.xml_file_input as xfi
 import src.validators.xml_dao_validator as xvi
 import src.generators.json_string_model_generator as jg
+import src.generators.xml_string_model_generator as xsmg
 
 import src.tests.pipeline.shared.pi_printer as pri
 import src.tests.pipeline.shared.pi_str as pstr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
+import src.tests.pipeline.shared.pi_inputs_to_array as parr
 
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
 FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".","data","tests","pipeline")
 
-FILE_NAME_XML_1 = "Travelhive_final_model_mini" # "Travelhive_final_model"
+FILE_NAME_XML_1 = "Travelhive_final_model" # "Travelhive_final_model_mini"
 EXTENSION_XML = "xml"
 FILE_PATH_XML = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
@@ -83,6 +85,23 @@ if __name__ == "__main__":
     k_printer_p_pts = "k_printer_p_pts"
     p_pts_printer = pri.PIPrinter(pi.PIData(k_printer_p_pts, [k_tf1_p_pts]), None, True)
     pm.addItem(p_pts_printer)
+
+    k_xml_generator = "k_xml_generator"
+    xml_generator = xsmg.XmlStringModelGenerator(pi.PIData(k_xml_generator, [k_xml_validator]))
+    pm.addItem(xml_generator)
+
+    k_string_model_printdebug = "k_string_model_printdebug"
+    string_model_printdebug = pstr.PIStr(pi.PIData(k_string_model_printdebug, None), "\n\nModel created from XML!")
+    pm.addItem(string_model_printdebug)
+    k_toarray_model_printdebug = "k_toarray_model_printdebug"
+    toarray_model_printdebug = parr.PIInputToArray(pi.PIData(k_toarray_model_printdebug, [k_string_model_printdebug, k_xml_generator]))
+    pm.addItem(toarray_model_printdebug)
+
+    k_printer_model_printdebug = "k_printer_model_printdebug"
+    printer_model_printdebug = pri.PIPrinter(pi.PIData(k_printer_model_printdebug, [k_toarray_model_printdebug]), None, True)
+    pm.addItem(printer_model_printdebug)
+
+    
 
     print("RUN\n\n\n")
     pm.runPipeline()
