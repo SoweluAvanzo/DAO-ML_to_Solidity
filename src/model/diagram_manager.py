@@ -3,14 +3,15 @@ import src.model.role as role_module
 import src.model.committee as committee_module
 import src.model.permission as permission_module
 import src.model.enums.relation_type as rt
+import src.control_graph.control_graph_basic as cgb
 
 
 class DiagramManager:
-    def __init__(self):
+    def __init__(self, controGraphGenerator=None):
         self.rowDataOnly = True
         self.daoByID: map[str, dao_module.DAO] = {}
         self.relations_by_dao: map[str, list[tuple[rt.RelationType, str, str]]] = {}
-
+        self.controGraphGenerator = controGraphGenerator
 
     def get_dao_by(self, daoOrID):
         dao = None
@@ -23,9 +24,9 @@ class DiagramManager:
         return dao
 
 
-    def addDao(self, dao):
-        self.daoByID[dao.dao_id] = dao
-        dao_id = dao.dao_id
+    def addDao(self, dao: dao_module.DAO):
+        self.daoByID[dao.get_id()] = dao
+        dao_id = dao.get_id()
         self.relations_by_dao[dao_id] = []
     
     def addRole(self, daoOrID, role: role_module.Role):
@@ -48,8 +49,9 @@ class DiagramManager:
     
 
     #
-    def createControlGraph(self):
-        pass #TODO
+    def createControlGraph(self, daoOrID):
+        dao = self.get_dao_by(daoOrID)
+        return cgb.ControlGraphBasic(dao) if self.controGraphGenerator is None else self.controGraphGenerator(dao)
 
 
     def get_aggregated_permissions(self, role_or_committee: role_module.Role | committee_module.Committee):

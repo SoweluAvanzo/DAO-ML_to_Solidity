@@ -4,18 +4,25 @@ import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
 import src.input.txt_file_input as tfi
 import src.input.xml_file_input as xfi
+import src.validators.xml_dao_validator as xvi
 import src.generators.json_string_model_generator as jg
+import src.generators.xml_string_model_generator as xsmg
 
 import src.tests.pipeline.shared.pi_printer as pri
 import src.tests.pipeline.shared.pi_str as pstr
+import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
+import src.tests.pipeline.shared.pi_inputs_to_array as parr
 
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
 FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".","data","tests","pipeline")
 
-FILE_NAME_XML_1 = "Travelhive_final_model"
+FILE_NAME_XML_1 = "Travelhive_final_model" # "Travelhive_final_model_mini"
 EXTENSION_XML = "xml"
 FILE_PATH_XML = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
+FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
+EXTENSION_XML_SCHEMA = "xsd"
+FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
 
 
 if __name__ == "__main__":
@@ -43,15 +50,17 @@ if __name__ == "__main__":
     # TODO: aggiungere valudazione generator che cerca di costruire gli oggetti del modello usando le giuste classi a partire dai dict generati dal JsonStringModelGenerator
 
     # TODO: aggiungere:
-    # [ ] lettore Text File del file xml
-    # [ ] XML validator
-    # [ ] XML_to_model_generator
-    # [ ] model_to_json_repr
-    # [ ] txt file_output
-    # [ ] IL TRADUTTORE
-    # [ ] jinja_outputter
-    # [ ] etc
+    # 1 )[V] lettore Text File del file xml
+    # 2 )[ ] XML validator
+    # 3 )[ ] XML_to_model_generator
+    # 4 )[ ] model_to_json_repr
+    # 5 )[ ] txt file_output
+    # 6 )[ ] IL TRADUTTORE
+    # 7 )[ ] jinja_outputter
+    # 8 )[ ] etc
     
+    # 1)
+
     k_xml_filepath_provider = "k_xml_filepath_provider"
     xml_filepath_provider = pstr.PIStr(pi.PIData(k_xml_filepath_provider, None), FILE_PATH_XML)
     pm.addItem(xml_filepath_provider)
@@ -63,6 +72,36 @@ if __name__ == "__main__":
     k_printer_echo_xml = "k_printer_echo_xml"
     printer_json = pri.PIPrinter(pi.PIData(k_printer_echo_xml, [k_xml_file_input_pi]), None, True)
     pm.addItem(printer_json)
+
+    # 2)
+
+    k_xml_validator = "k_xml_validator"
+    xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [k_xml_file_input_pi]), FILE_PATH_XML_SCHEMA)
+    pm.addItem(xml_validator)
+
+    k_tf1_p_pts = "k_tf1_p_pts"
+    p_pts = tf1_p_pts.TestFile1_Processor_ParsedTreeStringer(pi.PIData(k_tf1_p_pts, [k_xml_validator]))
+    pm.addItem(p_pts)
+    k_printer_p_pts = "k_printer_p_pts"
+    p_pts_printer = pri.PIPrinter(pi.PIData(k_printer_p_pts, [k_tf1_p_pts]), None, True)
+    pm.addItem(p_pts_printer)
+
+    k_xml_generator = "k_xml_generator"
+    xml_generator = xsmg.XmlStringModelGenerator(pi.PIData(k_xml_generator, [k_xml_validator]))
+    pm.addItem(xml_generator)
+
+    k_string_model_printdebug = "k_string_model_printdebug"
+    string_model_printdebug = pstr.PIStr(pi.PIData(k_string_model_printdebug, None), "\n\nModel created from XML!")
+    pm.addItem(string_model_printdebug)
+    k_toarray_model_printdebug = "k_toarray_model_printdebug"
+    toarray_model_printdebug = parr.PIInputToArray(pi.PIData(k_toarray_model_printdebug, [k_string_model_printdebug, k_xml_generator]))
+    pm.addItem(toarray_model_printdebug)
+
+    k_printer_model_printdebug = "k_printer_model_printdebug"
+    printer_model_printdebug = pri.PIPrinter(pi.PIData(k_printer_model_printdebug, [k_toarray_model_printdebug]), None, True)
+    pm.addItem(printer_model_printdebug)
+
+    
 
     print("RUN\n\n\n")
     pm.runPipeline()

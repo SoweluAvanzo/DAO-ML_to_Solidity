@@ -13,7 +13,7 @@ class PIAddMult(pi.PipelineItem):
                 input_data = inputs[dep] if dep in inputs else 0
                 partial += input_data
             return partial
-        return self.scalar * inputs[self.get_dependencies()[0]]  # input['value'] if 'value' in input else 0
+        return self.scalar * self.get_ith_input(inputs, 0)  # input['value'] if 'value' in input else 0
 
     def repr_inner(self):
         return \

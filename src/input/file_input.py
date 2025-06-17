@@ -11,7 +11,7 @@ class FileInput(ib.InputBase):
         if not (self.file is None): # TODO: how to check for closed files?
             return self.file
         try:
-            file_path = self.filepath if self.input_for_run is None or len(self.get_dependencies()) == 0 else self.input_for_run[self.get_dependencies()[0]]
+            file_path = self.filepath if self.input_for_run is None or len(self.get_dependencies()) == 0 else self.get_ith_input(self.input_for_run, 0)
             f = open(file_path, 'r')
             self.file = f
             return f
