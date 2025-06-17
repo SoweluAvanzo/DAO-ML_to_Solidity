@@ -3,7 +3,7 @@
 import src.pipeline.pipeline_item as pi
 import src.generators.base_generator as bg
 import src.utilities.utils as u
-
+import src.model.diagram_manager as dm
 
 class XmlStringModelGenerator(bg.BaseGenerator):
     def __init__(self, pipeline_item_data: pi.PIData):
@@ -16,7 +16,7 @@ class XmlStringModelGenerator(bg.BaseGenerator):
         # visitor = DAOVisitor2()
 
         # # PARTE 2) Dato l'input, CREARE ISTANZA DI "DiagramManager"
-        # diagram_manager = DiagramManager()
+        # diagram_manager = dm.DiagramManager()
         # visitor.parseDiagramTree(tree, diagram_manager)
 
         """ 
