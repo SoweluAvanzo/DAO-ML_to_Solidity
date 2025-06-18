@@ -19,7 +19,7 @@ class PIPrinter(pi.PipelineItem):
                 print(x)
         else:
             print(f"printing non-str, non-list:")
-            print(t)
+            print(repr(t))
         return inputs
 
     def repr_inner(self):

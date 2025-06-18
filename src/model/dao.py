@@ -90,5 +90,3 @@ class DAO(base_entity_module.BaseEntity):
         obj["conditions"] = self.conditions
         return obj
 
-    def __repr__(self):
-        return self.toJSON()

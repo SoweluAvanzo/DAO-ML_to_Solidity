@@ -1,3 +1,4 @@
+import src.model.base_entity as base_entity_module
 import src.model.dao as dao_module
 import src.model.role as role_module
 import src.model.committee as committee_module
@@ -6,8 +7,10 @@ import src.model.enums.relation_type as rt
 import src.control_graph.control_graph_basic as cgb
 
 
-class DiagramManager:
+class DiagramManager(base_entity_module.BaseEntity):
     def __init__(self, controGraphGenerator=None):
+        super().__init__("DiagramManager_ID")
+        self.uniqueID = "DiagramManager_ID"
         self.rowDataOnly = True
         self.daoByID: map[str, dao_module.DAO] = {}
         self.relations_by_dao: map[str, list[tuple[rt.RelationType, str, str]]] = {}
@@ -83,3 +86,36 @@ class DiagramManager:
                 result.append(str(role))
         return "\n".join(result)
     
+    
+    def toJSON(self):
+        """ 
+        self.uniqueID = "DiagramManager_ID"
+        self.rowDataOnly = True
+        self.daoByID: map[str, dao_module.DAO] = {}
+        self.relations_by_dao: map[str, list[tuple[rt.RelationType, str, str]]] = {}
+         """
+        #self.controGraphGenerator
+
+        relations_by_dao = {
+                dao_id: [\
+                    { \
+                        "relationType": rel_data[0].name, \
+                        "fromID": rel_data[1], \
+                        "content": rel_data[2], \
+                    }\
+                    for rel_data in relations
+                ]
+                for dao_id, relations in self.relations_by_dao.items()
+            }
+        daoByID = {\
+            dao_id: repr(dao) \
+            for dao_id, dao in self.daoByID.items() \
+        }
+        return {
+            "id": self.id,
+            "uniqueID": self.uniqueID,
+            "rowDataOnly": self.rowDataOnly,
+            "relations_by_dao": relations_by_dao,
+            "daoByID": daoByID,
+            "controGraphGenerator": None
+        }

@@ -26,3 +26,6 @@ class BaseEntity:
 
         string_builder.write(')')
         return string_builder.getvalue()
+    
+    def __repr__(self):
+        return self.toJSON()
