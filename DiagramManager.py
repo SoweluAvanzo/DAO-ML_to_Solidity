@@ -61,9 +61,12 @@ class DiagramManager:
             cg_wrapper = dc.ControlGraph(dao)
             dao.dao_control_graph = cg_wrapper         
        
-        
+    
     def get_aggregated_permissions(self, role_or_committee):
-
+        """
+        get and collect recursively all "decendants", all members
+        of inclusion relations that this Diagram could have.
+        """
         for aggregated in role_or_committee.aggregated:
             self.get_aggregated_permissions(aggregated)
             #the aggregator inherits permissions from the aggregated

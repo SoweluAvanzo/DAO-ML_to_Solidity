@@ -4,6 +4,7 @@ import src.model.role as role_module
 import src.model.committee as committee_module
 import src.model.permission as permission_module
 import src.model.enums.relation_type as rt
+import src.model.enums.governance_permission as gp
 import src.control_graph.control_graph_basic as cgb
 
 
@@ -62,6 +63,7 @@ class DiagramManager(base_entity_module.BaseEntity):
 
 
     def processRawInstances(self):
+        #TODO: use gp.GovernancePermission
         pass #TODO
 
 
