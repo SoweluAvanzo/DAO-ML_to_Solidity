@@ -5,7 +5,6 @@ import src.parsers.xml.XMLLexer as xmlL
 import src.parsers.xml.XMLParser as xmlP
 import src.parsers.xml.XMLParserVisitor as xmlPV
 
-
 import src.pipeline.pipeline_item as pi
 import src.generators.base_generator as bg
 #import src.utilities.utils as u
@@ -63,15 +62,26 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         diagramManager.processRawInstances()
         self.diagramManager = None # just to clean the memory
         
-    def visitDiagram(self, ctx):
+    def visitDiagram(self, ctx: xmlP.XMLParser.DiagramContext):
         print("..........visitDiagram ^^ ")
-        print("ctx.name()")
+        print(f"ctx type {type(ctx)}; class: {ctx.__class__.__name__} ; ctx.name()")
+        a = ctx.attribute(0)
+        print(a)
+        print(f"type {type(a)} ; class: {a.__class__.__name__}")
+        """ 
+        a = ctx.xpath("*")
+        print(a)
+        """
+        """ 
         print(ctx.name())
         print("ctx.unique_id()")
         print(ctx.unique_id())
-        self.diagramManager.uniqueID = ctx.unique_id()
+        """
+        """ 
+        self.diagramManager.id = ctx.unique_id()
         self.diagramManager.uniqueID = self.diagramManager.get_id()
-
+        """
+        
     def visitRole(self, ctx):
         role_id = ctx.role_id()[0].STRING().getText().strip('"')
         role_name = ctx.role_name()[0].STRING().getText().strip('"')

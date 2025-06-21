@@ -167,7 +167,7 @@ class DiagramManager(base_entity_module.BaseEntity):
             self.generate_conditions(dao)
             #generate owner role
             self.generateOwnerRole(dao)
-        self.createControlGraph()
+            self.createControlGraph(dao_id)
 
 
     def generateOwnerRole(self, dao: dao_module.DAO):
