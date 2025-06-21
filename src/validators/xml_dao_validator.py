@@ -22,10 +22,10 @@ class XMLDaoValidator(bv.BaseValidator):
     
     def validate(self, input:str) -> bool:
         # if the input is a list/array, then collapse it to form a single string
-        input_string=None
+        input_string_list=None
         if isinstance(input, list):
-            input_string = "\n".join(input)
-            input = input_string
+            input_string_list = input
+            input = "\n".join(input)
         # check if the input is a file or a string-of-already-read-file
         if not isinstance(input, str):
             error_text = f"input is not a string: {input.__class__.__name__}"
@@ -37,21 +37,21 @@ class XMLDaoValidator(bv.BaseValidator):
         if os.path.isfile(input):
             with open(input, 'r') as file_xml:
                 tree_root = etree.parse(StringIO(file_xml))
-                input_string = ''.join(tree_root.itertext())
+                input_string_list = tree_root.itertext()
         elif (isinstance(input, TextIOBase) or \
             isinstance(input, BufferedIOBase) or \
             isinstance(input, RawIOBase) or \
             isinstance(input, IOBase) \
             ):
                 tree_root = etree.parse(input)
-                input_string = ''.join(tree_root.itertext())
+                input_string_list = tree_root.itertext()
         else:
-            input_string = input
+            input_string_list = input.split('\n')
             parser = etree.XMLParser(ns_clean=True, remove_comments=True, remove_blank_text=True)
             tree_root = etree.fromstring(input, parser)
 
         xml_schema_fp = DEFAULT_XML_SCHEMA if self.xml_schema_filepath is None else self.xml_schema_filepath
-        cv = ConstraintValidator(xml_schema_fp, input_string) if self.constraint_validator is None else self.constraint_validator
+        cv = ConstraintValidator(xml_schema_fp, input) if self.constraint_validator is None else self.constraint_validator
         
         errors_ok = cv.validate_dao_ml_diagram(tree_root)
         ok:bool = errors_ok[0]
@@ -61,7 +61,8 @@ class XMLDaoValidator(bv.BaseValidator):
             "validation_result": ok,
             "errors": errors,
             "tree_parsed": tree_root,
-            "input_string": input_string
+            "input": input,
+            "input_string_list": input_string_list
         }        
 
 class ConstraintValidator():

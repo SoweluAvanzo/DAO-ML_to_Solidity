@@ -30,6 +30,7 @@ class DAO(base_entity_module.BaseEntity):
         self.dao_name = dao_name
         self.mission_statement = mission_statement
         self.hierarchical_inheritance = hierarchical_inheritance
+        self.owner_role: role_module.Role = None
         self.roles: dict[str, role_module.Role] = {}
         self.committees: dict[str, committee_module.Committee] = {}
         self.permissions: dict[str, permission_module.Permission] = {}
@@ -90,5 +91,3 @@ class DAO(base_entity_module.BaseEntity):
         obj["conditions"] = self.conditions
         return obj
 
-    def __repr__(self):
-        return self.toJSON()

@@ -51,8 +51,8 @@ if __name__ == "__main__":
 
     # TODO: aggiungere:
     # 1 )[V] lettore Text File del file xml
-    # 2 )[ ] XML validator
-    # 3 )[ ] XML_to_model_generator
+    # 2 )[V] XML validator
+    # 3 )[V] XML_to_model_generator
     # 4 )[ ] model_to_json_repr
     # 5 )[ ] txt file_output
     # 6 )[ ] IL TRADUTTORE
@@ -86,6 +86,8 @@ if __name__ == "__main__":
     p_pts_printer = pri.PIPrinter(pi.PIData(k_printer_p_pts, [k_tf1_p_pts]), None, True)
     pm.addItem(p_pts_printer)
 
+    # 3)
+
     k_xml_generator = "k_xml_generator"
     xml_generator = xsmg.XmlStringModelGenerator(pi.PIData(k_xml_generator, [k_xml_validator]))
     pm.addItem(xml_generator)
@@ -101,7 +103,11 @@ if __name__ == "__main__":
     printer_model_printdebug = pri.PIPrinter(pi.PIData(k_printer_model_printdebug, [k_toarray_model_printdebug]), None, True)
     pm.addItem(printer_model_printdebug)
 
-    
+    #4)
+
+    k_xml_generator = "k_xml_generator"
+    #k_model_to_json
+
 
     print("RUN\n\n\n")
     pm.runPipeline()
