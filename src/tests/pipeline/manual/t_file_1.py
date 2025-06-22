@@ -7,6 +7,9 @@ import src.input.xml_file_input as xfi
 import src.validators.xml_dao_validator as xvi
 import src.generators.json_string_model_generator as jg
 import src.generators.xml_string_model_generator as xsmg
+import src.utilities.constants as consts
+import src.cli.cli_executor as clie
+import src.cli.antlr_invoker as grammar_compiler
 
 import src.tests.pipeline.shared.pi_printer as pri
 import src.tests.pipeline.shared.pi_str as pstr
@@ -23,6 +26,10 @@ FILE_PATH_XML = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_1)}.{EX
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
 FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
+
+XML_DAO_GRAMMAR_FILENAME = "XMLParser"
+XML_DAO_GRAMMAR_EXTENSION = "g4"
+XML_DAO_GRAMMAR_FILEPATH = files.concat_folder_filename('.', 'src', 'parsers', 'xml', f"{XML_DAO_GRAMMAR_FILENAME}.{XML_DAO_GRAMMAR_EXTENSION}")
 
 
 if __name__ == "__main__":
@@ -51,6 +58,7 @@ if __name__ == "__main__":
 
     # TODO: aggiungere:
     # 1 )[V] lettore Text File del file xml
+    #1.5)[ ] compile the parser
     # 2 )[V] XML validator
     # 3 )[V] XML_to_model_generator
     # 4 )[ ] model_to_json_repr
@@ -73,10 +81,18 @@ if __name__ == "__main__":
     printer_json = pri.PIPrinter(pi.PIData(k_printer_echo_xml, [k_xml_file_input_pi]), None, True)
     pm.addItem(printer_json)
 
+    #1.5) 
+
+    k_grammar_generator = "k_grammar_generator"
+    print(f"loading grammar at: {XML_DAO_GRAMMAR_FILEPATH}")
+    grammar_generator = grammar_compiler.AntlrInvoker(pi.PIData(k_grammar_generator, None), XML_DAO_GRAMMAR_FILEPATH)
+    pm.addItem(grammar_generator)
+
+
     # 2)
 
     k_xml_validator = "k_xml_validator"
-    xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [k_xml_file_input_pi]), FILE_PATH_XML_SCHEMA)
+    xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [k_xml_file_input_pi, k_grammar_generator]), FILE_PATH_XML_SCHEMA)
     pm.addItem(xml_validator)
 
     k_tf1_p_pts = "k_tf1_p_pts"
@@ -105,9 +121,28 @@ if __name__ == "__main__":
 
     #4)
 
-    k_xml_generator = "k_xml_generator"
     #k_model_to_json
 
+
+    #8)
+    k_commands_inputs = "k_commands_inputs"
+    commands_inputs = {
+        "k_dir": "dir",
+        "k_anltr": f"java -jar {os.path.join(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1.jar')}",
+        "k_echo": "echo ciao mamma"
+    }
+    keys_commands = list(commands_inputs.keys())
+    keys_commands_submitter = [f"{k_c}_submitter" for k_c in keys_commands]
+    i = 0
+    for k_cli_submitter in keys_commands_submitter:
+        cli_submitter = pstr.PIStr(pi.PIData(k_cli_submitter, None), commands_inputs[keys_commands[i]])
+        pm.addItem(cli_submitter)
+        i += 1
+    k_cli_exec = "k_cli_exec"
+    cli_exec = clie.CLIExecutor(pi.PIData(k_cli_exec, keys_commands_submitter), inputs_as_separated_commands=True)
+    pm.addItem(cli_exec)
+    
+    
 
     print("RUN\n\n\n")
     pm.runPipeline()
