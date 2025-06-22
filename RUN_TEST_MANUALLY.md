@@ -26,6 +26,12 @@ The packages that might arise that waring are the following
 - pipreqs
 
 
+#### compile the grammar
+
+run:
+**`python -m compile_DAOML_grammar > CCCCCC.txt`**
+
+
 ### Run on Terminal a test file manually
 
 With the Command Line (Terminal) pointing to the root of this project (i.e. "DAO-ML_to_Solidity" ),

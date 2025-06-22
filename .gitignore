@@ -171,6 +171,8 @@ node_modules/
 # nostre
 *_properties.txt
 *.txt
+!requirements.txt
+!requirements_TEMP.txt
 translated/
 translated/*
 out
