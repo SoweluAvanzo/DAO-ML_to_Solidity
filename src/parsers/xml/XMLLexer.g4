@@ -68,9 +68,8 @@ S             : [ \t\r\n] -> skip;
 
 DOUBLE_TICK   : '"';
 
-UNIQUEID_LITERAL
-    : 'uniqueID'
-    ;
+UNIQUEID_LITERAL: 'uniqueID';
+UNIQUEID_PREFIX: 'dao';
 
 fragment HEXDIGIT: [a-fA-F0-9];
 
@@ -105,6 +104,7 @@ UUIDV4:
     HEX_4 HEX_4 UuidV4Separator HEX_4 UuidV4Separator HEX_4 UuidV4Separator HEX_4 UuidV4Separator HEX_4 HEX_4 HEX_4
     ;
 
+UNIQUEID: UNIQUEID_PREFIX UuidV4Separator UUIDV4;
 
 // ----------------- Handle <? ... ?> ---------------------
 mode PROC_INSTR;
