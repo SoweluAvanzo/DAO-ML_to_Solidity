@@ -11,10 +11,10 @@ import src.utilities.constants as consts
 import src.cli.cli_executor as clie
 import src.cli.antlr_invoker as grammar_compiler
 
-import src.tests.pipeline.shared.pi_printer as pri
-import src.tests.pipeline.shared.pi_str as pstr
+import src.pipeline.utilities.pi_printer as pri
+import src.pipeline.utilities.pi_str as pstr
+import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
-import src.tests.pipeline.shared.pi_inputs_to_array as parr
 
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
@@ -82,17 +82,17 @@ if __name__ == "__main__":
     pm.addItem(printer_json)
 
     #1.5) 
-
+    """
     k_grammar_generator = "k_grammar_generator"
     print(f"loading grammar at: {XML_DAO_GRAMMAR_FILEPATH}")
     grammar_generator = grammar_compiler.AntlrInvoker(pi.PIData(k_grammar_generator, None), XML_DAO_GRAMMAR_FILEPATH)
     pm.addItem(grammar_generator)
-
+    """
 
     # 2)
 
     k_xml_validator = "k_xml_validator"
-    xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [k_xml_file_input_pi, k_grammar_generator]), FILE_PATH_XML_SCHEMA)
+    xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [k_xml_file_input_pi]), FILE_PATH_XML_SCHEMA) #, k_grammar_generator
     pm.addItem(xml_validator)
 
     k_tf1_p_pts = "k_tf1_p_pts"
@@ -129,7 +129,8 @@ if __name__ == "__main__":
     commands_inputs = {
         "k_dir": "dir",
         "k_anltr": f"java -jar {os.path.join(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1.jar')}",
-        "k_echo": "echo ciao mamma"
+        "k_echo": "echo ciao mamma",
+        "k_multiple": "cd data & dir & cd .."
     }
     keys_commands = list(commands_inputs.keys())
     keys_commands_submitter = [f"{k_c}_submitter" for k_c in keys_commands]

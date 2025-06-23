@@ -7,7 +7,7 @@ class CLIExecutor(pi.PipelineItem):
         self.inputs_as_separated_commands = inputs_as_separated_commands
 
 
-    def execute_command(self, command, index:int=None):
+    def execute_command(self, command:str, inputs:dict, index:int=None):
         o = None
         done = False
         try:
@@ -30,13 +30,20 @@ class CLIExecutor(pi.PipelineItem):
             i = 0
             for d in deps:
                 command = inputs[d]
-                print(f"running command #{i}: {command}")
+                # print(f"running command #{i}: {command}")
                 done, o = self.execute_command(command, i)
                 if done:
                     outputs[i] = o
                 i += 1
             return outputs
         command = self.commands_froms_inputs(inputs)
-        done, o = self.execute_command(command, None)
+        done, o = self.execute_command(command, inputs, None)
         return o if done else None
         
+    def repr_inner(self):
+        return \
+            """
+                "inputs_as_separated_commands": {0}
+            """.format( \
+                'true' if self.inputs_as_separated_commands else 'false'
+            )

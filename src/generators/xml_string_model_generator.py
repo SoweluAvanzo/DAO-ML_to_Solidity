@@ -62,7 +62,7 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         diagramManager.processRawInstances()
         self.diagramManager = None # just to clean the memory
         
-    def visitDiagram(self, ctx: xmlP.XMLParser.DiagramContext):
+    def visitDiagram(self, ctx:xmlP.XMLParser.DiagramContext):
         print("..........visitDiagram ^^ ")
         print(f"ctx type {type(ctx)}; class: {ctx.__class__.__name__} ; ctx.name()")
         a = ctx.attribute(0)
@@ -82,7 +82,14 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         self.diagramManager.uniqueID = self.diagramManager.get_id()
         """
         
-    def visitRole(self, ctx):
+    # Visit a parse tree produced by XMLParser#unique_id.
+    def visitUnique_id(self, ctx:xmlP.XMLParser.Unique_idContext):
+        print("visitUnique_id ^_^")
+        uniqueID = ctx.UUIDV4()
+        print(f"uniqueID: {uniqueID}")
+        return self.visitChildren(ctx)
+        
+    def visitRole(self, ctx:xmlP.XMLParser.RoleContext):
         role_id = ctx.role_id()[0].STRING().getText().strip('"')
         role_name = ctx.role_name()[0].STRING().getText().strip('"')
         role_assignment_method = ctx.role_assignment_method()[0].STRING().getText().strip('"') if len(ctx.role_assignment_method()) > 0 and ctx.role_assignment_method()[0] else None

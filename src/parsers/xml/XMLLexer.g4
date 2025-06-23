@@ -66,6 +66,12 @@ STRING        : '"' ~[<"]* '"' | '\'' ~[<']* '\'';
 Name          : NameStartChar NameChar*;
 S             : [ \t\r\n] -> skip;
 
+DOUBLE_TICK   : '"';
+
+UNIQUEID_LITERAL
+    : 'uniqueID'
+    ;
+
 fragment HEXDIGIT: [a-fA-F0-9];
 
 fragment DIGIT: [0-9];
@@ -88,6 +94,17 @@ fragment NameStartChar:
     | '\uF900' ..'\uFDCF'
     | '\uFDF0' ..'\uFFFD'
 ;
+
+fragment UuidV4Separator: '-' | '_';
+
+fragment HEX_4
+    : HEXDIGIT HEXDIGIT HEXDIGIT HEXDIGIT
+    ;
+
+UUIDV4:
+    HEX_4 HEX_4 UuidV4Separator HEX_4 UuidV4Separator HEX_4 UuidV4Separator HEX_4 UuidV4Separator HEX_4 HEX_4 HEX_4
+    ;
+
 
 // ----------------- Handle <? ... ?> ---------------------
 mode PROC_INSTR;

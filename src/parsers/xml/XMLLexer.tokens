@@ -46,7 +46,10 @@ EQUALS=45
 STRING=46
 Name=47
 S=48
-PI=49
+DOUBLE_TICK=49
+UNIQUEID_LITERAL=50
+UUIDV4=51
+PI=52
 '<'=7
 'DAO-ML_diagram'=10
 'DAO'=11
@@ -83,3 +86,5 @@ PI=49
 '/>'=43
 '/'=44
 '='=45
+'"'=49
+'uniqueID'=50

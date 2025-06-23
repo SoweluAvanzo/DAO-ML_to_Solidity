@@ -22,7 +22,7 @@ element
     ;
 
 
-diagram: OPEN DIAGRAM misc* attribute* misc* CLOSE chardata? ((dao | reference | comments_and_stuff | attribute) misc* chardata?)* OPEN SLASH DIAGRAM CLOSE
+diagram: OPEN DIAGRAM misc* attribute* unique_id attribute* misc* CLOSE chardata? ((dao | reference | comments_and_stuff | attribute) misc* chardata?)* OPEN SLASH DIAGRAM CLOSE
     ;
 
 dao
@@ -104,8 +104,13 @@ ref_gov_area : REF_GOV_AREA EQUALS STRING;
 
 //generic attribute definition
 attribute
-    : Name '=' STRING
+    : Name EQUALS STRING
     ; // Our STRING is AttValue in spec
+
+unique_id
+//    : UNIQUEID_LITERAL EQUALS DOUBLE_TICK UUIDV4 DOUBLE_TICK
+    : UNIQUEID_LITERAL EQUALS UUIDV4
+    ;
 
 /** ``All text that is not markup constitutes the character data of
  *  the document.''
