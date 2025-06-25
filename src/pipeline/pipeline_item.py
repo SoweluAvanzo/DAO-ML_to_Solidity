@@ -38,8 +38,8 @@ class PipelineItem:
     def get_dependencies(self):
         return self.pipeline_item_data.dependencies
     
-    def get_ith_input(self, input: Dict[str, any], index):
-        return input[self.get_dependencies()[index]]
+    def get_ith_input(self, inputs: Dict[str, any], index):
+        return inputs[self.get_dependencies()[index]]
 
     def repr_inner(self):
         return ""

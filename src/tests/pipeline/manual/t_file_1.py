@@ -9,10 +9,13 @@ import src.generators.json_string_model_generator as jg
 import src.generators.xml_string_model_generator as xsmg
 import src.utilities.constants as consts
 import src.cli.cli_executor as clie
-import src.cli.antlr_invoker as grammar_compiler
+#import src.cli.antlr_invoker as grammar_compiler
+import src.postprocessing.model_to_json as m_json
+import src.output.text_file_output as tfo
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
+import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
@@ -31,6 +34,9 @@ XML_DAO_GRAMMAR_FILENAME = "XMLParser"
 XML_DAO_GRAMMAR_EXTENSION = "g4"
 XML_DAO_GRAMMAR_FILEPATH = files.concat_folder_filename('.', 'src', 'parsers', 'xml', f"{XML_DAO_GRAMMAR_FILENAME}.{XML_DAO_GRAMMAR_EXTENSION}")
 
+FILE_OUTPUT_MODEL_NAME = f"{FILE_NAME_XML_1}_JSONed"
+FILE_OUTPUT_MODEL_EXTENSION = "json"
+FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename('.', 'outputs', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
 
 if __name__ == "__main__":
     print("AAAAAAAAAAAAAA")
@@ -57,12 +63,12 @@ if __name__ == "__main__":
     # TODO: aggiungere valudazione generator che cerca di costruire gli oggetti del modello usando le giuste classi a partire dai dict generati dal JsonStringModelGenerator
 
     # TODO: aggiungere:
+    #0.5)[ ] compile the parser -> MUST be done before running this script
     # 1 )[V] lettore Text File del file xml
-    #1.5)[ ] compile the parser
     # 2 )[V] XML validator
     # 3 )[V] XML_to_model_generator
-    # 4 )[ ] model_to_json_repr
-    # 5 )[ ] txt file_output
+    # 4 )[V] model_to_json_repr
+    # 5 )[V] txt file_output
     # 6 )[ ] IL TRADUTTORE
     # 7 )[ ] jinja_outputter
     # 8 )[ ] etc
@@ -121,8 +127,26 @@ if __name__ == "__main__":
 
     #4)
 
-    #k_model_to_json
+    k_model_to_json="k_model_to_json"
+    model_to_json = m_json.JsonStringModelGenerator(pi.PIData(k_model_to_json, [k_xml_generator]), True, indent="\t")
+    pm.addItem(model_to_json)
+    k_model_to_json_printer = "k_model_to_json_printer"
+    printer_model_jsonified = pri.PIPrinter(pi.PIData(k_model_to_json_printer, [k_model_to_json]), None, True)
+    pm.addItem(printer_model_jsonified)
 
+    # 5)
+    k_additional_output_data = "k_additional_output_data"
+    additional_metadata = {
+        "mode": "w"
+    }
+    additional_output_data = pval.PIAnyValue(pi.PIData(k_additional_output_data, [k_model_to_json]), additional_metadata)
+    pm.addItem(additional_output_data)
+    k_model_text_to_file_output = "k_model_text_to_file_output"
+    model_text_to_file_output = tfo.TextFileOutput(pi.PIData(k_model_text_to_file_output, [k_model_to_json, k_additional_output_data]), FILE_OUTPUT_MODEL_FILEPATH)
+    pm.addItem(model_text_to_file_output)
+    k_model_text_to_file_output_ok_printer = "k_model_text_to_file_output_ok_printer"
+    model_text_to_file_output_ok_printer = pri.PIPrinter(pi.PIData(k_model_text_to_file_output_ok_printer, [k_model_text_to_file_output]), "DONE ^^", False)
+    pm.addItem(model_text_to_file_output_ok_printer)
 
     #8)
     k_commands_inputs = "k_commands_inputs"

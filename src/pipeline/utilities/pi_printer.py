@@ -1,3 +1,5 @@
+import traceback
+
 import src.pipeline.pipeline_item as pi
 import src.utilities.utils as u
 
@@ -14,9 +16,15 @@ class PIPrinter(pi.PipelineItem):
         if is_string :
             print(f"printing: {t}")
         elif is_string != None:
-            print(f"printing array:")
+            print(f"printing array ({len(t)} elements):") 
+            i = 0
             for x in t:
-                print(x)
+                try:
+                    print(x)
+                except Exception as e:
+                    print(f"ERROR while printing {i}-th element:")
+                    traceback.print_exception(e)
+                i += 1
         else:
             print(f"printing non-str, non-list:")
             print(repr(t))

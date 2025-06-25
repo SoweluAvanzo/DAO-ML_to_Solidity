@@ -6,6 +6,8 @@ class PIAnyValue(pi.PipelineItem):
         self.val = val
 
     def run(self, inputs):
+        print("ANY VALUE")
+        print(self.val)
         return self.val
 
     def repr_inner(self):
