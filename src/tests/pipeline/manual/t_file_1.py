@@ -10,7 +10,7 @@ import src.generators.xml_string_model_generator as xsmg
 import src.utilities.constants as consts
 import src.cli.cli_executor as clie
 #import src.cli.antlr_invoker as grammar_compiler
-import src.postprocessing.model_to_json as m_json
+import src.postprocessing.serialization.model_to_json as m_json
 import src.output.text_file_output as tfo
 
 import src.pipeline.utilities.pi_printer as pri
