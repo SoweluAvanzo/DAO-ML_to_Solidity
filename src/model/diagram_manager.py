@@ -80,10 +80,11 @@ class DiagramManager(base_entity_module.BaseEntity):
 
 
     def processRawInstances(self):
+        print("\n running processRawInstances\n")
         # TODO 20/06/2025: use gp.GovernancePermission  Assign permissions to roles and committees in DAO based on association relations
         # TODO 20/06/2025: rafactor away this creation because it's not DiagramManager's responsibility to perfor all of this "management"
         for daooo in self.daoByID.values():
-            dao: dao_module.DAO = dao
+            dao: dao_module.DAO = daooo
             dao_id = dao.get_id()
             for relation in self.relations_by_dao[dao_id]:
                 fromID = relation[1]
@@ -184,12 +185,12 @@ class DiagramManager(base_entity_module.BaseEntity):
             committee.add_controller(owner_role.get_id())
 
 
-    def create_governance_permission(self, type, committee: committee_module.Committee):
-        permission_id = committee.get_id() + type + "Right"
-        allowed_action = committee.committee_description + " " + type + " Right"
-        if type == gp.GovernancePermission.VOTING:
+    def create_governance_permission(self, governance_permission_type:gp.GovernancePermission, committee: committee_module.Committee):
+        permission_id = committee.get_id() + governance_permission_type.value + "Right"
+        allowed_action = committee.committee_description + " " + governance_permission_type.value + " Right"
+        if governance_permission_type == gp.GovernancePermission.VOTING:
             permission = permission_module.Permission(permission_id=permission_id, allowed_action= allowed_action, permission_type ="strategic", ref_gov_area = None, voting_right = True, proposal_right = False)
-        elif type == gp.GovernancePermission.PROPOSAL:
+        elif governance_permission_type == gp.GovernancePermission.PROPOSAL:
             permission = permission_module.Permission(permission_id=permission_id, allowed_action= allowed_action, permission_type ="strategic", ref_gov_area = None, voting_right = False, proposal_right = True)
         return permission
 
@@ -216,14 +217,23 @@ class DiagramManager(base_entity_module.BaseEntity):
 
 
     def __str__(self):
-        result = ["DAOs:"]
-        for dao in self.daoByID.values():
-            result.append(str(dao))
-            result.append("\nRelations:")
-            for role in self.relations_by_dao[dao.get_id()]:
-                result.append(str(role))
-        return "\n".join(result)
-    
+        result = ["DiagramManager", f"\t uniqueID: {self.uniqueID}","DAOs:"]
+        try:
+            for dao in self.daoByID.values():
+                result.append("Dao")
+                result.append("\t" + str(dao))
+                result.append("\nRelations:")
+                for role in self.relations_by_dao[dao.get_id()]:
+                    result.append("\t" + str(role))
+            return "\n".join(result)
+        except Exception as e:
+            print("ERROR on D")
+            # print(e)
+            import traceback
+            traceback.print_exception(e)
+
+            return f"ERROR in DiagramManager to-string:\n{e}"
+
     
     def toJSON(self):
         """ 
@@ -246,7 +256,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                 for dao_id, relations in self.relations_by_dao.items()
             }
         daoByID = {\
-            dao_id: repr(dao) \
+            dao_id: dao.toJSON() \
             for dao_id, dao in self.daoByID.items() \
         }
         return {

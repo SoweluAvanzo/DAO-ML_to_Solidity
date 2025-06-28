@@ -4,6 +4,9 @@ import networkx as nx
 import utils as u
 
 class DiagramManager:
+    """
+    @deprecated
+    """
     def __init__(self):
         self.rowDataOnly = True
         self.daoByID: map[str, dc.DAO] = {}

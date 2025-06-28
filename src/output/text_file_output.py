@@ -9,6 +9,9 @@ class TextFileOutput(bo.BaseOutput):
         super().__init__(pipeline_item_data, base_destination)
 
     def to_output(self, what, destination:str=None, additional_data=None) -> bool:
+        print(f"to_output with what of type: {type(what)}")
+        print(f"... at: {destination}")
+        print(f"... with additional data: {additional_data}")
         if destination is None:
             destination = fu.get_base_folder(self.base_destination)
         if destination is None: #again?

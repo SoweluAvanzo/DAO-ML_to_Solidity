@@ -11,6 +11,9 @@ import model.enums.relation_type as rt
 import control_graph.control_graph_base as control_graph_impl
 
 class DiagramManager2:
+    """
+    @deprecated
+    """
     def __init__(self):
         self.rowDataOnly = True
         self.daoByID: map[str, ddao.DAO] = {}

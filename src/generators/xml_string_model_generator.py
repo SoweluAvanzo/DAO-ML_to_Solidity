@@ -38,10 +38,12 @@ class XmlStringModelGenerator(bg.BaseGenerator):
             visitor = XMLDAOVisitor()
             diagram_manager = dm.DiagramManager()
             visitor.parseDiagramTree(tree, diagram_manager)
-
+            print("diagram manager generated")
             return diagram_manager
         except Exception as e:
+            print("\nERROR while generating Model")
             print(e)
+            print("\n")
             return None
 
 
@@ -62,7 +64,7 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         diagramManager.processRawInstances()
         self.diagramManager = None # just to clean the memory
         
-    def visitDiagram(self, ctx: xmlP.XMLParser.DiagramContext):
+    def visitDiagram(self, ctx:xmlP.XMLParser.DiagramContext):
         print("..........visitDiagram ^^ ")
         print(f"ctx type {type(ctx)}; class: {ctx.__class__.__name__} ; ctx.name()")
         a = ctx.attribute(0)
@@ -81,8 +83,19 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         self.diagramManager.id = ctx.unique_id()
         self.diagramManager.uniqueID = self.diagramManager.get_id()
         """
+        return super().visitDiagram(ctx)
         
-    def visitRole(self, ctx):
+    # Visit a parse tree produced by XMLParser#unique_id.
+    def visitUnique_id(self, ctx:xmlP.XMLParser.Unique_idContext):
+        print("visitUnique_id ^_^")
+        uniqueID = ctx.UUIDV4()
+        print(f"uniqueID: {uniqueID} - type {type(uniqueID)}")
+        uniqueID = uniqueID.STRING().getText().strip('"')
+        print(f"uniqueID 2.0: {uniqueID} - type {type(uniqueID)}")
+        self.diagramManager.uniqueID = uniqueID
+        return super().visitUnique_id(ctx)
+        
+    def visitRole(self, ctx:xmlP.XMLParser.RoleContext):
         role_id = ctx.role_id()[0].STRING().getText().strip('"')
         role_name = ctx.role_name()[0].STRING().getText().strip('"')
         role_assignment_method = ctx.role_assignment_method()[0].STRING().getText().strip('"') if len(ctx.role_assignment_method()) > 0 and ctx.role_assignment_method()[0] else None
@@ -166,6 +179,7 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         #recursively visits the children of the dao
         self.current_dao = dao
         self.visitChildren(ctx)
+        print("visitDao completed")
         self.current_dao = None
         return dao
 

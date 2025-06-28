@@ -14,3 +14,12 @@ def get_base_folder(folder_base):
 
 def concat_folder_filename(*parts):
     return os.path.join(*parts)
+
+def file_exists(path:str):
+    return os.path.isfile(path)
+
+def list_files_in(folder_path:str):
+    return os.listdir(folder_path)
+
+def delete_file(file_path:str):
+    return os.remove(file_path)

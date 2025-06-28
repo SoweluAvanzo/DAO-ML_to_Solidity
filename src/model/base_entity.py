@@ -1,3 +1,4 @@
+
 from io import StringIO
 
 class BaseEntity:
@@ -28,4 +29,5 @@ class BaseEntity:
         return string_builder.getvalue()
     
     def __repr__(self):
-        return self.toJSON()
+        import json
+        return json.dumps(self.toJSON())

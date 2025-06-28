@@ -53,7 +53,27 @@ class DAO(base_entity_module.BaseEntity):
     def add_permission(self, permission: permission_module.Permission):
         self.permissions[permission.get_id()] = permission
 
+
+    def toJSON(self):
+        obj = super().toJSON()
+        obj["dao_name"] = self.dao_name
+        obj["mission_statement"] = self.mission_statement
+        obj["hierarchical_inheritance"] = self.hierarchical_inheritance
+        obj["roles"] = {n: self.roles[n].toJSON() for n in self.roles}
+        obj["committees"] = {n: self.committees[n].toJSON() for n in self.committees}
+        obj["permissions"] = {n: self.permissions[n].toJSON() for n in self.permissions}
+        obj["dao_control_graph"] = None # self.dao_control_graph -> ControlGraph
+        # obj["metadata"] = self.metadata.toJSON()
+        obj["assignment_conditions"] = {r: self.assignment_conditions[r] for r in self.assignment_conditions}
+        obj["voting_conditions"] = {n: self.voting_conditions[n] for n in self.voting_conditions} 
+        obj["proposal_conditions"] = {n: self.proposal_conditions[n] for n in self.proposal_conditions} 
+        obj["decision_making_methods"] = {n: self.decision_making_methods[n] for n in self.decision_making_methods} 
+        obj["conditions"] = self.conditions
+        return obj
+
+
     def __str__(self):
+        """ 
         parts = [
             f'\tdao_name={self.dao_name}',
             f'\tmission_statement={self.mission_statement}',
@@ -73,21 +93,6 @@ class DAO(base_entity_module.BaseEntity):
         additional_parts = "".join(parts)
         parts = None
         return super().__str__(additional_parts)
-
-    def toJSON(self):
-        obj = super().toJSON()
-        obj["dao_name"] = self.dao_name
-        obj["mission_statement"] = self.mission_statement
-        obj["hierarchical_inheritance"] = self.hierarchical_inheritance
-        obj["roles"] = {n: self.roles[n].toJSON() for n in self.roles}
-        obj["committees"] = {n: self.committees[n].toJSON() for n in self.committees}
-        obj["permissions"] = {n: self.permissions[n].toJSON() for n in self.permissions}
-        obj["dao_control_graph"] = None # self.dao_control_graph -> ControlGraph
-        # obj["metadata"] = self.metadata.toJSON()
-        obj["assignment_conditions"] = {r: self.assignment_conditions[r] for r in self.assignment_conditions}
-        obj["voting_conditions"] = {n: self.voting_conditions[n] for n in self.voting_conditions} 
-        obj["proposal_conditions"] = {n: self.proposal_conditions[n] for n in self.proposal_conditions} 
-        obj["decision_making_methods"] = {n: self.decision_making_methods[n] for n in self.decision_making_methods} 
-        obj["conditions"] = self.conditions
-        return obj
-
+        """
+        import json
+        return json.dumps(self.toJSON(), indent="\t")
