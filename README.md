@@ -89,3 +89,17 @@ Breakdown of the command parts:
 - .test_pi: the file you actually want to run, BUT expressed as a module (i.e., the extension is missing, similarly to import statements)
 - > AAAAA.txt: (Optional) output redirection into a text file named "AAAAA", optionally added to not clog the terminal output.
 
+
+
+
+## Translator Architecture
+We provide below a class diagram representing the architecture of the translator, including the main classes and modules and their relations. The OptimizedTranslator class handles translation using the Optimized scheme, whereas the SimpleTranslator class handles translation using the remaining two schemes automatically selecting either the simple or standard scheme.
+
+![immagine](https://github.com/user-attachments/assets/3a60fc72-eb75-4fa3-a91f-b5041b7725a3)
+
+---
+
+## Data Model
+We provide below a class diagram displaying the key classes of a language-independent model of a DAO specified using DAO-ML. This model expands the module in the diagram above, dsiplaying the translator architecture. Its implementation can be found in the DAOClasses.py file.
+
+![immagine](https://github.com/user-attachments/assets/36f18139-71a0-44f7-8e69-d8fcd74912d9)
