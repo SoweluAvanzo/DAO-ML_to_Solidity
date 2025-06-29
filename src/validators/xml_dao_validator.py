@@ -219,11 +219,11 @@ class ConstraintValidator():
 
 
 
-    #function to check if some cyclic dependencies exists within the federation or aggregation relations in DAO Diagrams
+    #functions to check if some cyclic dependencies exists within the federation or aggregation relations in DAO Diagrams
     def check_cyclic_dependencies(self, diagram, rel_name):
         daos_and_loops = []
         for dao in diagram.xpath('//DAO'):
-            # print(f"CHECKING {rel_name} LOOPS IN DAO: {dao}")
+            print(f"CHECKING {rel_name} LOOPS IN DAO: {dao}")
             dao_id = dao.get("DAO_ID")
             graph = nx.DiGraph()
             for elem in dao.xpath("./Role | ./Committee"):
@@ -231,18 +231,19 @@ class ConstraintValidator():
                 element_type = elem.tag  # This will be either 'Role' or 'Committee'
                 is_role = element_type == "Role"
                 id = elem.get("role_ID") if is_role else elem.get("committee_ID")
-                # print(f"CHECKING {rel_name} LOOPS IN ELEMENT: {id}")
+                print(f"CHECKING {rel_name} LOOPS IN ELEMENT: {id}")
                 relation = elem.xpath(f"{rel_name}/text()")
                 if relation:
-                    target = relation[0]  # ID of the "neighbour"
+                    target = relation[0] # ID of the "neighbour"
                     graph.add_edge(id, target)
             cycles = [c for c in nx.simple_cycles(graph)]
-            if len(cycles) > 0:  # ERROR
+            if len(cycles) > 0: # ERROR
                 daos_and_loops.append((dao_id, cycles))
         if len(daos_and_loops) > 0:
-            return [f"\tDAO {dal[0]} has the following loop for the ''{rel_name}'': {', '.join(map(str, dal[1]))}" for dal in daos_and_loops]
-        return True
-
+            return [ \
+                f"\tDAO {dal[0]} has the following loop for the ''{rel_name}'': {", ".join(dal[1])}" \
+                for dal in daos_and_loops]
+        return True # no error
                 
 
     def validate_dao_ml_diagram(self, diagram=None):
