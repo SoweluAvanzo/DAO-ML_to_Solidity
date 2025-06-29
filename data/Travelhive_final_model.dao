@@ -27,7 +27,7 @@
 			<aggregates _id="dao_9762bf93_ce55_4986_8f0d_de61624203e8">dao_9e2c2f74_ac1a_41a6_ad4e_9b3898d17903</aggregates>
 			<federates_into _id="dao_7fca3644_3eac_406f_8d0c_7db75b7e865b">dao_307e62f2_5ae1_4a98_9f9b_401c7d00c3cf</federates_into>
 		</Role>
-		<Committee committee_ID="dao_381786b9_effe_4564_9200_cf2e74ef3c1f" committee_description="DAO Council" aggregation_level="0" federation_level="0" x="875.2185869584947" y="372.3718029010038" width="112" height="49">
+		<Committee committee_ID="dao_381786b9_effe_4564_9200_cf2e74ef3c1f" committee_description="DAO Council" aggregation_level="0" federation_level="0" decision_making_method="optimistic_governance" voting_condition="token ownership" x="875.2185869584947" y="372.3718029010038" width="112" height="49">
 			<associated_to _id="dao_e3744e93_7d32_4811_a653_9172b5b72f02">dao_a22d3a72_7bb1_4141_80ce_4e866bc2d398</associated_to>
 			<associated_to _id="dao_d3744ba2_fdf4_4308_9d06_15977f03c862">dao_8a3ad695_2546_492f_b1f2_59f7dc743c92</associated_to>
 			<associated_to _id="dao_d3b2dbec_40d4_4e8c_abc8_6b69f65e1988">dao_35ed4536_90dc_4672_b2e1_8daae63a60b4</associated_to>
@@ -130,7 +130,7 @@
 			<associated_to _id="dao_0531398f_59f1_4262_a814_304fbc416fe0">dao_d6f3c403_a499_488e_a967_590b26b87fb4</associated_to>
 			<aggregates _id="dao_31647cf8_2c83_4bdf_906b_50d04e1827cf">dao_014bdce7_1628_4eaf_9e1d_2901cfe6b322</aggregates>
 		</Role>
-		<Committee committee_ID="dao_d0e6f05b_6369_4714_a878_cee63dfbf644" committee_description="DDMO Council" aggregation_level="0" federation_level="0" x="257.3080660477145" y="558.0619505144439" width="112" height="49">
+		<Committee committee_ID="dao_d0e6f05b_6369_4714_a878_cee63dfbf644" committee_description="DDMO Council" aggregation_level="0" federation_level="0"  decision_making_method="simple_majority" x="257.3080660477145" y="558.0619505144439" width="112" height="49">
 			<associated_to _id="dao_cf019fa4_0303_4e13_8936_ea23a9588b0f">dao_29058c71_7448_45fd_871c_0aabef5313a7</associated_to>
 			<associated_to _id="dao_c0fd0f64_7f4c_4cd9_9c62_ecdb9c25adba">dao_65b4cd76_7ba3_4ca8_815b_eeeb86dd88b9</associated_to>
 			<associated_to _id="dao_2312a2cf_aac7_4741_b4bc_e65ce154e237">dao_1672bb37_adfa_4ac5_ad7d_197e7ac55ce2</associated_to>

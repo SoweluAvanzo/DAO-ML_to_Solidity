@@ -81,11 +81,11 @@ class TestGeneratorOptimized:
     def generate_addresses_by_entity_value(self) -> dict[int, dict[str, any]]: # see "optimized_translator.newEntityData(...)"
         abEV = {}
         owner_role = self.dao.owner_role
-        print(f"in generate_address_list (test generator) - owner_role is {owner_role}")
+        #print(f"in generate_address_list (test generator) - owner_role is {owner_role}")
         address_role = "owner"
 
         entity_data_by_original_id = { e['original_id'] : e for e in self.entity_to_data.values()}
-        print(f"in generate_address_list - entity_data_by_original_id is {entity_data_by_original_id}")
+        #print(f"in generate_address_list - entity_data_by_original_id is {entity_data_by_original_id}")
 
         #reminder: the "final_id" is the justapposition of "bitmasn" + "id"
         i = 0
@@ -96,8 +96,6 @@ class TestGeneratorOptimized:
                 entity_data['address'] = f"addr{i}"
                 abEV[ entity_data['final_id'] ] = entity_data['address']
                 i += 1
-            else:
-                print(f"IN THE LOOP OF generate_address_list - owner_id is {owner_id}, WITH ID {entity_id} AND INDEX {i}")
         entity_data = entity_data_by_original_id[ owner_id ]
         abEV[ entity_data['final_id'] ] = address_role
         i+=1
@@ -139,5 +137,4 @@ class TestGeneratorOptimized:
                 postprocessed_permissions.append(permission)
         
         permission_tests_expected_results = [(self.entity_to_data[entity.get_id()]['final_id'], permission.allowed_action.replace("/", "_").replace(" ", "_").replace("\\", ""), permission in entity.permissions and permission.voting_right == False and permission.proposal_right == False) for entity in entities for permission in postprocessed_permissions]
-        print(permission_tests_expected_results)
         return permission_tests_expected_results
