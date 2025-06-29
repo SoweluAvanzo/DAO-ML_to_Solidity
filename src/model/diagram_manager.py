@@ -60,11 +60,13 @@ class DiagramManager(base_entity_module.BaseEntity):
         return cg
 
 
-    def get_aggregated_permissions(self, role_or_committee: role_module.Role | committee_module.Committee):
+    def get_aggregated_permissions(self, role_or_committee):
         """
         get and collect recursively all "decendants", all members
         of inclusion relations that this Diagram could have.
         """
+        if not (isinstance(role_or_committee, role_module.Role) or isinstance(role_or_committee, committee_module.Committee)):
+            raise Exception(f"The provided role_or_committe is not a Role nor a Committe: {type(role_or_committee)}")
         for aggregated in role_or_committee.aggregated:
             self.get_aggregated_permissions(aggregated)
             #the aggregator inherits permissions from the aggregated
