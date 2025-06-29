@@ -1,5 +1,5 @@
 
-import networkx as nx
+#import networkx as nx
 from antlr4 import *
 from antlr4.tree.Tree import TerminalNodeImpl
 if __name__ is not None and "." in __name__:
