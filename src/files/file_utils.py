@@ -1,0 +1,25 @@
+import os
+
+def check_and_make_folder(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+def get_base_folder(folder_base):
+    if folder_base != None:
+        return folder_base
+    try:
+        return os.path.abspath(__file__)
+    except:
+        return os.getcwd()
+
+def concat_folder_filename(*parts):
+    return os.path.join(*parts)
+
+def file_exists(path:str):
+    return os.path.isfile(path)
+
+def list_files_in(folder_path:str):
+    return os.listdir(folder_path)
+
+def delete_file(file_path:str):
+    return os.remove(file_path)

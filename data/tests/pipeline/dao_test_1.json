@@ -1,0 +1,56 @@
+{
+   "rowDataOnly": true,
+   "daoByID": {
+      "dao1": {
+         "id": "dao1",
+         "dao_name" : "Dao 1",
+         "mission_statement" : "fare un test",
+         "hierarchical_inheritance" : null,
+         "roles" : {
+            "r1": {
+               "id": "r1",
+               "role_name": "Role 1",
+               "role_assignment_method": "A_M_1",
+               "n_agent_min": 0,
+               "n_agent_max": 1000,
+               "agent_type": "???",
+               "permissions": [
+                  {
+                     "allowed_action": "AAA",
+                     "permission_type": "AAA",
+                     "ref_gov_area": "AAA",
+                     "voting_right": "AAA",
+                     "proposal_right": "AAA"
+                  }
+               ],
+               "controllers": "AAA",
+               "aggregated": "AAA",
+               "federated_committees": "AAA"
+            }
+         },
+         "committees" : {
+         },
+         "permissions" : {
+         },
+         "dao_control_graph" : null,
+         "metadata" : {
+            "user_functionalities_group_size": [258, 8],
+            "size_user_functionalities_group": 3
+         },
+         "assignment_conditions" :  {
+            "r1": "some_body",
+            "r2": "once_told_me",
+            "r3": "a_ROLE_is_gonna_roll_me"
+         },
+         "voting_conditions" :  {
+            "c1": "c1"
+         },
+         "proposal_conditions" : {},
+         "decision_making_methods" : {},
+         "conditions" : {},
+         "role_and_committee_voting_right_dict" : {},
+         "role_and_committee_proposal_right_dict" : {}
+      }
+   },
+   "relations_by_dao": {}
+}
