@@ -2,6 +2,9 @@ import src.output.output_manager as om
 import src.model.diagram_manager as dm
 
 class BasicTemplate:
+    """
+    @deprecated
+    """
     def __init__(self, template_name="", filename=""):
         self.template_name = template_name
         self.filename = filename
