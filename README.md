@@ -151,7 +151,6 @@ Breakdown of the command parts:
 
 
 
-
 ## **Translator Architecture**
 We provide below a class diagram representing the architecture of the translator, including the main classes and modules and their relations. The OptimizedTranslator class handles translation using the **Optimized** scheme, whereas the **SimpleTranslator** class handles translation using the remaining two schemes automatically selecting either the **simple** or **standard** scheme.
 
