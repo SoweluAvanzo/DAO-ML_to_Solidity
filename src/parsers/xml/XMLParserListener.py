@@ -379,7 +379,6 @@ class XMLParserListener(ParseTreeListener):
 
     # Enter a parse tree produced by XMLParser#unique_id.
     def enterUnique_id(self, ctx:XMLParser.Unique_idContext):
-        print("enterUnique_id ^_^")
         pass
 
     # Exit a parse tree produced by XMLParser#unique_id.
