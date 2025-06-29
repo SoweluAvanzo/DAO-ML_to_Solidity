@@ -50,7 +50,7 @@ class TranslationData:
         self.contract_translator:Translator = contract_translator
         self.tests_translator:TestGeneratorOptimized = tests_translator
         
-def translate_SCs(xml_file, translation_logic):
+def translate_SCs(xml_file, translation_logic, should_generate_tests):
     
     try:
         # PARTE 1) LETTURA XML
@@ -87,21 +87,21 @@ def translate_SCs(xml_file, translation_logic):
             #elif diamond_enabled.get()==False:
             translator = SolidityTranslator(dao, translation_logic , diamond=False)
             #else:
-            tests_translator = TestGeneratorOptimized(dao, translation_logic == 'optimized', translator)
+            tests_translator = TestGeneratorOptimized(dao, translation_logic == 'optimized', translator) if should_generate_tests else None
             contracts_to_write.append(TranslationData(dao_name, dao_name, translator, tests_translator))
              
             #contracts_to_write.extend(all_translated_smart_contract__tests)
             
             # each committee is a Smart Contract by its own
         # then, translate each Smart Contract into its translated version
-        write_SCs(contracts_to_write,superfolder_name)
+        write_SCs(contracts_to_write,superfolder_name, should_generate_tests)
     
     except Exception as e:
         traceback.print_exception(e)
         print("Error", f"An error occurred: {e}")
         
 
-def write_SCs(contracts_to_write:list[TranslationData],superfolder_name):
+def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should_generate_tests):
         for translation_data in contracts_to_write:
             folder_name = translation_data.folder_name
             name = translation_data.contract_name
@@ -138,7 +138,10 @@ def write_SCs(contracts_to_write:list[TranslationData],superfolder_name):
                                     print(line)
                                 else:
                                     print("Error".join(line))
-                                    
+                        
+                        if not should_generate_tests:
+                            continue
+                        
                         #test_folder = f"{folder_path_with_subfolder}/tests"
                         test_folder = "./Templates/test_scripts/"
                         check_and_make_folder(test_folder)

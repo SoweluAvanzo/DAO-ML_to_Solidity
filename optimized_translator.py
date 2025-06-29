@@ -128,20 +128,20 @@ class OptimizedSolidityTranslator(Translator):
                 ( // the new role must be a valid one
                     index_new_role < {_entities_amount} // checking for \"index out of bounds\"
                 )
-                && ( // \"CAN the sender control the target user (through its role)?\"
-                    (allowNullRole_user && (user_role_id == 0)) || // allow to add role if the user has not already one assigned to it
+                && ( // \"check the sender and target user control relation\"
+                    (allowNullRole_user && (user_role_id == 0)) || // allow to add role if the user doesn't have one
                     ((
                         (user_role_id >> {_id_bit_size}) // get the user role's bitmask 
                         &  // (... and then perform the bitwise-and with ...)
                         sender_role_index
-                    ) != 0) // THE FINAL CHECK
+                    ) != 0) // final check
                 ) &&
-                ( // \"CAN the sender control the target role?\"
+                ( // \"control relation check between sender and the target role\"
                     (
-                        ( all_roles[index_new_role] >> {_id_bit_size}) // get the new role's bitmask (the one saved internally, rather than the provided ones, due to safety reasons: avoiding roles forgery)
+                        ( all_roles[index_new_role] >> {_id_bit_size}) // get the new role's bitmask from those internally stored
                         &  // (... and then perform the bitwise-and with ...)
                         sender_role_index
-                    ) != 0 // THE FINAL CHECK
+                    ) != 0 // final check
                 )
                 , \"the given controller can\'t perform the given operation on the given controlled one\" );
             _;
@@ -192,7 +192,7 @@ class OptimizedSolidityTranslator(Translator):
         return TranslatedSmartContract(lines, "ICondition", folder="interfaces", testable=True)
 
     def translate(self) -> list[TranslatedSmartContract]:
-            print("TRANSLATE() -- invocato")
+            #print("TRANSLATE() -- invocato")
             all_smart_contracts: list[TranslatedSmartContract] = []
 
             # at first, translate all Committees
@@ -343,7 +343,7 @@ class OptimizedSolidityTranslator(Translator):
             index_entity += 1
             self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
 
-        print(self.context.entity_to_data)
+        #print(self.context.entity_to_data)
 
         lines.append("    ];")
         #generate events
@@ -402,7 +402,7 @@ class OptimizedSolidityTranslator(Translator):
         lines.append(" require(roleIds.length == assignmentConditionAddresses.length, \"Role ID and assignment condition count mismatch\"); \n")
         lines.append(self.generate_role_permission_mapping())
         for committee in self.context.dao.committees.values():
-            lines.append(f"         roles[_{committee.committee_description.replace(" ","_")}] = {committee.committee_description.replace(" ","_")}; \n" )
+            lines.append(f"         roles[_{committee.committee_description.replace(' ','_')}] = {committee.committee_description.replace(' ','_')}; \n" )
         if self.context.daoOwner:
             #lines.append(f"        roles[msg.sender] = {self.context.dao.dao_name}Owner;")
             lines.append(f"        roles[msg.sender] = all_roles[{len(self.context.dao.roles)}]; // {self.context.dao.dao_name}Owner")

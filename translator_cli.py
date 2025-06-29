@@ -47,7 +47,14 @@ def main():
         help="execute hardhat test simulations",
         required=False,
         default=True
-        )
+    )
+    parser.add_argument(
+        "-gen_test",
+        type=bool,
+        help="create hardhat test simulations as output file",
+        required=False,
+        default=False
+    )
     
     args = parser.parse_args()
 
@@ -61,7 +68,8 @@ def main():
         return None
     
     if args.function=="translate":
-        translate_SCs(args.file, args.translation_type)
+        should_generate_tests = args.gen_test == True
+        translate_SCs(args.file, args.translation_type, should_generate_tests)
         # TODO: refactoring
         # 1) DiagramInput: mix (da refattorizzare!) di lettura XML e istanziazione di "DiagramManager"
         # 2) OutputManager: in questo caso, "FileManager" che accetta produce un file a partire da una lista di stringhe / un template
