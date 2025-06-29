@@ -100,6 +100,7 @@ To compile and run tests using Hardhat:
 ```bash
 npx hardhat compile
 npx hardhat test
+```
 
 
 ## Manual Run

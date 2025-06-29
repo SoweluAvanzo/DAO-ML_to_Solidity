@@ -171,10 +171,13 @@ node_modules/
 # nostre
 *_properties.txt
 *.txt
+<<<<<<< HEAD
+=======
 !requirements.txt
 !requirements_TEMP.txt
 translated/
 translated/*
+>>>>>>> 5ea928d195a05b8dd6045ad144a3ab18b657bf5d
 out
 test/
 test/*
