@@ -141,6 +141,7 @@ run the following command to manually execute a test:
 
 **`python -m src.tests.pipeline.manual.test_pi > AAAAA.txt`**
 **`python -m src.tests.pipeline.manual.t_file_1 > AAAAA.txt`**
+**`python -m src.tests.pipeline.manual.t_jinja > COMPILE_TEST.txt`**
 
 Breakdown of the command parts:
 - -m : specifies that the current directory REMAINS TO BE the root directory, i.e. the top-level package is "src", as it should be
