@@ -18,7 +18,7 @@ class TemplateBase(pi.PipelineItem):
     
     def run(self, inputs):
         return self.compile_template(\
-            inputs[self.key_template_name if self.key_template_name else self.get_ith_input(0)], \
-            inputs[self.key_template_definition if self.key_template_definition else self.get_ith_input(1)], \
-            inputs[self.key_template_instance_data if self.key_template_instance_data else self.get_ith_input(2)] \
+            inputs[self.key_template_name] if self.key_template_name else self.get_ith_input(0), \
+            inputs[self.key_template_definition] if self.key_template_definition else self.get_ith_input(1), \
+            inputs[self.key_template_instance_data] if self.key_template_instance_data else self.get_ith_input(2)  \
         )

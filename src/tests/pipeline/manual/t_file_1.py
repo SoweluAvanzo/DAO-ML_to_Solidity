@@ -38,6 +38,13 @@ FILE_OUTPUT_MODEL_NAME = f"{FILE_NAME_XML_1}_JSONed"
 FILE_OUTPUT_MODEL_EXTENSION = "json"
 FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename('.', 'outputs', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
 
+
+# def setup_input(pm:pmp.PipelineManager):
+# def setup_model_generation(pm:pmp.PipelineManager):
+# def set up_input(pm:pmp.PipelineManager):
+
+
+
 if __name__ == "__main__":
     print("AAAAAAAAAAAAAA")
 
@@ -168,6 +175,10 @@ if __name__ == "__main__":
     pm.addItem(cli_exec)
     
     
+
+    # 6) TRADUTTORE
+
+    # 7) template compiling
 
     print("RUN\n\n\n")
     pm.runPipeline()

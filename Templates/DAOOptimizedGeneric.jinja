@@ -1,0 +1,306 @@
+{#
+NOTA: QUANTO SEGUE E' L'OGGETTO CHIAMATO "instance_data" CHE DEVE ESSERE PASSATO AL JinjaTemplateCompiler
+
+class TranslationInstanceDataDAOOptimized( tiddb.TranslationInstanceDataDAOBase ):
+    def __init__(self, dao_name):
+        super().__init__(dao_name)
+
+{
+    "solidity_version" : self.context.solidity_version,
+    "dao_name" : self.context.dao.dao_name,
+    "mission_statement" : self.context.dao.mission_statement,
+    
+    "dao_conditions": self.context.dao.conditions,
+
+    "visibility": visibility,
+    "id_var_type": id_var_type,
+    "voting_conditions": self.context.dao.voting_conditions,
+    "proposal_conditions": self.context.dao.proposal_conditions,
+    "assignment_conditions": self.context.dao.assignment_conditions,
+    "perm_var_type": perm_var_type,
+    "total_roles_amount": total_roles_amount, // len(roles) + len(committees)
+    "is_role_access_optimized": is_role_access_optimized,
+    // forse sono dati da collassare ... //
+    "roles": self.context.dao.roles, // ( role_id  )
+    "committees": self.context.dao.committees, // ( committee_id  )
+    "entities_amount": entities_amount,
+    "states_variables__functionalities_ids": functionalities_ids,
+    "roles_computed_data": roles_computed_data, // see the compex for in "generate_state_variable towards the end of the functino
+    "committees_computed_data": committees_computed_data, // see the compex for in "generate_state_variable towards the end of the functino
+
+    //control_relation
+    "control_relation_id_var_type": _id_var_type,
+    "control_relation_id_bit_size": _id_bit_size,
+    "control_relation_mask": _mask,
+    "control_relation_entities_amount": _entities_amount,
+    
+    //generate_has_permission_modifier
+    "eventual_addressing_manipulation": eventual_addressing_manipulation
+
+    //generate_constructor_v2
+    "constructor_parameters" : constructor_parameters, // [ {"type": id_var_type|'address' , "name": 'str' } ]
+      .... deriva dalla verifica di non-emptyness di: dao_conditions, voting_conditions, proposal_conditions
+assignment_conditions
+        //generate_role_permission_mapping !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        "entities_permissions": entities_permissions, // (role, permission_indices)
+        "role_to_index_fn": role_to_index_fn, // IT'S A LAMBDA :D
+        "bitflag_by_entity_index": ... a map from the "index_entity" to bitflag
+    "dao_owner": self.context.daoOwner,
+
+    // generate_committee_initialization_function
+    "visibility_committee_initialization_function": visibility,
+    "space_to_underscore_fn": lambda t: t.replace(" ", "_"),
+
+    // generate_functions
+    "group_size_bitmask": self.group_size.value[1],
+    "id_mask" :self.id_mask,
+
+    // generate_permission_functions
+    "permissions": self.context.dao.permissions.values(),
+    permission_index_by_id = , ... TODO
+    function_permission_name_by_id = , ... TODO
+    "voting_function": True, // ???
+    "proposal_function": True // ???
+}
+#}
+
+
+
+// SPDX-License-Identifier: MIT
+pragma solidity {{ solidity_version}};
+/**
+ * @title {{ dao_name}}
+ * @notice {{ mission_statement}}
+ */
+
+import "./interfaces/IPermissionManager.sol";
+{% if dao_conditions|length > 0 %}
+import "./interfaces/ICondition.sol";
+{% endif %}
+
+contract {{dao_name}} is IPermissionManager {{"{"}}
+
+    {# generate_state_variables #}
+
+    bool {{visibility}} committee_initialization_blocked;
+    {% if voting_conditions | length > 0 %} 
+    mapping({{id_var_type}} => ICondition) {{visibility}} voting_conditions;
+    {% endif %}
+    {% if proposal_conditions | length > 0 %} 
+    mapping({{id_var_type}} => ICondition) {{visibility}} proposal_conditions;
+    {% endif %}
+    {% if assignment_conditions | length > 0 %}
+    mapping({{id_var_type}} => ICondition) {{visibility}} assignment_conditions;
+    {% endif %}
+
+    {% if is_role_access_optimized %}
+    {{perm_var_type}}[{total_roles_amount}] {{visibility}} role_permissions;
+    {% else %}
+    mapping({{id_var_type}} => {{perm_var_type}}) {{visibility}} role_permissions;
+    {% endif %}
+    {{id_var_type}}[{{entities_amount}}] {{visibility}} all_roles = {{"["}}
+    {% for role_data in roles_computed_data %}
+    {{role_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")}} {{role_data.name_sanitized}} -> ID : {{ states_variables__functionalities_ids[roles[role_data.id].role_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
+    {% endfor %}
+    {% for committee_data in committees_computed_data %}
+    {{committee_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")}} {{committee_data.name_sanitized}} -> ID : {{ states_variables__functionalities_ids[committees[committee_data.id].committee_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
+    {% endfor %}
+    {{"];"}}
+
+
+    {# generate_modifier_control_relation #}
+    modifier controlledBy(address sender, {{control_relation_id_var_type}} user_role_id, bool allowNullRole_user, {{control_relation_id_var_type}} new_role_id) {{"{"}}
+        //we obtain the control relations of the controller role by shifting the its id by the number of bits contained in ids
+        //the sender must control BOTH the target role AND the user's role
+
+        {{control_relation_id_var_type}} index_new_role = new_role_id & {{control_relation_mask}};
+        {{control_relation_id_var_type}} sender_role_index = ( {{control_relation_id_var_type}}(1) << ( roles[sender] & {{control_relation_mask}} ) );
+
+        require(
+            ( // the new role must be a valid one
+                index_new_role < {{control_relation_entities_amount}} // checking for \"index out of bounds\"
+            )
+            && ( // \"check the sender and target user control relation\"
+                (allowNullRole_user && (user_role_id == 0)) || // allow to add role if the user doesn't have one
+                ((
+                    (user_role_id >> {{control_relation_id_bit_size}}) // get the user role's bitmask 
+                    &  // (... and then perform the bitwise-and with ...)
+                    sender_role_index
+                ) != 0) // final check
+            ) &&
+            ( // \"control relation check between sender and the target role\"
+                (
+                    ( all_roles[index_new_role] >> {{control_relation_id_bit_size}}) // get the new role's bitmask from those internally stored
+                    &  // (... and then perform the bitwise-and with ...)
+                    sender_role_index
+                ) != 0 // final check
+            )
+            , \"the given controller can\'t perform the given operation on the given controlled one\" );
+        _;
+    {{"}"}}
+
+
+    {# generate_has_permission_modifier #}
+
+    modifier hasPermission(address _executor, {{perm_var_type}} _permissionIndex) {{"{"}}
+        require(role_permissions[{{perm_var_type}}(roles[_executor]{{eventual_addressing_manipulation}})] & ({{perm_var_type}}(1) << _permissionIndex) != 0, "User does not have this permission");
+        _;
+    {{"}"}}
+
+
+
+    {# generate_constructor_v2 #}
+        
+    constructor(
+        {% for cp in constructor_parameters %} {% if loop.index0 != 0 %} , {% endif %}
+        {{cp.type}}[] memory {{cp.name}}
+        {% endfor %}
+    ){{"{"}}
+        
+        {% for ep in entities_permissions %}
+        role_permissions[{{role_to_index_fn(role, loop.index0)}}] = {{bitflag_by_entity_index(loop.index0)}} // # {{ loop.index0}}{{")"}} {{ep[0]}}
+        {% endfor %}
+
+        {% if dao_owner %}
+        roles[msg.sender] = all_roles[{{ roles|length -1 }}]; // {{dao_name}}Owner
+        {% endif %}
+        {% if dao_conditions | length > 0 %}
+        for (uint256 i = 0; i < roleIds.length; i++) {{"{"}}
+        {% endif %}
+        {% if voting_conditions | length > 0 %}
+            voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);
+        {% endif %}
+        {% if proposal_conditions | length > 0 %}
+            proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);
+        {% endif %}
+        {% if assignment_conditions | length > 0 %}
+            assignment_conditions[roleIds[i]] = ICondition(assignmentConditionAddresses[i]);
+        {% endif %}
+        {{"}"}}
+
+    {{"}"}}
+        
+        
+    {# generate_committee_initialization_function #}
+        
+    function initializeCommittees( {% for c in committees %}{% if loop.index0 != 0 %}, {% endif %} address _{{space_to_underscore_fn(c)}} {% endfor %} ) {{visibility_committee_initialization_function}} {{"{"}}
+        reqiure( roles[msg.sender] == all_roles[{{ roles|length -1 }}]), "Only the owner can initialize the Dao"{{")"}}; // {{dao_name}}Owner
+        {% if committees|length > 0 %}
+        require(committee_initialization_blocked == false {% for c in committees %} && _{{space_to_underscore_fn(c)}} != address(0) {% endfor %}, "Invalid committee initialization");
+        {% for c in committees %}
+        roles[_{{space_to_underscore_fn(c)}}] = all_roles[{{loop.index0}}]; // {{{{space_to_underscore_fn(c)}}}}
+        {% endfor %}
+        committee_initialization_blocked = true;
+        {% endif %}        
+        
+        
+
+        
+
+    {# generate_functions #}
+        
+        function canControl({{id_var_type}} controller, {{id_var_type}} controlled) public pure returns(bool controls){{"{"}}
+             // ( "CAN the sender control the target user (through its role)?"
+                //(allowNullRole && (target_role_id == 0)) || // allow to add role if the user has not already one assigned to it
+                if((
+                    (controlled >> {{group_size_bitmask}} ) // get the role's bitmask 
+                    &  // (and then perform the bitwise-and with ...)
+                    ({{id_var_type}}(1) << ( controller & {{id_mask}} )) // (...) get the sender role's index AND shift it accordingly 
+                ) != 0 ){{"{"}}
+                    controls = true;
+                    return controls;
+                {{"}"}} else {{"{"}}
+                    return controls;
+                {{"}"}}
+        {{"}"}}
+        
+
+        function assignRole(address _user, {{id_var_type}} _role) external controlledBy(msg.sender, roles[_user], true, _role) {{"{"}}
+            require(_user != address(0) , "Invalid user address" );
+            {# the following is the actual "execution" of the function "generate_user_role_condition_evaluation" from the OptimizedTranslatorSolidity class: it's so Solidity-specific that it can't be generally created AND provided as a function }
+            {# generate_user_role_condition_evaluation("assignment_conditions", "_user", RoleInConditionCheckType.REQUIRE) if self.context.dao.assignment_conditions != {} else "" #}
+            {% if assignment_conditions|length > 0 %}
+            ICondition _condition = assignment_conditions[roles[msg.sender]];
+            require( (_condition == ICondition(address(0))) || _condition.evaluate( _user ), "User does not meet the required conditions");
+            {% endif %}
+            roles[_user] = _role;
+            emit RoleAssigned(_user, _role);
+        {{"}"}}
+
+
+        function revokeRole(address _user, {{id_var_type}} _role) external controlledBy(msg.sender, roles[_user], false, _role) {{"{"}}
+            require(roles[_user] == _role, "User's role and the role to be removed don't coincide" );
+
+            delete roles[_user];
+            emit RoleRevoked(_user, _role);
+        {{"}"}}
+
+
+        function grantPermission({{id_var_type}} _role, {{perm_var_type}} _permissionIndex) external hasPermission(msg.sender, _permissionIndex) {{"{"}}
+            require(canControl(roles[msg.sender], _role), "cannot grant permission, as the control relation is lacking");
+            {{perm_var_type}} new_role_perm_value;
+            new_role_perm_value  = role_permissions[_role & {{id_mask}} ] | ({{perm_var_type}}(1) << _permissionIndex);
+            role_permissions[_role & {{id_mask}} ] = new_role_perm_value;
+            
+            emit PermissionGranted(_role, _permissionIndex);
+        {{"}"}}
+
+
+        function revokePermission({{id_var_type}} _role, {{perm_var_type}}  _permissionIndex) external hasPermission(msg.sender, _permissionIndex) {{"{"}}
+            require(canControl(roles[msg.sender], _role), "cannot revoke permission, as the control relation is lacking");
+            {{perm_var_type}} new_role_perm_value;
+            new_role_perm_value = role_permissions[_role & {{id_mask}}] & ~({{perm_var_type}}(1) << _permissionIndex);
+            role_permissions[_role & {{id_mask}}] = new_role_perm_value;
+
+            emit PermissionRevoked(_role, _permissionIndex);
+        {{"}"}}
+
+
+        function hasRole(address user) external view returns({{id_var_type}}) {{"{"}}
+            return roles[user];
+        {{"}"}}
+
+
+        function has_permission(address user, {{perm_var_type}} _permissionIndex) external view returns (bool) {{"{"}}
+            if (role_permissions[{{perm_var_type}}(roles[user]{{eventual_addressing_manipulation}})] & ({{perm_var_type}}(1) << _permissionIndex) != 0){{"{"}}
+                return true;
+            {{"}"}}else{{"{"}}
+                return false;
+            {{"}"}}
+        {{"}"}}
+        
+        
+        
+        
+        
+        
+        
+        
+    {# generate_permission_functions #}
+        
+        {% for perm in permissions %}
+        function {{function_permission_name_by_id[perm.id]}}() external hasPermission(msg.sender, {{permission_index_by_id[perm.id]}}) {{"{"}}
+            // TODO: Implement the function logic here
+        {{"}"}}
+        {% endfor %}
+        
+        {& if voting_function: %}
+        function canVote(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {{"{"}}
+                require(role_permissions[{{perm_var_type}}(roles[user] & 31)] & ({{perm_var_type}}(1) << permissionIndex) != 0, "User does not have this permission");
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                {self.generate_user_role_condition_evaluation("voting_conditions", "user") if self.context.dao.voting_conditions != {} else "return true;"}
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        {{"}"}}
+        {% endif %}
+        {& if proposal_function: %}
+        function canPropose(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {'{'}
+                require(role_permissions[{{perm_var_type}}(roles[user] & 31)] & ({{perm_var_type}}(1) << permissionIndex) != 0, "User does not have this permission");
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                {self.generate_user_role_condition_evaluation("proposal_conditions", "user") if self.context.dao.proposal_conditions != {} else "return true;"}
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        {{"}"}}
+        {% endif %}
+
+
+        
+{{"}"}}

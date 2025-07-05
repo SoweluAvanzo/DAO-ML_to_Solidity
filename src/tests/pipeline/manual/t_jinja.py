@@ -39,7 +39,8 @@ if __name__ == "__main__":
             ("puzzolo", "rat"),
             ("beppe", "dog"),
             ("fluffolo", "platapus")
-        ]
+        ],
+        "lenlen": lambda x: f"{len(x)} is the length of: {x}"
     }
     k_jinja_test_data_provider = "k_jinja_test_data_provider"
     jinja_test_data_provider = pval.PIAnyValue(pi.PIData(k_jinja_test_data_provider, None), jinja_test_data)

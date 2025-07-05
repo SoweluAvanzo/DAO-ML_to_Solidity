@@ -10,6 +10,23 @@ class SolidityTranslationData:
         self.key_translation_logic = key_translation_logic
 
 
+class TranslationInstanceDataDAOBase:
+    def __init__(self, dao_name):
+        self.dao_name = dao_name
+    
+    def toJSON(self):
+        return {
+            "dao_name": self.dao_name
+        }
+
+    def __to_json__(self):
+        return self.toJSON()
+
+    def __repr__(self):
+        import json
+        return json.dumps(self.__to_json__())
+
+
 
 class ModelToSolidity(pi.PipelineItem):
     def __init__(self, pipeline_item_data: pi.PIData, key_input_template:str):
