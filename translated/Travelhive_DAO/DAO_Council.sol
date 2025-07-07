@@ -31,7 +31,7 @@ contract DaoCouncil is Governor, GovernorSettings, GovernorVotes, GovernorVotesQ
     mapping(uint256 => Proposal) public proposals; // Track the status of proposals
 
     // Constructor
-    constructor(IVotes _token,, address _permissionManager, uint256 _challengePeriod)
+    constructor(IVotes _token, address _permissionManager, uint256 _challengePeriod)
         Governor(DaoCouncil)
         GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
         GovernorVotes(_token)

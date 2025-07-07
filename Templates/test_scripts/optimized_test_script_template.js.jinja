@@ -22,7 +22,7 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
       const{{ "{" }}{{DAO_name}}, owner, {% for committee_address in committee_addresses%}{{committee_address}} {% if not loop.last %} , {% endif %}{% endfor %} {{ "}"}} = await loadFixture(deployTokenFixture);
       expect(await {{DAO_name}}.hasRole(owner.address)).to.equal({{owner_role_value}});
       // Initialize committees
-      ownerConnect = Travelhive_DAO.connect(owner);
+      ownerConnect = {{DAO_name}}.connect(owner);
       const tx = await ownerConnect.initializeCommittees({% for committee_address in committee_addresses%}{{committee_address}}.address {% if not loop.last %} , {% endif %}{% endfor %});
       await tx.wait();
       expect(tx).to.not.be.reverted;

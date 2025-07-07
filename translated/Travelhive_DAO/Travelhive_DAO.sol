@@ -5,12 +5,9 @@ pragma solidity ^0.8.0;
  * @notice Manage the Travelhive ecosystem governance
  */
 import "./interfaces/IPermissionManager.sol";
-import "./interfaces/ICondition.sol";
 contract Travelhive_DAO is IPermissionManager {
     bool internal committee_initialization_blocked;
     mapping(address => uint32) internal roles;
-    mapping(uint32 => ICondition) internal voting_conditions;
-    mapping(uint32 => ICondition) internal proposal_conditions;
     uint32[14] internal role_permissions;
     uint32[14] internal all_roles = [
         24576, // #0) Advisor -> ID : 0 , control bitmask: 1100000000
@@ -75,9 +72,6 @@ contract Travelhive_DAO is IPermissionManager {
     }
             
     constructor(
-uint32[] memory roleIds, 
-address[] memory votingConditionAddresses, 
-address[] memory proposalConditionAddresses, 
 ) {
         role_permissions[0] = 51298496; // #0) Advisor 
 
@@ -108,9 +102,6 @@ address[] memory proposalConditionAddresses,
         role_permissions[13] = 69667; // #13) Development_Board 
 
 roles[msg.sender] = all_roles[8]; // Travelhive_DAOOwner
-for (uint256 i = 0; i < roleIds.length; i++) { 
-     voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);
-     proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);
 }
     function initializeCommittees(address _DAO_Council, address _Marketing_Board, address _Financial_Board, address _Travelware_Board, address _Development_Board) external {
         require(roles[msg.sender] == all_roles[8], "Only the owner can initialize the Dao");  // Travelhive_DAOOwner
@@ -274,17 +265,11 @@ for (uint256 i = 0; i < roleIds.length; i++) {
 
             function canVote(address user, uint32 permissionIndex) external view returns (bool) {
                 require(role_permissions[uint32(roles[user] & 31)] & (uint32(1) << permissionIndex) != 0, "User does not have this permission");
-                
-                ICondition _condition = voting_conditions[roles[msg.sender]] ;
-                return (_condition == ICondition(address(0))) || _condition.evaluate(user);
-            
+                return true;
             }
 
             function canPropose(address user, uint32 permissionIndex) external view returns (bool) {
                 require(role_permissions[uint32(roles[user] & 31)] & (uint32(1) << permissionIndex) != 0, "User does not have this permission");
-                
-                ICondition _condition = proposal_conditions[roles[msg.sender]] ;
-                return (_condition == ICondition(address(0))) || _condition.evaluate(user);
-            
+                return true;
             }
 }

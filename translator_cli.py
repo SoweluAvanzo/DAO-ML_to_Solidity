@@ -53,7 +53,7 @@ def main():
         type=bool,
         help="create hardhat test simulations as output file",
         required=False,
-        default=False
+        default=True
     )
     
     args = parser.parse_args()
