@@ -44,11 +44,12 @@ class TestGeneratorOptimized:
         owner_id_bitmask = self.entity_to_data[ self.dao.owner_role.role_id]['final_id']
         owner_role_value = owner_id_bitmask # redundant, but kept for clarity
         permission_tests_expected_results = self.generate_permission_tests_expected_results()
-
+        
         with open(file_name_and_path, 'r', encoding='utf-8') as f:
             template_content = f.read()
             template = Template(template_content)
             rendered_lines = template.render(
+                entity_to_data = self.name_to_final_id(),
                 solidity_version=self.context.solidity_version,
                 addresses_list=addresses_list,
                 addressesByEntityValue=addressesByEntityValue,
@@ -126,6 +127,13 @@ class TestGeneratorOptimized:
             for entity in entities \
                 for controlled_entity in entities \
         ]
+    
+    def name_to_final_id(self) -> dict[str, int]:
+        """
+        Returns a dictionary mapping entity names to their final IDs.
+        """
+        return {value['final_id']: value['name'] for value in self.entity_to_data.values()}
+       
         
  
     def generate_permission_tests_expected_results(self)-> list[tuple[int,str,bool]]:

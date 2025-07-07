@@ -1,4 +1,3 @@
-// We import Chai to use its asserting functions here.
 //parameters: DAO_name, addresses_list, addresses, owner_role_value, role_value, role_address, role_name
 const {{ "{" }} expect {{ "}" }} = require("chai");
 
@@ -17,12 +16,12 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
 
     return{{ "{" }}{{DAO_name}}, owner{% for role_address in addresses_list %}, {{role_address}}{% endfor %}{{ "}"}};
  {{ "}"}}
-    
     it("Should set the right owner and initialize committees", async function (){{ "{" }}
       const{{ "{" }}{{DAO_name}}, owner, {% for committee_address in committee_addresses%}{{committee_address}} {% if not loop.last %} , {% endif %}{% endfor %} {{ "}"}} = await loadFixture(deployTokenFixture);
       expect(await {{DAO_name}}.hasRole(owner.address)).to.equal({{owner_role_value}});
       // Initialize committees
       ownerConnect = {{DAO_name}}.connect(owner);
+
       const tx = await ownerConnect.initializeCommittees({% for committee_address in committee_addresses%}{{committee_address}}.address {% if not loop.last %} , {% endif %}{% endfor %});
       await tx.wait();
       expect(tx).to.not.be.reverted;
@@ -59,7 +58,7 @@ describe("{{DAO_name}} Permission Manager contract", function () {{ "{" }}
       let result = null;
       {% for control_relation in control_relation_results %}
       result = await {{DAO_name}}.canControl({{control_relation[0]}}, {{control_relation[1]}});
-      console.log(`Result of canControl({{control_relation[0]}}, {{control_relation[1]}}):`, result);
+      console.log(`Result of canControl({{entity_to_data[control_relation[0]]}}, {{entity_to_data[control_relation[1]]}}):`, result);
       expect(result).to.equal({% if control_relation[2] %} true {% else %} false {% endif %});
       {% endfor %}
    {{ "}"}});
@@ -68,11 +67,11 @@ it("Permissions should be properly configured.", async function (){{"{"}}
       {% for permission in permissions %}
       {% if permission[2] %}
       result = await {{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}();
-      //console.log(`Execution result of permission ({{permission[1]}} for {{permission[0]}}):`, result);
+      console.log(`Execution result of permission ({{permission[1]}} for {{entity_to_data[permission[0]]}}):`, result);
       await expect(result).not.to.be.reverted;
       {%else%}
       await expect({{addressesByEntityValue.get(permission[0])}}Connect.{{permission[1]}}()).to.be.revertedWith(
-        "User does not have this permission"
+        "{{entity_to_data[permission[0]]}} does not have permission: {{permission[1]}}"
       );
       {% endif %}
       {% endfor %}
