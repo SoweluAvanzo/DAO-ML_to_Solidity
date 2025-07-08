@@ -22,6 +22,8 @@ class TranslatedDiagram:
         self.diagram = diagram
         self.diagram_specific_data = diagram_specific_data
         self.daos_by_id:dict[str, TranslatedDAO] = {}
+    def add_translated_dao(self, dao_translated: TranslatedDAO):
+        self.daos_by_id[dao_translated.dao.get_id()] = dao_translated
 
 
 class TranslatorGeneral(pi.PipelineItem):

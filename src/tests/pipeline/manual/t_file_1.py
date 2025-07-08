@@ -12,6 +12,7 @@ import src.cli.cli_executor as clie
 #import src.cli.antlr_invoker as grammar_compiler
 import src.postprocessing.output_preparation.model_to_json as m_json
 import src.output.text_file_output as tfo
+import src.postprocessing.output_preparation.templates.jinja.model_to_template_mapper_jinja as mtt_mapper_j
 
 import src.postprocessing.output_preparation.templates.jinja.t_j_solidity as template_jinja_solidity
 
@@ -186,13 +187,18 @@ if __name__ == "__main__":
 
     # 7) template compiling
 
-    template_filename_by_entity_idNameClassname = {}
-    # template_filename_by_entity_idNameClassname[dm.DiagramManager.__class__.__name__] = None # no template for Diagram, at the moment
-    template_filename_by_entity_idNameClassname[d.DAO.__class__.__name__] = files.concat_folder_filename(".", "Templates","DAOOptimizedGeneric.jinja")
-    template_filename_by_entity_idNameClassname[c.Committee.__class__.__name__] = files.concat_folder_filename(".", "Templates","WHAT ELSE?.jinja")
-    k_template_filename_by_entity_idNameClassname = "k_template_filename_by_entity_idNameClassname"
-    template_filename_by_entity_idNameClassname_submitter = pval.PIAnyValue(pi.PIData(k_template_filename_by_entity_idNameClassname, [k_xml_generator]), template_filename_by_entity_idNameClassname)
-    pm.addItem(template_filename_by_entity_idNameClassname_submitter)
+    model_to_template_filename_jinja = mtt_mapper_j.ModelToTemplateMapperJinja()
+    # TODO: it's STILL NEEDED TO DEFINE HOW TO PROVIDE (and retrieve?) ALL THE NECESSARY DATA 
+    # .... maybe inside that ModelToTemplateMapperJinja instance?
+     
+    # model_to_template_filename_jinja[dm.DiagramManager.__class__.__name__] = None # no template for Diagram, at the moment
+    model_to_template_filename_jinja[d.DAO.__class__.__name__] = files.concat_folder_filename(".", "Templates","DAOOptimizedGeneric.jinja")
+    model_to_template_filename_jinja[c.Committee.__class__.__name__] = files.concat_folder_filename(".", "Templates","WHAT ELSE?.jinja")
+    # NOTE: other entries might be ID of "things" (Committees, usually) that are known in advance (even their ID as well) to have a specific, custom, user-defined
+    # template rather than the "generic" pre-defined one 
+    k_model_to_template_filename_jinja = "k_model_to_template_filename_jinja"
+    model_to_template_filename_jinja_submitter = pval.PIAnyValue(pi.PIData(k_model_to_template_filename_jinja, [k_xml_generator]), model_to_template_filename_jinja)
+    pm.addItem(model_to_template_filename_jinja_submitter)
 
 
     tjs = template_jinja_solidity.TemplateJinjaSolidity(... TODO ...)

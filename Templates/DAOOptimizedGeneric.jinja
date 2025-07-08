@@ -285,29 +285,29 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         {& if voting_function: %}
         function canVote(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {{"{"}}
                 require(role_permissions[{{perm_var_type}}(roles[user] & 31)] & ({{perm_var_type}}(1) << permissionIndex) != 0, "User does not have this permission");
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                {self.generate_user_role_condition_evaluation("voting_conditions", "user") if self.context.dao.voting_conditions != {} else "return true;"}
-                
                 {# the following is the actual "execution" of the function "generate_user_role_condition_evaluation" from the OptimizedTranslatorSolidity class: it's so Solidity-specific that it can't be generally created AND provided as a function }
                 {# generate_user_role_condition_evaluation("voting_conditions", "user")  if self.context.dao.voting_conditions != {} else "return true;" #}
-                {% if assignment_conditions|length > 0 %}
-                ICondition _condition = assignment_conditions[roles[msg.sender]];
-                require( (_condition == ICondition(address(0))) || _condition.evaluate( _user ), "User does not meet the required conditions");
+                {% if voting_conditions|length > 0 %}
+                ICondition _condition = voting_conditions[roles[msg.sender]];
+                return (_condition == ICondition(address(0))) || _condition.evaluate( user );
+                {% else %}
+                return true;
                 {% endif %}
-
-
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         {{"}"}}
         {% endif %}
+
         {& if proposal_function: %}
-        function canPropose(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {'{'}
+        function canPropose(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {{"{"}}
                 require(role_permissions[{{perm_var_type}}(roles[user] & 31)] & ({{perm_var_type}}(1) << permissionIndex) != 0, "User does not have this permission");
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                {self.generate_user_role_condition_evaluation("proposal_conditions", "user") if self.context.dao.proposal_conditions != {} else "return true;"}
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                {# the following is the actual "execution" of the function "generate_user_role_condition_evaluation" from the OptimizedTranslatorSolidity class: it's so Solidity-specific that it can't be generally created AND provided as a function }
+                {# generate_user_role_condition_evaluation("proposal_conditions", "user")  if self.context.dao.proposal_conditions != {} else "return true;" #}
+                {% if proposal_conditions|length > 0 %}
+                ICondition _condition = proposal_conditions[roles[msg.sender]];
+                return (_condition == ICondition(address(0))) || _condition.evaluate( user );
+                {% else %}
+                return true;
+                {% endif %}
         {{"}"}}
         {% endif %}
-
-
         
 {{"}"}}
