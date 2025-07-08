@@ -14,6 +14,9 @@ class SolidityTranslationData:
 
 
 class TranslationInstanceDataDAOBase:
+    """
+    @deprecated
+    """
     def __init__(self, dao_name):
         self.dao_name = dao_name
     
