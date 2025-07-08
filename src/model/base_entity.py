@@ -7,6 +7,12 @@ class BaseEntity:
 
     def get_id(self):
         return self.id
+    
+    def get_name(self) -> str:
+        """
+        To be Overridden
+        """
+        return ""
 
     def toJSON(self):
         return {

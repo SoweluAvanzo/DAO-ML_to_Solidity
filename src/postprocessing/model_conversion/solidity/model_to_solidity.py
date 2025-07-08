@@ -5,6 +5,9 @@ import src.model.diagram_manager as dm
 
 
 class SolidityTranslationData:
+    """
+    @deprecated
+    """
     def __init__(self, key_input_template:str, key_translation_logic:str):
         self.key_input_template = key_input_template
         self.key_translation_logic = key_translation_logic
@@ -29,6 +32,9 @@ class TranslationInstanceDataDAOBase:
 
 
 class ModelToSolidity(pi.PipelineItem):
+    """
+    @deprecated
+    """
     def __init__(self, pipeline_item_data: pi.PIData, key_input_template:str):
         super().__init__(pipeline_item_data)
         self.key_input_template = key_input_template

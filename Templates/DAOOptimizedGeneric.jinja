@@ -1,9 +1,7 @@
 {#
 NOTA: QUANTO SEGUE E' L'OGGETTO CHIAMATO "instance_data" CHE DEVE ESSERE PASSATO AL JinjaTemplateCompiler
 
-class TranslationInstanceDataDAOOptimized( tiddb.TranslationInstanceDataDAOBase ):
-    def __init__(self, dao_name):
-        super().__init__(dao_name)
+TranslatedDiagram
 
 {
     "solidity_version" : self.context.solidity_version,
@@ -289,6 +287,15 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
                 require(role_permissions[{{perm_var_type}}(roles[user] & 31)] & ({{perm_var_type}}(1) << permissionIndex) != 0, "User does not have this permission");
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
                 {self.generate_user_role_condition_evaluation("voting_conditions", "user") if self.context.dao.voting_conditions != {} else "return true;"}
+                
+                {# the following is the actual "execution" of the function "generate_user_role_condition_evaluation" from the OptimizedTranslatorSolidity class: it's so Solidity-specific that it can't be generally created AND provided as a function }
+                {# generate_user_role_condition_evaluation("voting_conditions", "user")  if self.context.dao.voting_conditions != {} else "return true;" #}
+                {% if assignment_conditions|length > 0 %}
+                ICondition _condition = assignment_conditions[roles[msg.sender]];
+                require( (_condition == ICondition(address(0))) || _condition.evaluate( _user ), "User does not meet the required conditions");
+                {% endif %}
+
+
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         {{"}"}}
         {% endif %}
