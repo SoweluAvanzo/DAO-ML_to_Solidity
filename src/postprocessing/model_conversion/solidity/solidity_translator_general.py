@@ -5,25 +5,36 @@ import src.model.dao as d
 import src.model.committee as c
 
 
-class TranslatedCommittee:
+class IDGetterDelegators:
+    def get_id(self) -> str:
+        return None
+
+
+class TranslatedCommittee(IDGetterDelegators):
     def __init__(self, committee:c.Committee, committee_specific_data:dict):
         self.committee = committee
         self.committee_specific_data = committee_specific_data
         self.additional_modules_instances_by_name:dict[str, list[dict]] = [] # as of "translator.py # CommitteeTranslator", there are A LOT of additional templates to be created for each Committee
+    def get_id(self) -> str:
+        return self.committee.get_id()
 
-class TranslatedDAO:
+class TranslatedDAO(IDGetterDelegators):
     def __init__(self, dao:d.DAO, dao_specific_data:dict):
         self.dao = dao
         self.dao_specific_data = dao_specific_data
         self.committees_by_id:dict[str, TranslatedCommittee] = {}
+    def get_id(self) -> str:
+        return self.dao.get_id()
 
-class TranslatedDiagram:
+class TranslatedDiagram(IDGetterDelegators):
     def __init__(self, diagram:dm.DiagramManager, diagram_specific_data:dict):
         self.diagram = diagram
         self.diagram_specific_data = diagram_specific_data
         self.daos_by_id:dict[str, TranslatedDAO] = {}
     def add_translated_dao(self, dao_translated: TranslatedDAO):
         self.daos_by_id[dao_translated.dao.get_id()] = dao_translated
+    def get_id(self) -> str:
+        return self.diagram.get_id()
 
 
 class TranslatorGeneral(pi.PipelineItem):
