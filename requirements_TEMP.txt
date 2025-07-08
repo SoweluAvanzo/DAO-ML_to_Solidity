@@ -2,3 +2,4 @@ typing
 antlr4
 lxml
 antlr4-python3-runtime==4.13.0
+typing==3.7.4

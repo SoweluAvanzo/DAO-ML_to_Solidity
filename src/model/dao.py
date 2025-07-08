@@ -43,6 +43,9 @@ class DAO(base_entity_module.BaseEntity):
         self.conditions = []
         self.role_and_committee_voting_right_dict = {}
         self.role_and_committee_proposal_right_dict = {}
+        
+    def get_name(self) -> str:
+        return self.dao_name
     
     def add_role(self, role: role_module.Role):
         self.roles[role.get_id()] = role

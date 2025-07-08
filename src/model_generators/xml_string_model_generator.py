@@ -6,7 +6,7 @@ import src.parsers.xml.XMLParser as xmlP
 import src.parsers.xml.XMLParserVisitor as xmlPV
 
 import src.pipeline.pipeline_item as pi
-import src.generators.base_generator as bg
+import src.model_generators.base_generator as bg
 #import src.utilities.utils as u
 import src.model.diagram_manager as dm
 import src.model.dao as d

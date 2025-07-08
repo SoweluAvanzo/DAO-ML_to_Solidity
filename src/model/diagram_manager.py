@@ -17,6 +17,11 @@ class DiagramManager(base_entity_module.BaseEntity):
         self.relations_by_dao: map[str, list[tuple[rt.RelationType, str, str]]] = {}
         self.controGraphGenerator = controGraphGenerator
 
+        
+    def get_name(self) -> str:
+        return self.uniqueID
+    
+
     def get_dao_by(self, daoOrID):
         dao = None
         if isinstance(daoOrID, dao_module.DAO):
@@ -33,13 +38,16 @@ class DiagramManager(base_entity_module.BaseEntity):
         dao_id = dao.get_id()
         self.relations_by_dao[dao_id] = []
     
+
     def addRole(self, daoOrID, role: role_module.Role):
         dao = self.get_dao_by(daoOrID)
         dao.add_role(role)
 
+
     def addCommittee(self, daoOrID, committee: committee_module.Committee):
         dao = self.get_dao_by(daoOrID)
         dao.add_committee(committee)
+
 
     def addPermission(self, daoOrID, permission: permission_module.Permission ):
         dao = self.get_dao_by(daoOrID)

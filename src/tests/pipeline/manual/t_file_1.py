@@ -5,19 +5,25 @@ import src.pipeline.pipeline_item as pi
 import src.input.txt_file_input as tfi
 import src.input.xml_file_input as xfi
 import src.validators.xml_dao_validator as xvi
-import src.generators.json_string_model_generator as jg
-import src.generators.xml_string_model_generator as xsmg
+import src.model_generators.json_string_model_generator as jg
+import src.model_generators.xml_string_model_generator as xsmg
 import src.utilities.constants as consts
 import src.cli.cli_executor as clie
 #import src.cli.antlr_invoker as grammar_compiler
-import src.postprocessing.serialization.model_to_json as m_json
+import src.postprocessing.output_preparation.model_to_json as m_json
 import src.output.text_file_output as tfo
+
+import src.postprocessing.output_preparation.templates.jinja.t_j_solidity as template_jinja_solidity
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
 import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
+
+import src.model.diagram_manager as dm
+import src.model.dao as d
+import src.model.committee as c
 
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
@@ -179,6 +185,18 @@ if __name__ == "__main__":
     # 6) TRADUTTORE
 
     # 7) template compiling
+
+    template_filename_by_entity_idNameClassname = {}
+    # template_filename_by_entity_idNameClassname[dm.DiagramManager.__class__.__name__] = None # no template for Diagram, at the moment
+    template_filename_by_entity_idNameClassname[d.DAO.__class__.__name__] = files.concat_folder_filename(".", "Templates","DAOOptimizedGeneric.jinja")
+    template_filename_by_entity_idNameClassname[c.Committee.__class__.__name__] = files.concat_folder_filename(".", "Templates","WHAT ELSE?.jinja")
+    k_template_filename_by_entity_idNameClassname = "k_template_filename_by_entity_idNameClassname"
+    template_filename_by_entity_idNameClassname_submitter = pval.PIAnyValue(pi.PIData(k_template_filename_by_entity_idNameClassname, [k_xml_generator]), template_filename_by_entity_idNameClassname)
+    pm.addItem(template_filename_by_entity_idNameClassname_submitter)
+
+
+    tjs = template_jinja_solidity.TemplateJinjaSolidity(... TODO ...)
+
 
     print("RUN\n\n\n")
     pm.runPipeline()
