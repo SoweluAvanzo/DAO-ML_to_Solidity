@@ -8,6 +8,9 @@ class ModelToTemplateMapperJinja(mtt_mapper_b.ModelToTemplateMapperBase):
     templates to be populate, compiled and produced.
     This class serves as a bridge between those two worlds.
     """
+    def __init__(self, version="1.0.0"):
+        super().__init__()
+        self.version = version
 
     def has_template_filename_for_key(self, entity_or_id_name_classname):
         return False
