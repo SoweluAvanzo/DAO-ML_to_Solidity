@@ -32,34 +32,37 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         if not isinstance(model_to_template_mapper_jinja, mtt_mapper_j.ModelToTemplateMapperJinja):
             raise Exception(f"The provided model_to_template_mapper_jinja should be an instance of ModelToTemplateMapperJinja, but it's a: {type(model_to_template_mapper_jinja)}")
 
-        content_and_filepath_to_output = [
-            (translated_diagram.diagram_specific_data, model_to_template_mapper_jinja.get_template_filename_by_key(translated_diagram)) \
-            if model_to_template_mapper_jinja.has_template_filename_for_key(translated_diagram) else None,
-        ]
-        """
-        TODO: aggiungere uno per uno, perchè i Committee richiedono _moltissimi_ templates cadauno (e forse pure le DAO), tant'è che un dict, una
-        lista o una singola stringa viene restituita dal "get_template_filename_by_key" e ciò deve essere gestito ..
-        ... producendo delle tuple come nell'esempio qui sopra
+        def append_template_filename_output(array:list, translated_data:stg.IDGetterDelegators, template_filename ):
+            if isinstance(template_filename, str):
+                array.append((translated_data, template_filename))
+            elif isinstance(template_filename, list):
+                array.extend([ (translated_data, tf) for tf in template_filename])
+            elif isinstance(template_filename, dict) or isinstance(template_filename, map):
+                array.extend([ (translated_data, template_filename[ktf]) for ktf in template_filename.keys()])
+            return array
 
-         *[ \
-                *[ \
-                    model_to_template_mapper_jinja.get_template_filename_by_key( \
-                        translated_diagram.daos_by_id[dao_id] \
-                    ),
-                    *[ \
-                        
-                        model_to_template_mapper_jinja.get_template_filename_by_key( \
-                            translated_diagram.daos_by_id[dao_id] \
-                        ),
-                        for committee_id in translated_diagram.daos_by_id[dao_id].committees_by_id.keys()
-                    ]
-                ]\
-                if model_to_template_mapper_jinja.has_template_filename_for_key(translated_diagram.daos_by_id[dao_id]) \
-                else None
-                
-                for dao_id in translated_diagram.daos_by_id.keys()
-            ]
-        """
+
+        content_and_filepath_to_output = append_template_filename_output( \
+            [], \
+            translated_diagram.diagram_specific_data, \
+            model_to_template_mapper_jinja.get_template_filename_by_key(translated_diagram) \
+            ) \
+            if model_to_template_mapper_jinja.has_template_filename_for_key(translated_diagram) else []
+        for dao_id in translated_diagram.daos_by_id.keys():
+            if model_to_template_mapper_jinja.has_template_filename_for_key(translated_diagram.daos_by_id[dao_id]):
+                dao = translated_diagram.daos_by_id[dao_id]
+                append_template_filename_output( \
+                    content_and_filepath_to_output, \
+                    dao, \
+                    model_to_template_mapper_jinja.get_template_filename_by_key(dao) \
+                )
+                for committee_id in dao.committees_by_id.keys():
+                        committee = dao.committees_by_id[committee_id]
+                        append_template_filename_output( \
+                            content_and_filepath_to_output, \
+                            committee, \
+                            model_to_template_mapper_jinja.get_template_filename_by_key(committee) \
+                        )
         for output_and_filepath in content_and_filepath_to_output:
             output_to_print = output_and_filepath[0]
             filepath = output_and_filepath[1]
