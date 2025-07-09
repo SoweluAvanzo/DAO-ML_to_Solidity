@@ -17,7 +17,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
 import "./interfaces/IPermissionManager.sol";
 
 
-contract DdmoCouncil is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction, IPermissionManager {
+contract DdmoCouncil is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction {
     
     // State variables
     IPermissionManager public permissionManager;

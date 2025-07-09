@@ -176,7 +176,7 @@ class CommitteeTranslator:
         proposal_requirement = f'require(permissionManager.canPropose(msg.sender, {proposal_permission_index}), "User cannot propose");' if optimized else f'require(permissionManager.isCommitteeMember(msg.sender, {proposal_permission_index})==2, "User cannot propose");'
         state_var_declarations = "IPermissionManager public permissionManager;"
         constructor_actions= "permissionManager = IPermissionManager(_permissionManager); "
-        inherited_contracts=", IPermissionManager"
+        inherited_contracts=""
         name = committee.committee_description.replace(" ","_")
         constructor_parameters = ", address _permissionManager"
         imports=self.generate_import_statements()

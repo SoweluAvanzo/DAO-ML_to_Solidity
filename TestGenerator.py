@@ -76,7 +76,7 @@ class TestGeneratorOptimized:
     def generate_address_list(self) -> list[str]:
         entities = [*self.dao.roles.values(), *self.dao.committees.values()]
         addresses_list = [f"addr{index}" for index, entity in enumerate(entities) if entity.get_id() != self.dao.owner_role.role_id ]
-
+        #print(f"this is the addresses list generatedby the test generator: {addresses_list}")
         return addresses_list 
 
     def generate_addresses_by_entity_value(self) -> dict[int, dict[str, any]]: # see "optimized_translator.newEntityData(...)"
