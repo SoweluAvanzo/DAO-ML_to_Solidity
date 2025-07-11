@@ -4,6 +4,8 @@ import src.postprocessing.output_preparation.templates.model_to_template_mapper_
 
 class ModelToTemplateMapperJinja(mtt_mapper_b.ModelToTemplateMapperBase): 
     """
+    @deprecated : all this responsibility is moved onto the specific translators, since they MUST know what data to produce
+    
     This is one of the crucial aspect of templates: sometimes, specific instances or sub-fields require one or more
     templates to be populate, compiled and produced.
     This class serves as a bridge between those two worlds.

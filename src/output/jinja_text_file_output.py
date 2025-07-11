@@ -41,13 +41,14 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                 array.extend([ (translated_data, template_filename[ktf]) for ktf in template_filename.keys()])
             return array
 
-
+        # start with diagram ....
         content_and_filepath_to_output = append_template_filename_output( \
             [], \
             translated_diagram.diagram_specific_data, \
             model_to_template_mapper_jinja.get_template_filename_by_key(translated_diagram) \
             ) \
             if model_to_template_mapper_jinja.has_template_filename_for_key(translated_diagram) else []
+        # ... then DAOs ...
         for dao_id in translated_diagram.daos_by_id.keys():
             if model_to_template_mapper_jinja.has_template_filename_for_key(translated_diagram.daos_by_id[dao_id]):
                 dao = translated_diagram.daos_by_id[dao_id]
@@ -56,6 +57,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                     dao, \
                     model_to_template_mapper_jinja.get_template_filename_by_key(dao) \
                 )
+                # ... then committees ...
                 for committee_id in dao.committees_by_id.keys():
                         committee = dao.committees_by_id[committee_id]
                         append_template_filename_output( \
@@ -63,6 +65,8 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                             committee, \
                             model_to_template_mapper_jinja.get_template_filename_by_key(committee) \
                         )
+                    # ... then ... what? is there something specific to each committee?
+        # then, produce the output  
         for output_and_filepath in content_and_filepath_to_output:
             output_to_print = output_and_filepath[0]
             filepath = output_and_filepath[1]

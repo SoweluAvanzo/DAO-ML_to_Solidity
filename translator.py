@@ -185,9 +185,31 @@ class CommitteeTranslator:
             decision_making_method = "custom_decision_making_method"
         template_name = decision_making_method + ".sol.jinja"
         if template_name in self.get_voting_protocol_list():
-            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_description.replace(" ","_"), decision_making_method_name=decision_making_method, state_var_declarations= state_var_declarations,dao_name= dao_name,imports= imports, constructor_parameters= constructor_parameters, inherited_contracts=inherited_contracts, constructor_actions= constructor_actions,vote_requirement= vote_requirement, proposal_requirement=proposal_requirement, template_path=template_path, name= contract_name, output_folder="", extension=".sol"))
+            lines.extend(self.generate_voting_protocol_from_template( \
+                committee_name=committee.committee_description.replace(" ","_"), \
+                decision_making_method_name=decision_making_method, \
+                state_var_declarations= state_var_declarations,
+                dao_name= dao_name,
+                imports= imports, \
+                constructor_parameters= constructor_parameters, \
+                inherited_contracts=inherited_contracts, \
+                constructor_actions= constructor_actions,
+                vote_requirement= vote_requirement, \
+                proposal_requirement=proposal_requirement, \
+                template_path=template_path, \
+                name= contract_name, \
+                output_folder="", \
+                extension=".sol"))
         else:
-            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_description.replace(" ","_"), decision_making_method_name=committee.decision_making_method,dao_name= dao_name, template_path=template_path, name= contract_name, custom=True))
+            lines.extend( \
+                self.generate_voting_protocol_from_template( \
+                    committee_name=committee.committee_description.replace(" ","_"),
+                    decision_making_method_name=committee.decision_making_method,
+                    dao_name= dao_name,
+                    template_path=template_path,
+                    name= contract_name,
+                    custom=True)
+                )
         return TranslatedSmartContract(lines, name, testable=True)
     
 

@@ -1,16 +1,13 @@
 import src.pipeline.pipeline_item as pi
-
+import src.postprocessing.model_conversion.model_converter_base as mcb
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.committee as c
 
-
-class IDGetterDelegators:
-    def get_id(self) -> str:
-        return None
+ 
 
 
-class TranslatedCommittee(IDGetterDelegators):
+class TranslatedCommittee(mcb.ModelConversionResultBase):
     def __init__(self, committee:c.Committee, committee_specific_data:dict):
         self.committee = committee
         self.committee_specific_data = committee_specific_data
@@ -18,7 +15,7 @@ class TranslatedCommittee(IDGetterDelegators):
     def get_id(self) -> str:
         return self.committee.get_id()
 
-class TranslatedDAO(IDGetterDelegators):
+class TranslatedDAO(mcb.ModelConversionResultBase):
     def __init__(self, dao:d.DAO, dao_specific_data:dict):
         self.dao = dao
         self.dao_specific_data = dao_specific_data
@@ -26,7 +23,7 @@ class TranslatedDAO(IDGetterDelegators):
     def get_id(self) -> str:
         return self.dao.get_id()
 
-class TranslatedDiagram(IDGetterDelegators):
+class TranslatedDiagram(mcb.ModelConversionResultBase):
     def __init__(self, diagram:dm.DiagramManager, diagram_specific_data:dict):
         self.diagram = diagram
         self.diagram_specific_data = diagram_specific_data
@@ -37,19 +34,9 @@ class TranslatedDiagram(IDGetterDelegators):
         return self.diagram.get_id()
 
 
-class TranslatorGeneral(pi.PipelineItem):
+class TranslatorGeneral(mcb.ModelConverterBase):
     """
-    Superclass of all other Solidity Translators
+    Superclass of all other Solidity Translators.
     """
     def __init__(self, pipeline_item_data: pi.PIData, key_model:str=None):
-        super().__init__(pipeline_item_data)
-        self.key_model = key_model
-
-
-    def translate(self, model:dm.DiagramManager, additional_data=None) -> TranslatedDiagram:
-        return None
-
-    def run(self, inputs):
-        return self.translate(\
-            inputs[self.key_model] if self.key_model is not None else self.get_ith_input(inputs, 0), \
-            inputs)
+        super().__init__(pipeline_item_data, key_model)
