@@ -12,6 +12,9 @@ class Permission(base_entity.BaseEntity):
     def __str__(self):
         return super().__str__(f' allowed_action={self.allowed_action}, permission_type={self.permission_type}, ref_gov_area={self.ref_gov_area}')
 
+    def get_name(self) -> str:
+        return self.get_id()
+    
     def toJSON(self):
         obj = super().toJSON()
         obj["allowed_action"] = self.allowed_action

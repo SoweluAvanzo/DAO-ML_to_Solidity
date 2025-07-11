@@ -22,7 +22,7 @@ element
     ;
 
 
-diagram: OPEN DIAGRAM misc* (attribute* unique_id)? attribute* misc* CLOSE chardata? ((dao | reference | comments_and_stuff | attribute) misc* chardata?)* OPEN SLASH DIAGRAM CLOSE
+diagram: OPEN DIAGRAM misc* (attribute+ unique_id)? attribute* misc* CLOSE chardata? ((dao | reference | comments_and_stuff | attribute) misc* chardata?)* OPEN SLASH DIAGRAM CLOSE
     ;
 
 dao

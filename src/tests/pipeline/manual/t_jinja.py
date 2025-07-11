@@ -9,7 +9,8 @@ import src.pipeline.pipeline_item as pi
 import src.input.txt_file_input as tfi
 import src.output.text_file_output as tfo
 
-import src.templates.template_jinja_solidity  as tjs
+#import src.templates.template_jinja_solidity as tjs
+import src.templates.template_jinja_base as tjb
 
 JINJA_TEMPLATE_NAME = "test_jinja"
 JINJA_TEMPLATE_EXTENSION = "jinja"
@@ -39,7 +40,8 @@ if __name__ == "__main__":
             ("puzzolo", "rat"),
             ("beppe", "dog"),
             ("fluffolo", "platapus")
-        ]
+        ],
+        "lenlen": lambda x: f"{len(x)} is the length of: {x}"
     }
     k_jinja_test_data_provider = "k_jinja_test_data_provider"
     jinja_test_data_provider = pval.PIAnyValue(pi.PIData(k_jinja_test_data_provider, None), jinja_test_data)
@@ -53,7 +55,7 @@ if __name__ == "__main__":
 
     
     k_jinja_template_compiler = "k_jinja_template_compiler"
-    jinja_template_compiler = tjs.TemplateJinjaSolidity( \
+    jinja_template_compiler = tjb.TemplateJinjaBase( \
         pi.PIData(k_jinja_template_compiler, [
                 k_jinja_name,
                 k_jinja_template_input,
@@ -61,7 +63,7 @@ if __name__ == "__main__":
             ]
         ),
         key_template_name=k_jinja_name,
-        key_template_definition=k_jinja_template_input,
+        key_template_skeleton=k_jinja_template_input,
         key_template_instance_data=k_jinja_test_data_provider
     )
     pm.addItem(jinja_template_compiler)

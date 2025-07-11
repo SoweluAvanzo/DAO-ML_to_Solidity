@@ -16,6 +16,9 @@ class Role(base_entity.BaseEntity):
         self.aggregated:list[Role|committee.Committee] =  []
         self.federated_committees:list[committee.Committee] = []
 
+    def get_name(self) -> str:
+        return self.role_name
+    
     def add_permission(self, permission: permission.Permission):
         print(f'Adding permission {str(permission)} to role {self.id}')
         self.permissions.append(permission)

@@ -18,6 +18,9 @@ class Committee(base_entity.BaseEntity):
         self.member_entities:list[Committee] = []
         self.federated_committees:list[Committee|role.Role] = []
 
+    def get_name(self) -> str:
+        return self.committee_description
+    
     def add_permission(self, permission: permission.Permission):
         print(f'Adding permission {str(permission)} to committee {self.id}')
         self.permissions.append(permission)

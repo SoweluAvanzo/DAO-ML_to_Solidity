@@ -10,6 +10,7 @@ import DiagramManager2 as dm
 class SolidityJinjaTemplate(bt.BasicTemplate):
     '''
     refactor "TemplateRenderer" as this class
+    @deprecated
     '''
 
     def __init__(self, template_name="", filename=""):

@@ -28,7 +28,7 @@ class TestFile1_Processor_ParsedTreeStringer(pi.PipelineItem):
             try:
                 daos = tree_parsed.xpath('//DAO')
                 for dao in daos:
-                    print(f"\t dao ID: {dao.get("DAO_ID")}, dao name: {dao.get("DAO_name")}")
+                    print(f"\t dao ID: {dao.get('DAO_ID')}, dao name: {dao.get('DAO_name')}")
             except Exception as e:
                 print(e)
         return etree.tostring(tree_parsed)

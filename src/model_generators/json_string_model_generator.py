@@ -1,7 +1,7 @@
 import json
 
 import src.pipeline.pipeline_item as pi
-import src.generators.base_generator as bg
+import src.model_generators.base_generator as bg
 import src.utilities.utils as u
 
 
