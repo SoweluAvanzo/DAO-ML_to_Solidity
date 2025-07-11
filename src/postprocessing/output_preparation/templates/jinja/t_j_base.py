@@ -4,6 +4,9 @@ import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.templates.template_base as tb
 
 class TemplateJinjaBase(tb.TemplateBase):
+    """
+    Compiles a template using the Jinja package by populating it with the provided data and producing as output the lines of the compiled template
+    """
     def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None, key_template_name:str=None, key_template_skeleton:str=None, key_template_instance_data:str=None):
         super().__init__(pipeline_item_data, optional_external_data, key_template_name, key_template_skeleton, key_template_instance_data)
         
