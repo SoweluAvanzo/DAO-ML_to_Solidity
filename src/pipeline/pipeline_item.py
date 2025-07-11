@@ -29,6 +29,9 @@ class PipelineItem:
         print(self.pipeline_item_data.key)
         pass
 
+    def get_pipeline_item_data(self):
+        return self.pipeline_item_data
+
     def get_key(self):
         return self.pipeline_item_data.key
 
