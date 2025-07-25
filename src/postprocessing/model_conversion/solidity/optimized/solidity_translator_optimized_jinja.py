@@ -17,12 +17,15 @@ class TranslatorOptimizedJinja(sol_transl_opt.TranslatorOptimized):
     def __init__(self, pipeline_item_data: pi.PIData, \
                 key_model:str=None, \
                 key_translator_type:str=None, \
-                key_version:str=None):
+                key_version_translator:str=None, \
+                key_version_target:str=None \
+            ):
         super().__init__(\
             pipeline_item_data, \
             key_model, \
-            key_translator_type, \
-            key_version)
+            key_version_translator, \
+            key_version_target \
+        )
 
 
         #

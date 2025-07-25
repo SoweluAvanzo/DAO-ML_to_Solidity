@@ -25,12 +25,12 @@ class TranslationInstanceDataDAOBase:
             "dao_name": self.dao_name
         }
 
-    def __to_json__(self):
+    def __tojson__(self, **kwargs):
         return self.toJSON()
 
     def __repr__(self):
         import json
-        return json.dumps(self.__to_json__())
+        return json.dumps(self.__tojson__())
 
 
 
