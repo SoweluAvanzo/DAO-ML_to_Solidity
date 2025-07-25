@@ -40,7 +40,7 @@ class DAO(base_entity_module.BaseEntity):
         self.voting_conditions: dict[str, str]  = {} # Committee
         self.proposal_conditions: dict[str, str]  = {} # Committee
         self.decision_making_methods: dict[str, str]  = {} # Committee
-        self.conditions = []
+        self.conditions:list[str] = []
         self.role_and_committee_voting_right_dict = {}
         self.role_and_committee_proposal_right_dict = {}
         

@@ -4,14 +4,14 @@ import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.committee as c
 
- 
-
+#
+# TRANSLATION OUTPUT
+#
 
 class TranslatedCommittee(mcb.ModelConversionResultBase):
     def __init__(self, committee:c.Committee, committee_specific_data:dict):
         self.committee = committee
         self.committee_specific_data = committee_specific_data
-        self.additional_modules_instances_by_name:dict[str, list[dict]] = [] # as of "translator.py # CommitteeTranslator", there are A LOT of additional templates to be created for each Committee
     def get_id(self) -> str:
         return self.committee.get_id()
 
@@ -33,6 +33,10 @@ class TranslatedDiagram(mcb.ModelConversionResultBase):
     def get_id(self) -> str:
         return self.diagram.get_id()
 
+#
+# THE ACTUAL TRANSLATOR
+#
+
 
 class TranslatorGeneral(mcb.ModelConverterBase):
     """
@@ -40,3 +44,21 @@ class TranslatorGeneral(mcb.ModelConverterBase):
     """
     def __init__(self, pipeline_item_data: pi.PIData, key_model:str=None):
         super().__init__(pipeline_item_data, key_model)
+
+    def new_translated_diagram(self, diagram:dm.DiagramManager, other_data=None) -> TranslatedDiagram:
+        """
+        Designed to be overridden
+        """
+        return TranslatedDiagram(diagram, other_data)
+
+    def new_translated_dao(self, diagram:dm.DiagramManager, dao:d.DAO, other_data=None) -> TranslatedDAO:
+        """
+        Designed to be overridden
+        """
+        return TranslatedDAO(dao, other_data)
+
+    def new_translated_committee(self, diagram:dm.DiagramManager, dao:d.DAO, committee:c.Committee, other_data=None) -> TranslatedCommittee:
+        """
+        Designed to be overridden
+        """
+        return TranslatedCommittee(committee, other_data)

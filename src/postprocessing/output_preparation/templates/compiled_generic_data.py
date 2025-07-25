@@ -10,16 +10,16 @@ class CompiledUnitWithID:
         """
         return self.template_name
 
-    def __to_json__(self):
+    def __tojson__(self, **kwargs):
         return {
             "id": self.id,
             "template_name": self.template_name
         }
     def to_json(self):
-        return self.__to_json__()
+        return self.__tojson__()
     def toJSON(self):
         return self.to_json()
     
     def __repr__(self):
         import json
-        return json.dumps(self.__to_json__())
+        return json.dumps(self.__tojson__())
