@@ -24,6 +24,7 @@ class DAOMetadata:
     def __repr__(self):
         return self.toJSON()
 
+
 class DAO(base_entity_module.BaseEntity):
     def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
         super().__init__(dao_id)
@@ -43,15 +44,19 @@ class DAO(base_entity_module.BaseEntity):
         self.conditions:list[str] = []
         self.role_and_committee_voting_right_dict = {}
         self.role_and_committee_proposal_right_dict = {}
-        
+
+
     def get_name(self) -> str:
         return self.dao_name
-    
+
+
     def add_role(self, role: role_module.Role):
         self.roles[role.get_id()] = role
 
+
     def add_committee(self, committee: committee_module.Committee):
         self.committees[committee.get_id()] = committee
+
 
     def add_permission(self, permission: permission_module.Permission):
         self.permissions[permission.get_id()] = permission
@@ -65,7 +70,7 @@ class DAO(base_entity_module.BaseEntity):
         obj["roles"] = {n: self.roles[n].toJSON() for n in self.roles}
         obj["committees"] = {n: self.committees[n].toJSON() for n in self.committees}
         obj["permissions"] = {n: self.permissions[n].toJSON() for n in self.permissions}
-        obj["dao_control_graph"] = None # self.dao_control_graph -> ControlGraph
+        obj["dao_control_graph"] = f"DAO Graph, but not serializable, of type: {self.dao_control_graph.__class__.__name__ if self.dao_control_graph is not None else 'NONE'}"
         # obj["metadata"] = self.metadata.toJSON()
         obj["assignment_conditions"] = {r: self.assignment_conditions[r] for r in self.assignment_conditions}
         obj["voting_conditions"] = {n: self.voting_conditions[n] for n in self.voting_conditions} 

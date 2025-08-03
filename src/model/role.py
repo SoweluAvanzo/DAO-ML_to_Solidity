@@ -1,8 +1,8 @@
-import src.model.aggregable_entity as aggregable_entity
-import src.model.permission as permission
-import src.model.committee as committee
+import src.model.aggregable_entity as aggregable_e
+#import src.model.permission as permission
+#import src.model.committee as committee
 
-class Role(aggregable_entity.AggregableEntity):
+class Role(aggregable_e.AggregableEntity):
     def __init__(self, role_id, role_name, role_assignment_method, n_agent_min, n_agent_max, agent_type):
         super().__init__(role_id)
         self.role_name = role_name

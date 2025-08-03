@@ -2,9 +2,9 @@ import src.pipeline.pipeline_item as pi
 #import src.postprocessing.model_conversion.solidity.model_to_solidity as mts
 import src.postprocessing.model_conversion.model_converter_base as mcb
 import src.postprocessing.model_conversion.solidity.solidity_translator_general as stg
-import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized_jinja as sto_j
+#import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized_jinja as sto_j
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as j_o_v
-import src.postprocessing.model_conversion.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as to_sol_j_1_0_0
+#import src.postprocessing.model_conversion.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as to_sol_j_1_0_0
 import src.model.enums.relation_type as rt
 import src.model.diagram_manager as dm
 import src.model.dao as d
@@ -35,25 +35,27 @@ class TranslatorOptimized(stg.TranslatorGeneral):
         """
         Override designed
         """
+        """
+        SEE TODO INSIDE TranslatorOptimizedJinja
         if translator_type == None or (isinstance(translator_type, str) and translator_type.lower() == "jinja"):
             jinja_transl = sto_j.TranslatorOptimizedJinja(self.get_pipeline_item_data(), \
                                 self.key_model, \
                                 self.key_translator_type, \
-                                self.key_version, \
+                                self.key_version_translator, \
                                 )
             deleg = jinja_transl.select_delegator(diagram, translator_type, version, additional_data)
             return deleg
+        """
         raise Exception(f"(Solidity)TranslatorOptimized can't select its own delegator for translator type ({translator_type}) and version ({version}): instantiate another one.")
 
     def translate(self, diagram:dm.DiagramManager, additional_data:dict=None) -> stg.TranslatedDiagram:
         if additional_data is None:
             additional_data = {}
-
         translator_type = additional_data[self.key_translator_type] if self.key_translator_type is not None \
             and None and self.key_translator_type in additional_data else \
             self.get_ith_input(additional_data, 1)
         if translator_type is None:
-            translator_type = "jinj" # TODO: how to choose another default one? 
+            translator_type = "jinja" # TODO: how to choose another default one? 
 
         translator_version = additional_data[self.key_version_translator] if self.key_version_translator is not None \
             and None and self.key_version_translator in additional_data else \

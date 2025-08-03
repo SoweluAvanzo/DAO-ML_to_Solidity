@@ -1,6 +1,6 @@
 import src.model.base_entity as base_entity
 import src.model.permission as permission
-import src.model.role as role
+#import src.model.role as role
 
 # super class of both Committee and Role
 class AggregableEntity(base_entity.BaseEntity):

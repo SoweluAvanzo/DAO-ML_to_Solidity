@@ -139,12 +139,6 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
 
     def visitRelations(self, ctx):
     #visits associated to relations and stores them in the dictionary
-
-        # TODO: usa "RelationType" nella invocazione
-        # " addRelation(self.current_dao, RelationType.AGGREGATION, id, content) "
-        # iterata nei vari cicli for
-        # (qui il " RelationType.AGGREGATION" e' SOLO un ruolo di esempio)
-        
         if ctx.associated_to():
             for assoc in ctx.associated_to():
                 content = self.aggregate_texts(assoc.content().chardata())

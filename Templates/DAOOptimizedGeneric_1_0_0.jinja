@@ -272,11 +272,11 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         
     {# generate_permission_functions #}
         
-        {% for perm in permissions %}
+        {% for perm in permissions %} {% if not (perm.voting_right or perm.proposal_right) %}
         function {{function_permission_name_by_id[perm.id]}}() external hasPermission(msg.sender, {{permission_index_by_id[perm.id]}}) {{"{"}}
             // TODO: Implement the function logic here
         {{"}"}}
-        {% endfor %}
+{% endif%} {% endfor %}
         
         {& if voting_function: %}
         function canVote(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {{"{"}}

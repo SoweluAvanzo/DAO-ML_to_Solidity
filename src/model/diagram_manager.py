@@ -61,8 +61,14 @@ class DiagramManager(base_entity_module.BaseEntity):
     
 
     #
-    def createControlGraph(self, daoOrID):
-        dao: dao_module.DAO = self.get_dao_by(daoOrID)
+    def createControlGraph(self, daoOrID:str, dao: dao_module.DAO=None):
+        if dao is None:
+            if isinstance(daoOrID, str):
+                dao = self.get_dao_by(daoOrID)
+            elif isinstance(daoOrID, dao_module.DAO):
+                dao = daoOrID
+            else:
+                raise Exception("Can't create Control Graph with no provided DAO")
         cg = cgb.ControlGraphBasic(dao) if self.controGraphGenerator is None else self.controGraphGenerator(dao)
         dao.dao_control_graph = cg
         return cg
@@ -95,7 +101,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         # TODO 20/06/2025: rafactor away this creation because it's not DiagramManager's responsibility to perfor all of this "management"
         for daooo in self.daoByID.values():
             dao: dao_module.DAO = daooo
-            dao_id = dao.get_id()
+            dao_id:str = dao.get_id()
             for relation in self.relations_by_dao[dao_id]:
                 fromID = relation[1]
                 content = relation[2]
@@ -178,7 +184,7 @@ class DiagramManager(base_entity_module.BaseEntity):
             self.generate_conditions(dao)
             #generate owner role
             self.generateOwnerRole(dao)
-            self.createControlGraph(dao_id)
+            self.createControlGraph(dao_id, dao)
 
 
     def generateOwnerRole(self, dao: dao_module.DAO):
