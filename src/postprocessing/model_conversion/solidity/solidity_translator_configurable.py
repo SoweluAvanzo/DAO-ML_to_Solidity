@@ -3,12 +3,23 @@ import src.postprocessing.model_conversion.solidity.solidity_translator_general 
 
 
 class TranslatorConfigurable(sol_transl_general.TranslatorGeneral):
+    """
+    TODO: should be the actual translator, a refactored one which implements
+    the whole translator selection process depending on some configuration
+    """
     
     def __init__(self, pipeline_item_data: pi.PIData):
         super().__init__(pipeline_item_data)
 
-    def translate(self, additional_data=None):
+    def select_implementation(self, translation_type:str, version:str, additional_metadata=None) -> sol_transl_general.TranslatorGeneral
+        #TODO 2025/08/03 DA FAREEEEEEEEEEE
         return None
+
+
+    def translate(self, additional_data=None):
+        #TODO 2025/08/03 DA FAREEEEEEEEEEE: somehow, get translation_type and version 
+        implementation = self.select_implementation(....)
+        return implementation.translate(additional_data)
 
     """
     TODO:

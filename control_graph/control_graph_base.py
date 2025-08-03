@@ -7,6 +7,7 @@ import model.enums.graph_type as graph_type #GraphType
 
 class ControlGraphBase(control_graph_generic.ControlGraphGeneric):
     '''
+    @deprecated
     First, simple implementation of the control graph (controlling Role, Committee
     and the ability to perform operations onto one another).
     '''

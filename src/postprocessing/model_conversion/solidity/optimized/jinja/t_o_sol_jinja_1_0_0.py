@@ -6,13 +6,14 @@ import src.postprocessing.model_conversion.solidity.solidity_translator_general 
 import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized as sol_transl_opt
 import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized_jinja as sol_transl_opt_jinja
 import src.postprocessing.model_conversion.model_converter_base as mcb
-import src.model.aggregable_entity as aggregable_entity
+import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
+import src.model.enums.entity_type_controllable as etc
+import src.model.aggregable_entity as aggregable_e
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.committee as c
-import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
+#import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 import src.model.enums.relation_type as rt
-import src.model.enums.entity_type_controllable as etc
 
 VERSION = "1.0.0"
 
@@ -63,14 +64,15 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
             key_version_translator, \
             key_version_target \
         )
-
+    
+    def select_delegator(self, diagram:dm.DiagramManager, translator_type:str, version:str,  additional_data:dict=None) -> mcb.ModelConverterBase:
+        return self
+    
     def translate(self, diagram, additional_data:dict=None) -> mcb.ModelConversionResultBase:
         #raise Exception("TranslatorOptimizedJinja_1_0_0 translation NOT IMPLEMENTED YET")
+        print("YAYYYYYYy")
         return self.translate_diagram_solidity(diagram, additional_data)
-
-
         # TODO THE REAL TRANSLATION!
-
         """
         # See " optimized_translator.py # OptimizedSolidityTranslator"
         
@@ -88,12 +90,8 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
                 # translateCommittee
                 -> file_name_and_path = template_path + "ConditionImplementation" + extension + ".jinja"
                 - - -> extension = ".sol" ?
-                - - -> template_path = 
-
-        
+                - - -> template_path =         
         """
-
-
 
 
     def translate_diagram_solidity(self, diagram:dm.DiagramManager, additional_data:dict=None) -> stg.TranslatedDiagram:
@@ -126,7 +124,7 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
         dao_translated = self.new_translated_dao(diagram, dao, dao_specific_data_translated) 
         # vars
         entities_amount = len(dao.roles) + len(dao.committees)
-        group_size = dao.metadata.user_functionalities_group_size
+        group_size:user_functionalities_group_size_module.UserFunctionalitiesGroupSize = dao.metadata.user_functionalities_group_size
         id_var_type = self.get_variable_type(dao, group_size)
         is_role_access_optimized = group_size is not None
         functionalities_ids = self.compute_states_variables__functionalities_ids(dao)
@@ -173,19 +171,15 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
         # generate_functions
         dao_specific_data_translated["group_size_bitmask"] = group_size.get_mask_size()
         dao_specific_data_translated["id_mask"] = mask_id
-
-        # TODO: 2025-07-25 SONO ARRIVATO QUI A COMPLETARE LA COMPILAZIONE DEL TEMPLATE
+        # generate_permission_functions
+        dao_specific_data_translated["permissions"] = dao.permissions.values()
+        dao_specific_data_translated["permission_index_by_id"] = permission_to_index
+        dao_specific_data_translated["function_permission_name_by_id"] = self.get_function_permission_name_by_id(dao)
+        has_voting_proposal = self.has_default_functions_overridden(dao)
+        dao_specific_data_translated["voting_function"] = has_voting_proposal["voting_function"]
+        dao_specific_data_translated["proposal_function"] = has_voting_proposal["proposal_function"]
         
-        #dao_specific_data_translated["TODO"] = TODO
-        #dao_specific_data_translated["TODO"] = TODO
-        #dao_specific_data_translated["TODO"] = TODO
-        #dao_specific_data_translated["TODO"] = TODO
-        #dao_specific_data_translated["TODO"] = TODO
-        #dao_specific_data_translated["TODO"] = TODO
-        #dao_specific_data_translated["TODO"] = TODO
-        #dao_specific_data_translated["TODO"] = TODO
-
-        # TODO: completare il resto della traduzione dentro a "dao_specific_data_translated"
+        # TODO: 2025-07-26 TESTAREEEE
         return dao_translated
 
     def translate_committee_solidity(self, diagram: dm.DiagramManager, dao: d.DAO, committee: c.Committee) -> stg.TranslatedDAO:
@@ -244,18 +238,22 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
         return functionalities_ids
     
     
-    def __get_control_bitflags(self, role_or_committee, r_o_c_ID, group_size, functionalities_ids):
+    def __get_control_bitflags(self, \
+        dao:d.DAO, \
+        role_or_committee: aggregable_e.AggregableEntity, \
+        r_o_c_ID:str, \
+        group_size:user_functionalities_group_size_module.UserFunctionalitiesGroupSize, \
+        functionalities_ids \
+        ):
             bits_for_id = group_size.value[1]
             mask = 0
-            is_transitive = self.context.control_transitivity
-
-            if not self.context.dao.dao_control_graph.control_graph.has_node(r_o_c_ID):
+            is_transitive = dao.hierarchical_inheritance == 1 or dao.hierarchical_inheritance == "1"
+            if not dao.dao_control_graph.has_node(r_o_c_ID):
                 return 0, 0
-
-            all_controllers = list( nx.descendants(self.context.dao.dao_control_graph.control_graph, r_o_c_ID) ) \
+            all_controllers = dao.dao_control_graph.get_all_descendants_of(r_o_c_ID) \
                 if is_transitive else \
                 role_or_committee.controllers
-            if is_transitive and self.context.dao.dao_control_graph.control_graph.has_edge(r_o_c_ID, r_o_c_ID):
+            if is_transitive and dao.dao_control_graph.has_edge(r_o_c_ID, r_o_c_ID):
                 all_controllers.append(r_o_c_ID)
             for controller in all_controllers:
                 index = functionalities_ids[controller]
@@ -269,7 +267,7 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
         roles_computed_data = {}
         committees_computed_data = {}
         for role in dao.roles.values():
-            mask_shifted_for_id_bits, original_mask = self.__get_control_bitflags(role, role.get_id(), group_size, functionalities_ids)
+            mask_shifted_for_id_bits, original_mask = self.__get_control_bitflags(dao, role, role.get_id(), group_size, functionalities_ids)
             final_id = functionalities_ids[role.get_id()] | mask_shifted_for_id_bits
             name_sanitized = role.role_name.replace(" ","_")
             #lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity}) {name_sanitized} -> ID : {functionalities_ids[role.get_id()]} , control bitmask: { '{0:b}'.format( original_mask ) }")
@@ -286,7 +284,7 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
             roles_computed_data[role.get_id()] = ed
             
         for committee in dao.committees.values():
-            mask_shifted_for_id_bits, original_mask = self.__get_control_bitflags(committee, committee.get_id(), group_size, functionalities_ids)
+            mask_shifted_for_id_bits, original_mask = self.__get_control_bitflags(dao, committee, committee.get_id(), group_size, functionalities_ids)
             final_id = functionalities_ids[committee.get_id()] | mask_shifted_for_id_bits
             name_sanitized = committee.committee_description.replace(" ","_")
             #lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity})  {name_sanitized} -> ID : {functionalities_ids[committee.get_id()]} , control bitmask: { '{0:b}'.format( original_mask ) }")
@@ -322,7 +320,7 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
     def generate_role_permission_mapping_data(self, dao:d.DAO, space_to_underscore_fn, permission_to_index:dict, is_role_access_optimized:bool):
         # permission_to_index:dict[str, int]
         entities_permissions = []
-        entities_map_list:list[dict[str, aggregable_entity.AggregableEntity]] = [ \
+        entities_map_list:list[dict[str, aggregable_e.AggregableEntity]] = [ \
             dao.roles, \
             dao.committees \
         ]
@@ -362,7 +360,25 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
             lines.append("      }")
         """
         return None
-
+    
+    def get_function_permission_name_by_id(self, dao:d.DAO):
+        return {
+            perm.get_id(): perm.allowed_action.replace("/", "_").replace(" ", "_").replace("\\", "") # sanitize the name
+            for perm in dao.permissions.values()
+        }
+    
+    def has_default_functions_overridden(self, dao:d.DAO):
+        voting_function = False
+        proposal_function = False
+        for perm in dao.permissions.values():
+            if perm.voting_right:
+                voting_function = True
+            if perm.proposal_right:
+                proposal_function = True
+        return {
+            "voting_function": voting_function,
+            "proposal_function": proposal_function
+        }
 
 
 def newEntityData(final_id=0, name="", index=-1, original_id="", address="", entity_type:etc.EntityTypeControllable=None, mask:int=-1):
