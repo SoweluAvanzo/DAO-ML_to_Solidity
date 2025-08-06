@@ -13,11 +13,13 @@ import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
 import src.postprocessing.output_preparation.model_to_json as m_json
 #import src.postprocessing.model_conversion.translation_types as transl_types
-import src.postprocessing.model_conversion.solidity.translation_types_solidity as transl_types_sol
+import src.postprocessing.model_conversion.model_converter_configurable as mcc
+import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
-import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized as translator_sol_opt
+import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as translator_sol_opt
 import src.postprocessing.model_conversion.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as to_sol_j_1_0_0
 import src.postprocessing.output_preparation.templates.jinja.t_j_solidity as template_jinja_solidity
+import src.postprocessing.model_conversion.conversion_types as ct
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
@@ -189,10 +191,10 @@ if __name__ == "__main__":
     # 6) TRADUTTORE
 
     # TODO generare gli inputs (per le key_ROBE del costruttore)
-    # transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
 
+    converter_type = ct.ConversionTypes.SOLIDITY.value
     k_translator_type = "k_translator_type"
-    pi_translator_type = pstr.PIStr(pi.PIData(k_translator_type, None), "jinja")
+    pi_translator_type = pstr.PIStr(pi.PIData(k_translator_type, None), converter_type)
     pm.addItem(pi_translator_type)
 
     jinja_translator_version = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
@@ -204,18 +206,24 @@ if __name__ == "__main__":
     pi_translator_target = pstr.PIStr(pi.PIData(k_translator_target, None), "1.0.0")
     pm.addItem(pi_translator_target)
 
+    converter_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
+    k_converter_solidity_subtype = "k_converter_solidity_subtype"
+    pi_converter_solidity_subtype = pstr.PIStr(pi.PIData(k_converter_solidity_subtype, None), converter_solidity_subtype)
+    pm.addItem(pi_converter_solidity_subtype)
+
     k_translator = "k_translator"
-    #translator = translator_sol_opt.TranslatorOptimized( \
-    translator = to_sol_j_1_0_0.TranslatorOptimizedJinja_1_0_0( \
-            pi.PIData(k_translator, [k_xml_generator, k_translator_type, k_version_translator, k_translator_target]), \
+    #translator = translator_sol_opt.SolidityConverterOptimized( \
+    #translator = to_sol_j_1_0_0.SolidityConverterOptimizedJinja_1_0_0( \
+    translator = mcc.ModelConverterConfigurable( \
+            pi.PIData(k_translator, [k_xml_generator, k_translator_type, k_version_translator, k_translator_target, k_converter_solidity_subtype]), \
             key_model = k_xml_generator, \
-            key_translator_type = k_translator_type, \
-            key_version_translator = k_version_translator, \
-            key_version_target = k_translator_target                     
+            key_converter_type = k_translator_type, \
+            key_converter_version = k_version_translator, \
+            key_converter_target = k_translator_target                     
         )
     pm.addItem(translator)
 
-    
+    #
 
     k_printer_translated_sol_opt = "k_printer_translated_sol_opt"
     printer_translated_sol_opt = pri.PIPrinter(pi.PIData(k_printer_translated_sol_opt, [k_translator]), None, True)

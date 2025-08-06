@@ -38,7 +38,7 @@ class TranslatedDiagram(mcb.ModelConversionResultBase):
 #
 
 
-class TranslatorGeneral(mcb.ModelConverterBase):
+class SolidityConverterGeneral(mcb.ModelConverterBase):
     """
     Superclass of all other Solidity Translators.
     """
