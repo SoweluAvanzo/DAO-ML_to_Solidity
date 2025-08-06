@@ -2,17 +2,16 @@ import src.pipeline.pipeline_item as pi
 import src.model.diagram_manager as dm
 import src.postprocessing.model_conversion.model_converter_base as mcb
 import src.postprocessing.model_conversion.model_converter_configurable as mcc
-import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized_configurable as sol_conv_opt_c
 #import src.postprocessing.model_conversion.solidity.solidity_translator_general as sol_transl_general
 import src.postprocessing.model_conversion.solidity.conversion_types_solidity as tts
 
-__KEY__SOLIDITY_CONVERTER_OPTIMIZED = "solidity_converter_optimized"
 
 class SolidityConverterConfigurable(mcc.ModelConverterConfigurable):
     """
     TODO: should be the actual translator, a refactored one which implements
     the whole translator selection process depending on some configuration
     """
+    __KEY__SOLIDITY_CONVERTER_OPTIMIZED = "solidity_converter_optimized"
     
     def __init__(self, pipeline_item_data: pi.PIData, \
                 key_model:str=None, \
@@ -47,6 +46,7 @@ class SolidityConverterConfigurable(mcc.ModelConverterConfigurable):
         return converter_subtype
     
     def new_solidity_converter_optimized(self, additional_data = None):
+        import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized_configurable as sol_conv_opt_c
         return sol_conv_opt_c.SolidityConverterOptimizedConfigurable(self.pipeline_item_data, self.key_model, \
                 self.key_converter_type, self.key_converter_version, self.key_converter_target)
     
@@ -55,7 +55,7 @@ class SolidityConverterConfigurable(mcc.ModelConverterConfigurable):
         if converter_solidity_subtype == tts.TranslationTypesSolidity.OPTIMIZED.value:
             sco = self.new_solidity_converter_optimized(additional_data)
             if additional_data is not None:
-                additional_data[__KEY__SOLIDITY_CONVERTER_OPTIMIZED] = sco
+                additional_data[SolidityConverterConfigurable.__KEY__SOLIDITY_CONVERTER_OPTIMIZED] = sco
             return sco.get_default_converter_version(converter_type, additional_data)
         # get_default_converter_target
         return None
@@ -72,9 +72,10 @@ class SolidityConverterConfigurable(mcc.ModelConverterConfigurable):
         converter_solidity_subtype = self.get_converter_solidity_subtype(diagram, additional_data)
         match converter_solidity_subtype:
             case tts.TranslationTypesSolidity.OPTIMIZED.value:
+                import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized_configurable as sol_conv_opt_c
                 sco_instance:sol_conv_opt_c.SolidityConverterOptimizedConfigurable = None
-                if additional_data is not None:
-                    sco_instance = additional_data[__KEY__SOLIDITY_CONVERTER_OPTIMIZED]
+                if additional_data is not None and SolidityConverterConfigurable.__KEY__SOLIDITY_CONVERTER_OPTIMIZED in additional_data:
+                    sco_instance = additional_data[SolidityConverterConfigurable.__KEY__SOLIDITY_CONVERTER_OPTIMIZED]
                 else:
                     sco_instance = self.new_solidity_converter_optimized(additional_data)
                 impl = sco_instance.select_implementation(diagram, converter_type, converter_version, converter_target, additional_data)

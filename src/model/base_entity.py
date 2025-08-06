@@ -38,7 +38,10 @@ class BaseEntity:
     
     def __tojson__(self):
         return self.toJSON()
-    
+    def __to_json__(self):
+        return self.__tojson__()
+    def to_json(self):
+        return self.__to_json__()
     def __repr__(self):
         import json
         return json.dumps(self.toJSON())

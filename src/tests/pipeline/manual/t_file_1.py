@@ -16,9 +16,7 @@ import src.postprocessing.output_preparation.model_to_json as m_json
 import src.postprocessing.model_conversion.model_converter_configurable as mcc
 import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
-import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as translator_sol_opt
-import src.postprocessing.model_conversion.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as to_sol_j_1_0_0
-import src.postprocessing.output_preparation.templates.jinja.t_j_solidity as template_jinja_solidity
+
 import src.postprocessing.model_conversion.conversion_types as ct
 
 import src.pipeline.utilities.pi_printer as pri
@@ -225,6 +223,9 @@ if __name__ == "__main__":
 
     #
 
+    k_printer__pre__translated_sol_opt = "k_printer__pre__translated_sol_opt"
+    printer__pre__translated_sol_opt = pri.PIPrinter(pi.PIData(k_printer__pre__translated_sol_opt, [k_translator]), "\nPRINTING THE TRANSLATED STUFF\n", False)
+    pm.addItem(printer__pre__translated_sol_opt)
     k_printer_translated_sol_opt = "k_printer_translated_sol_opt"
     printer_translated_sol_opt = pri.PIPrinter(pi.PIData(k_printer_translated_sol_opt, [k_translator]), None, True)
     pm.addItem(printer_translated_sol_opt)

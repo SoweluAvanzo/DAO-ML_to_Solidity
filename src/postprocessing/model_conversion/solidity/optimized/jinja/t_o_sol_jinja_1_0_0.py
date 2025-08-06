@@ -175,20 +175,25 @@ class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConvert
         dao_specific_data_translated["group_size_bitmask"] = group_mask_size
         dao_specific_data_translated["id_mask"] = mask_id
         # generate_permission_functions
-        dao_specific_data_translated["permissions"] = dao.permissions.values()
+        dao_specific_data_translated["permissions"] = list(dao.permissions.values())
         dao_specific_data_translated["permission_index_by_id"] = permission_to_index
         dao_specific_data_translated["function_permission_name_by_id"] = self.get_function_permission_name_by_id(dao)
         has_voting_proposal = self.has_default_functions_overridden(dao)
         dao_specific_data_translated["voting_function"] = has_voting_proposal["voting_function"]
         dao_specific_data_translated["proposal_function"] = has_voting_proposal["proposal_function"]
         
-        # TODO: 2025-07-26 TESTAREEEE
+        # TODO: 2025-08-06
+        # 1) TESTAREEEE
+        # 2) translate_committee_solidity 
+        for c in dao.committees.values():
+            c_t = self.translate_committee_solidity(diagram, dao, c)
+            dao_translated.add_translated_committee(c_t)
         return dao_translated
 
     def translate_committee_solidity(self, diagram: dm.DiagramManager, dao: d.DAO, committee: c.Committee) -> stg.TranslatedDAO:
         committee_specific_data_translated = {}
         committee_translated = self.new_translated_committee(diagram, dao, committee, committee_specific_data_translated)
-        # TODO: completare il resto della traduzione dentro a "committee_specific_data_translated"
+        # TODO: 2025-08-06 : completare il resto della traduzione dentro a "committee_specific_data_translated"
         return committee_translated
 
     # overrides 
@@ -280,7 +285,7 @@ class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConvert
                 name=name_sanitized, \
                 index=index_entity, \
                 original_id=role.get_id(), \
-                entity_type=etc.EntityTypeControllable.ROLE, \
+                entity_type=etc.EntityTypeControllable.ROLE.value, \
                 mask=original_mask
             )
             entity_to_data[role.get_id()] = ed
@@ -297,7 +302,7 @@ class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConvert
                 name=name_sanitized, \
                 index=index_entity, \
                 original_id=committee.get_id(), \
-                entity_type=etc.EntityTypeControllable.COMMITTEE, \
+                entity_type=etc.EntityTypeControllable.COMMITTEE.value, \
                 mask=original_mask
             )
             entity_to_data[committee.get_id()] = ed
@@ -374,7 +379,7 @@ class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConvert
 
 def newEntityData(final_id=0, name="", index=-1, original_id="", address="", entity_type:etc.EntityTypeControllable=None, mask:int=-1):
     if entity_type == None:
-        entity_type = etc.EntityTypeControllable.ROLE # default
+        entity_type = etc.EntityTypeControllable.ROLE.value # default
     return {\
         "final_id": final_id, \
         "name": name, \
