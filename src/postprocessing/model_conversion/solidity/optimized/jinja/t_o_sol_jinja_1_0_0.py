@@ -1,11 +1,11 @@
 
 
 import src.pipeline.pipeline_item as pi
-import src.postprocessing.model_conversion.solidity.model_to_solidity as mts
-import src.postprocessing.model_conversion.solidity.solidity_translator_general as stg
-import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized as sol_transl_opt
-import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized_jinja as sol_transl_opt_jinja
 import src.postprocessing.model_conversion.model_converter_base as mcb
+import src.postprocessing.model_conversion.model_converter_configurable as mcc
+import src.postprocessing.model_conversion.solidity.solidity_converter_general as stg
+import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
+import src.postprocessing.model_conversion.solidity.optimized.jinja.solidity_converter_optimized_jinja as sol_transl_opt_jinja
 import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 import src.model.enums.entity_type_controllable as etc
 import src.model.aggregable_entity as aggregable_e
@@ -45,39 +45,38 @@ class TranslatedDiagram_Jinja_1_0_0(stg.TranslatedDiagram):
 #
 
 
-
-class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJinja):
+class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConverterOptimizedJinja):
     """
     All of this subclasses bear the responsibility of declaring and defining which kind of templates they are using
     """
 
     def __init__(self, pipeline_item_data: pi.PIData, \
                 key_model:str=None, \
-                key_translator_type:str=None, \
-                key_version_translator:str=None, \
-                key_version_target:str=None \
+                key_converter_type:str=None, \
+                key_converter_version:str=None, \
+                key_converter_target:str=None \
             ):
         super().__init__(\
             pipeline_item_data, \
             key_model, \
-            key_translator_type, \
-            key_version_translator, \
-            key_version_target \
+            key_converter_type, \
+            key_converter_version, \
+            key_converter_target \
         )
     
     def select_delegator(self, diagram:dm.DiagramManager, translator_type:str, version:str,  additional_data:dict=None) -> mcb.ModelConverterBase:
         return self
     
-    def translate(self, diagram, additional_data:dict=None) -> mcb.ModelConversionResultBase:
-        #raise Exception("TranslatorOptimizedJinja_1_0_0 translation NOT IMPLEMENTED YET")
-        print("YAYYYYYYy")
-        return self.translate_diagram_solidity(diagram, additional_data)
+    def convert(self, diagram, additional_data:dict=None) -> mcb.ModelConversionResultBase:
+        #raise Exception("SolidityConverterOptimizedJinja_1_0_0 translation NOT IMPLEMENTED YET")
+        print("YAYYYYYYy SolidityConverterOptimizedJinja_1_0_0 conversioooooooooooooon")
         # TODO THE REAL TRANSLATION!
+        return self.translate_diagram_solidity(diagram, additional_data)
         """
         # See " optimized_translator.py # OptimizedSolidityTranslator"
         
         OptimizedSolidityTranslator
-        -> def translate(self)
+        -> def convert(self)
     
             # at first, translate all Committees
             ct = CommitteeTranslator(self.context)
@@ -96,8 +95,8 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
 
     def translate_diagram_solidity(self, diagram:dm.DiagramManager, additional_data:dict=None) -> stg.TranslatedDiagram:
         diagram_specific_data_translated = {
-            "solidity_version": additional_data[self.key_version_target] if self.key_version_target in additional_data \
-                else additional_data[sol_transl_opt.KEY_ADDITIONAL_DATA_TARGET_VERSION]
+            "solidity_version": additional_data[self.key_converter_target] if self.key_converter_target in additional_data \
+                else additional_data[mcc.KEY_ADDITIONAL_DATA_TARGET_VERSION]
         }
         td = self.new_translated_diagram(diagram, diagram_specific_data_translated) 
         diagram_specific_data_translated["uniqueID"] = diagram.uniqueID
@@ -125,6 +124,7 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
         # vars
         entities_amount = len(dao.roles) + len(dao.committees)
         group_size:user_functionalities_group_size_module.UserFunctionalitiesGroupSize = dao.metadata.user_functionalities_group_size
+        group_mask_size = group_size.get_mask_size()
         id_var_type = self.get_variable_type(dao, group_size)
         is_role_access_optimized = group_size is not None
         functionalities_ids = self.compute_states_variables__functionalities_ids(dao)
@@ -159,17 +159,20 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
         dao_specific_data_translated["roles_computed_data"] = roles_computed_data
         dao_specific_data_translated["committees_computed_data"] = committees_computed_data
         # control_relation
-        dao_specific_data_translated["control_relation_id_bit_size"] = group_size.get_mask_size()
+        dao_specific_data_translated["control_relation_id_bit_size"] = group_mask_size 
         dao_specific_data_translated["control_relation_mask"] = mask_id
         # generate_constructor_v2
         dao_specific_data_translated["constructor_parameters"] = self.get_dao_constructor_parameters(dao, id_var_type)
+        body_constructor_data = self.get_dao_constructor_body(dao, id_var_type)
+        if body_constructor_data is not None:
+            dao_specific_data_translated.update(body_constructor_data)
         # ... generate_role_permission_mapping
         dao_specific_data_translated["entities_permissions"] = self.generate_role_permission_mapping_data(dao, space_to_underscore_fn, permission_to_index, is_role_access_optimized)
         # generate_committee_initialization_function
         dao_specific_data_translated["visibility_committee_initialization_function"] = "external"
         dao_specific_data_translated["space_to_underscore_fn"] = space_to_underscore_fn
         # generate_functions
-        dao_specific_data_translated["group_size_bitmask"] = group_size.get_mask_size()
+        dao_specific_data_translated["group_size_bitmask"] = group_mask_size
         dao_specific_data_translated["id_mask"] = mask_id
         # generate_permission_functions
         dao_specific_data_translated["permissions"] = dao.permissions.values()
@@ -204,7 +207,7 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
 
     #
 
-    def get_variable_type(self, dao:d.DAO, group_size):
+    def get_variable_type(self, dao:d.DAO, group_size:user_functionalities_group_size_module.UserFunctionalitiesGroupSize):
         id_var_type = "bytes32" if group_size is None else f"uint{group_size.to_maximum_size()}"
         return id_var_type
     
@@ -344,22 +347,10 @@ class TranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.TranslatorOptimizedJin
                 index_entity += 0
         return  entities_permissions
 
-    def get_dao_constructor_body(self, dao:d.DAO, id_var_type:str, daoOwner) -> dict:
-        """
-        lines.append(self.generate_role_permission_mapping())
-        if daoOwner:
-            lines.append(f"roles[msg.sender] = all_roles[{len(dao.roles)-1}]; // {dao.dao_name}Owner")
-        if dao.conditions != []:
-            lines.append("for (uint256 i = 0; i < roleIds.length; i++) { ")
-        if dao.voting_conditions != {}:
-            lines.append("     voting_conditions[roleIds[i]] = ICondition(votingConditionAddresses[i]);")
-        if dao.proposal_conditions != {}:
-            lines.append("     proposal_conditions[roleIds[i]] = ICondition(proposalConditionAddresses[i]);")
-        if dao.assignment_conditions != {}:
-            lines.append("     assignment_conditions[roleIds[i]] = ICondition(assignmentConditionAddresses[i]);")
-            lines.append("      }")
-        """
-        return None
+    def get_dao_constructor_body(self, dao:d.DAO, id_var_type:str) -> dict:
+        return {
+            "dao_owner": True
+        }
     
     def get_function_permission_name_by_id(self, dao:d.DAO):
         return {

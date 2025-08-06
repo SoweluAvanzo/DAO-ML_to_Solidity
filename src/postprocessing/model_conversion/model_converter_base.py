@@ -17,11 +17,10 @@ class ModelConverterBase(pi.PipelineItem):
         super().__init__(pipeline_item_data)
         self.key_model = key_model
 
-    
-    def translate(self, model:dm.DiagramManager, additional_data=None) -> ModelConversionResultBase:
-        return None
+    def convert(self, model:dm.DiagramManager, additional_data=None) -> ModelConversionResultBase:
+        raise Exception(f"convert function not implemented yet in {type(self)}")
 
     def run(self, inputs):
-        return self.translate(\
+        return self.convert(\
             inputs[self.key_model] if self.key_model is not None else self.get_ith_input(inputs, 0), \
             inputs)
