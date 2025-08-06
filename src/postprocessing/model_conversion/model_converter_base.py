@@ -5,6 +5,9 @@ import src.model.diagram_manager as dm
 class ModelConversionResultBase:
     def get_id(self) -> str:
         return None
+    
+    def __repr__(self):
+        return ""
 
 
 class ModelConverterBase(pi.PipelineItem):

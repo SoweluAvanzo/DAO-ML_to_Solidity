@@ -1,20 +1,16 @@
 import src.pipeline.pipeline_item as pi
 import src.postprocessing.model_conversion.model_converter_base as mcb
 import src.postprocessing.model_conversion.conversion_types as ct
-import src.model.diagram_manager as dm
-# implementations' stuff
-import src.postprocessing.model_conversion.solidity.solidity_converter_configurable as stc
-                    
+import src.model.diagram_manager as dm                    
 
-KEY_ADDITIONAL_DATA_TARGET_VERSION = "target_version"
-
-__KEY__SOLIDITY_CONVERTER_CONFIGURABLE = "solidity_converter_configurable"
 
 class ModelConverterConfigurable(mcb.ModelConverterBase):
     """
     TODO: should be the actual translator, a refactored one which implements
     the whole translator selection process depending on some configuration
     """
+    KEY_ADDITIONAL_DATA_TARGET_VERSION = "target_version"
+    __KEY__SOLIDITY_CONVERTER_CONFIGURABLE = "solidity_converter_configurable"
     
     def __init__(self, pipeline_item_data: pi.PIData, \
                 key_model:str=None, \
@@ -48,7 +44,8 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
 
     #
     
-    def new_solidity_converter_configurable(self, additional_data:dict=None) -> stc.SolidityConverterConfigurable:
+    def new_solidity_converter_configurable(self, additional_data:dict=None):
+        import src.postprocessing.model_conversion.solidity.solidity_converter_configurable as stc
         return stc.SolidityConverterConfigurable(self.pipeline_item_data, self.key_model, \
                         self.key_converter_type, self.key_converter_version, self.key_converter_target)
 
@@ -62,7 +59,7 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
                 case ct.ConversionTypes.SOLIDITY.value:
                     stc_instance = self.new_solidity_converter_configurable(additional_data)
                     if additional_data is not None:
-                        additional_data[__KEY__SOLIDITY_CONVERTER_CONFIGURABLE] = stc_instance
+                        additional_data[ModelConverterConfigurable.__KEY__SOLIDITY_CONVERTER_CONFIGURABLE] = stc_instance
                     c_v = stc_instance.get_default_converter_version(converter_type, additional_data=additional_data)
                 # TODO 2025-08-06 add ASM one
         if c_v is None:
@@ -105,12 +102,13 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
         impl = None
         match converter_type:
             case ct.ConversionTypes.SOLIDITY.value:
+                import src.postprocessing.model_conversion.solidity.solidity_converter_configurable as stc
                 stc_instance:stc.SolidityConverterConfigurable = None
-                if additional_data is not None:
-                    stc_instance = additional_data[__KEY__SOLIDITY_CONVERTER_CONFIGURABLE]
+                if additional_data is not None and ModelConverterConfigurable.__KEY__SOLIDITY_CONVERTER_CONFIGURABLE in additional_data:
+                    stc_instance = additional_data[ModelConverterConfigurable.__KEY__SOLIDITY_CONVERTER_CONFIGURABLE]
                 else:
                     stc_instance = self.new_solidity_converter_configurable(additional_data)
-                stc_instance.select_implementation(diagram, converter_type, converter_version, converter_target, additional_data)
+                impl = stc_instance.select_implementation(diagram, converter_type, converter_version, converter_target, additional_data)
         # TODO
         if impl is None:
             raise Exception("TODO : still to be implemented 2025-08-06")
@@ -127,6 +125,6 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
         implementation:mcb.ModelConverterBase = self.select_implementation(diagram, converter_type, converter_version, converter_target, additional_data)
         if implementation is None:
             return None
-        if KEY_ADDITIONAL_DATA_TARGET_VERSION not in additional_data:
-            additional_data[KEY_ADDITIONAL_DATA_TARGET_VERSION] = converter_target
+        if ModelConverterConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION not in additional_data:
+            additional_data[ModelConverterConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION] = converter_target
         return implementation.convert(diagram, additional_data)

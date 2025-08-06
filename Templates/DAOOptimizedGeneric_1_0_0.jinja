@@ -1,66 +1,3 @@
-{#
-NOTA: QUANTO SEGUE E' L'OGGETTO CHIAMATO "instance_data" CHE DEVE ESSERE PASSATO AL JinjaTemplateCompiler
-
-TranslatedDiagram
-
-{
-    "solidity_version" : self.context.solidity_version,
-    "dao_name" : self.context.dao.dao_name,
-    "mission_statement" : self.context.dao.mission_statement,
-    
-    "dao_conditions": self.context.dao.conditions,
-
-    // generate_state_variables
-    "visibility": visibility,
-    "id_var_type": id_var_type,
-    "voting_conditions": self.context.dao.voting_conditions,
-    "proposal_conditions": self.context.dao.proposal_conditions,
-    "assignment_conditions": self.context.dao.assignment_conditions,
-    "perm_var_type": perm_var_type,
-    "total_roles_amount": total_roles_amount, // len(roles) + len(committees)
-    // generate_has_permission_modifier
-    "is_role_access_optimized": is_role_access_optimized,
-    // forse sono dati da collassare ... //
-    "roles": self.context.dao.roles, // ( role_id  )
-    "committees": self.context.dao.committees, // ( committee_id  )
-    "entities_amount": entities_amount,
-    "states_variables__functionalities_ids": functionalities_ids,
-    "roles_computed_data": roles_computed_data, // see the compex for in "generate_state_variable towards the end of the functino
-    "committees_computed_data": committees_computed_data, // see the compex for in "generate_state_variable towards the end of the functino
-
-    //control_relation
-    "control_relation_id_bit_size": _id_bit_size,
-    "control_relation_mask": _mask,
-    
-    //generate_constructor_v2
-    "constructor_parameters" : constructor_parameters, // [ {"type": id_var_type|'address' , "name": 'str' } ]
-      .... deriva dalla verifica di non-emptyness di: dao_conditions, voting_conditions, proposal_conditions
-assignment_conditions
-        //generate_role_permission_mapping !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        "entities_permissions": entities_permissions, // {entity_name, permission_indices, bitflag, index_entity_in_dao, index_entity}
-        "role_to_index_fn": role_to_index_fn, // IT'S A LAMBDA :D NOTE 2025-07-20 IT ALSO INCLUDES THE VARIABLE "is_role_access_optimized" TO MAKE IT EASIER TO Implement
-        "bitflag_by_entity_index": ... a map from the "index_entity" to bitflag
-    "dao_owner": self.context.daoOwner,
-
-    // generate_committee_initialization_function
-    "visibility_committee_initialization_function": visibility,
-    "space_to_underscore_fn": lambda t: t.replace(" ", "_"),
-
-    // generate_functions
-    "group_size_bitmask": self.group_size.value[1],
-    "id_mask" :self.id_mask,
-
-    // generate_permission_functions
-    "permissions": self.context.dao.permissions.values(),
-    permission_index_by_id = , ... TODO
-    function_permission_name_by_id = , ... TODO
-    "voting_function": True, // ???
-    "proposal_function": True // ???
-}
-#}
-
-
-
 // SPDX-License-Identifier: MIT
 pragma solidity {{ solidity_version}};
 /**
@@ -95,10 +32,10 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
     {% endif %}
     {{id_var_type}}[{{entities_amount}}] {{visibility}} all_roles = {{"["}}
     {% for role_data in roles_computed_data %}
-    {{role_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")}} {{role_data.name_sanitized}} -> ID : {{ states_variables__functionalities_ids[roles[role_data.id].role_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
+    {{role_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{role_data.name}} -> ID : {{ states_variables__functionalities_ids[roles[role_data.id].role_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
     {% endfor %}
     {% for committee_data in committees_computed_data %}
-    {{committee_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")}} {{committee_data.name_sanitized}} -> ID : {{ states_variables__functionalities_ids[committees[committee_data.id].committee_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
+    {{committee_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{committee_data.name}} -> ID : {{ states_variables__functionalities_ids[committees[committee_data.id].committee_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
     {% endfor %}
     {{"];"}}
 
