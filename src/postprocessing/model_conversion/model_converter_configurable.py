@@ -115,7 +115,7 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
         return impl
 
 
-    def convert(self, diagram:dm.DiagramManager, additional_data:dict=None): # -> mcb.ModelConversionResultBase:
+    def convert(self, diagram:dm.DiagramManager, additional_data:dict=None) -> mcb.ModelConversionResultBase:
         if additional_data is None:
             additional_data = {}
         converter_type = self.get_converter_type(diagram, additional_data)

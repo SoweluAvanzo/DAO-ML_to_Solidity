@@ -1,6 +1,6 @@
-from enum import Enum
+import model.enums.extended_enum as ext_enum
 
-class UserFunctionalitiesGroupSize(Enum):
+class UserFunctionalitiesGroupSize(ext_enum.ExtendedEnum):
     SMALL = (32,5)
     MEDIUM = (64,6)
     LARGE = (128,7)

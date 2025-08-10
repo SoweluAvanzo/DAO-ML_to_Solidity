@@ -3,6 +3,7 @@
 
 class ModelToTemplateMapperBase: 
     """
+    @ deprecated: each Converter MUST be template-aware, so it's its own responsibility to do a proper mapping
     This is one of the crucial aspect of templates: sometimes, specific instances or sub-fields require one or more
     templates to be populate, compiled and produced.
     This class serves as a bridge between those two worlds.

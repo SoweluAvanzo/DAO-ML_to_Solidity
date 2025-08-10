@@ -2,8 +2,11 @@
 import src.output.text_file_output as tfo
 import src.files.file_utils as fu
 import src.pipeline.pipeline_item as pi
-import src.postprocessing.output_preparation.templates.jinja.model_to_template_mapper_jinja as mtt_mapper_j
-import src.postprocessing.model_conversion.solidity.solidity_translator_general as stg
+import src.postprocessing.model_conversion.model_converter_base as mcb
+#import src.postprocessing.output_preparation.templates.jinja.model_to_template_mapper_jinja as mtt_mapper_j
+import src.postprocessing.model_conversion.solidity.solidity_converter_general as stg
+
+# TODO 2025-08-10 DA SISTEMARE
 
 class JinjaTextFileOutput(tfo.TextFileOutput):
     def __init__(self, pipeline_item_data: pi.PIData, \
@@ -32,7 +35,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         if not isinstance(model_to_template_mapper_jinja, mtt_mapper_j.ModelToTemplateMapperJinja):
             raise Exception(f"The provided model_to_template_mapper_jinja should be an instance of ModelToTemplateMapperJinja, but it's a: {type(model_to_template_mapper_jinja)}")
 
-        def append_template_filename_output(array:list, translated_data:stg.IDGetterDelegators, template_filename ):
+        def append_template_filename_output(array:list, translated_data:mcb.ModelConversionResultBase, template_filename ):
             if isinstance(template_filename, str):
                 array.append((translated_data, template_filename))
             elif isinstance(template_filename, list):

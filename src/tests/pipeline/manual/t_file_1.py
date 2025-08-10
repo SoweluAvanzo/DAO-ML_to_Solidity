@@ -18,6 +18,7 @@ import src.postprocessing.model_conversion.solidity.conversion_types_solidity as
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
 
 import src.postprocessing.model_conversion.conversion_types as ct
+import src.postprocessing.output_preparation.templates.jinja.template_providers.tpbn_txt_file as template_by_name_txt
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
@@ -25,20 +26,22 @@ import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
+"""
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.committee as c
+"""
 
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
-FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".","data","tests","pipeline")
+FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".", "data","tests","pipeline")
 
 FILE_NAME_XML_1 = "Travelhive_final_model" # "Travelhive_final_model_mini"
 EXTENSION_XML = "xml"
-FILE_PATH_XML = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
+FILE_PATH_XML = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
-FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
+FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
 
 XML_DAO_GRAMMAR_FILENAME = "XMLParser"
 XML_DAO_GRAMMAR_EXTENSION = "g4"
@@ -48,6 +51,7 @@ FILE_OUTPUT_MODEL_NAME = f"{FILE_NAME_XML_1}_JSONed"
 FILE_OUTPUT_MODEL_EXTENSION = "json"
 FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename('.', 'outputs', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
 
+TEMPLATE_BASE_FOLDER = files.concat_folder_filename(".", "Templates")
 
 # def setup_input(pm:pmp.PipelineManager):
 # def setup_model_generation(pm:pmp.PipelineManager):
@@ -244,6 +248,9 @@ if __name__ == "__main__":
     """
     # NOTE: other entries might be ID of "things" (Committees, usually) that are known in advance (even their ID as well) to have a specific, custom, user-defined
     # template rather than the "generic" pre-defined one 
+
+    k_template_provider = "k_template_provider"
+    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(base_template_folder=TEMPLATE_BASE_FOLDER)
 
     """
     # TODO: 2025-07-26 FARE L'OUTPUT E LA TRADUZIONE
