@@ -4,7 +4,7 @@ import src.pipeline.pipeline_item as pi
 import src.postprocessing.model_conversion.model_converter_base as mcb
 import src.postprocessing.model_conversion.model_converter_configurable as mcc
 import src.postprocessing.model_conversion.solidity.solidity_converter_general as stg
-import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
+#import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
 import src.postprocessing.model_conversion.solidity.optimized.jinja.solidity_converter_optimized_jinja as sol_transl_opt_jinja
 import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 import src.model.enums.entity_type_controllable as etc
@@ -35,10 +35,10 @@ class TranslatedDAO_Jinja_1_0_0(stg.TranslatedDAO):
         self.i_permissions_manager_translated = [] #a single tuple ; depends on dao's committees
 
 """
+"""
 class TranslatedDiagram_Jinja_1_0_0(stg.TranslatedDiagram):
     def __init__(self, diagram:dm.DiagramManager, diagram_specific_data:dict):
         super().__init__(diagram, diagram_specific_data)
-"""
 
 #
 # THE ACTUAL TRANSLATOR
@@ -96,7 +96,7 @@ class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConvert
     def translate_diagram_solidity(self, diagram:dm.DiagramManager, additional_data:dict=None) -> stg.TranslatedDiagram:
         diagram_specific_data_translated = {
             "solidity_version": additional_data[self.key_converter_target] if self.key_converter_target in additional_data \
-                else additional_data[mcc.KEY_ADDITIONAL_DATA_TARGET_VERSION]
+                else additional_data[mcc.ModelConverterConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION]
         }
         td = self.new_translated_diagram(diagram, diagram_specific_data_translated) 
         diagram_specific_data_translated["uniqueID"] = diagram.uniqueID
@@ -198,7 +198,8 @@ class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConvert
 
     # overrides 
 
-    # def new_translated_diagram(self, diagram:dm.DiagramManager, other_data=None) -> TranslatedDiagram:
+    def new_translated_diagram(self, diagram:dm.DiagramManager, other_data=None) -> TranslatedDiagram_Jinja_1_0_0:
+        return TranslatedDiagram_Jinja_1_0_0(diagram, diagram_specific_data=other_data)
 
     def new_translated_dao(self, diagram:dm.DiagramManager, dao:d.DAO, other_data=None) -> TranslatedDAO_Jinja_1_0_0:
         return TranslatedDAO_Jinja_1_0_0(dao, other_data)
