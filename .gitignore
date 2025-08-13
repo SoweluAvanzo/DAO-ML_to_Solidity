@@ -181,4 +181,7 @@ test/*
 */test/*
 sim/
 sim/*
-
+NO_COMMIT
+NO_COMMIT*
+NO_COMMIT/
+NO_COMMIT/*

@@ -61,7 +61,7 @@ class TestGeneratorOptimized:
                     #entity_data['final_id'] : entity_data['address'] \
                     entity_data['address'] \
                     for entity_data in self.entity_to_data.values() \
-                        if entity_data['entity_type'] == EntityTypeControllable.COMMITTEE \
+                        if entity_data['entity_type'] == EntityTypeControllable.COMMITTEE.value \
                 ]
             ).splitlines()
 

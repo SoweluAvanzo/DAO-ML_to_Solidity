@@ -31,11 +31,11 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
     mapping({{id_var_type}} => {{perm_var_type}}) {{visibility}} role_permissions;
     {% endif %}
     {{id_var_type}}[{{entities_amount}}] {{visibility}} all_roles = {{"["}}
-    {% for role_data in roles_computed_data %}
-    {{role_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{role_data.name}} -> ID : {{ states_variables__functionalities_ids[roles[role_data.id].role_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
+    {% for role_id, role_data in roles_computed_data.items() %}
+    {{role_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{role_data.name}} -> ID : {{ states_variables__functionalities_ids[roles[role_data.original_id].id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
     {% endfor %}
-    {% for committee_data in committees_computed_data %}
-    {{committee_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{committee_data.name}} -> ID : {{ states_variables__functionalities_ids[committees[committee_data.id].committee_id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
+    {% for committee_id, committee_data in committees_computed_data.items() %}
+    {{committee_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{committee_data.name}} -> ID : {{ states_variables__functionalities_ids[committees[committee_data.original_id].id]}} , control bitmask: { '{0:b}'.format( original_mask ) }
     {% endfor %}
     {{"];"}}
 
@@ -75,7 +75,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
     {# generate_has_permission_modifier #}
 
     modifier hasPermission(address _executor, {{perm_var_type}} _permissionIndex) {{"{"}}
-        require(role_permissions[{{perm_var_type}}(roles[_executor] {{% if is_role_access_optimized %}}& {{id_mask}}{{% endif %}} )] & ({{perm_var_type}}(1) << _permissionIndex) != 0, "User does not have this permission");
+        require(role_permissions[{{perm_var_type}}(roles[_executor] {% if is_role_access_optimized %}& {{id_mask}}{% endif %} )] & ({{perm_var_type}}(1) << _permissionIndex) != 0, "User does not have this permission");
         _;
     {{"}"}}
 
@@ -119,7 +119,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         {% if committees|length > 0 %}
         require(committee_initialization_blocked == false {% for c in committees %} && _{{space_to_underscore_fn(c)}} != address(0) {% endfor %}, "Invalid committee initialization");
         {% for c in committees %}
-        roles[_{{space_to_underscore_fn(c)}}] = all_roles[{{loop.index0}}]; // {{{{space_to_underscore_fn(c)}}}}
+        roles[_{{space_to_underscore_fn(c)}}] = all_roles[{{loop.index0}}]; // {{space_to_underscore_fn(c)}}
         {% endfor %}
         committee_initialization_blocked = true;
         {% endif %}        
@@ -193,7 +193,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
 
 
         function has_permission(address user, {{perm_var_type}} _permissionIndex) external view returns (bool) {{"{"}}
-            if (role_permissions[{{perm_var_type}}(roles[user] {{% if is_role_access_optimized %}}& {{id_mask}}{{% endif %}} )] & ({{perm_var_type}}(1) << _permissionIndex) != 0){{"{"}}
+            if (role_permissions[{{perm_var_type}}(roles[user] {% if is_role_access_optimized %}& {{id_mask}}{% endif %} )] & ({{perm_var_type}}(1) << _permissionIndex) != 0){{"{"}}
                 return true;
             {{"}"}}else{{"{"}}
                 return false;
@@ -213,9 +213,9 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         function {{function_permission_name_by_id[perm.id]}}() external hasPermission(msg.sender, {{permission_index_by_id[perm.id]}}) {{"{"}}
             // TODO: Implement the function logic here
         {{"}"}}
-{% endif%} {% endfor %}
+{% endif %} {% endfor %}
         
-        {& if voting_function: %}
+        {% if voting_function: %}
         function canVote(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {{"{"}}
                 require(role_permissions[{{perm_var_type}}(roles[user] & 31)] & ({{perm_var_type}}(1) << permissionIndex) != 0, "User does not have this permission");
                 {# the following is the actual "execution" of the function "generate_user_role_condition_evaluation" from the OptimizedTranslatorSolidity class: it's so Solidity-specific that it can't be generally created AND provided as a function }
@@ -229,7 +229,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         {{"}"}}
         {% endif %}
 
-        {& if proposal_function: %}
+        {% if proposal_function: %}
         function canPropose(address user, {{perm_var_type}} permissionIndex) external view returns (bool) {{"{"}}
                 require(role_permissions[{{perm_var_type}}(roles[user] & 31)] & ({{perm_var_type}}(1) << permissionIndex) != 0, "User does not have this permission");
                 {# the following is the actual "execution" of the function "generate_user_role_condition_evaluation" from the OptimizedTranslatorSolidity class: it's so Solidity-specific that it can't be generally created AND provided as a function }

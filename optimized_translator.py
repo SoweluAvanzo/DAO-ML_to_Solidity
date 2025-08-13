@@ -337,7 +337,7 @@ class OptimizedSolidityTranslator(Translator):
             lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity}) {name_sanitized} -> ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
             index_entity += 1
 
-            self.context.entity_to_data[role.role_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE)
+            self.context.entity_to_data[role.role_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE.value)
             
         for committee in self.context.dao.committees.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
@@ -345,7 +345,7 @@ class OptimizedSolidityTranslator(Translator):
             name_sanitized = committee.committee_description.replace(" ","_")
             lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity})  {name_sanitized} -> ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
             index_entity += 1
-            self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
+            self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE.value)
 
         #print(self.context.entity_to_data)
 

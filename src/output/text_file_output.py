@@ -21,7 +21,9 @@ class TextFileOutput(bo.BaseOutput):
             if 'write' in additional_data:
                 is_write = (additional_data['write'] == True) or (additional_data['write'] == 'w') 
             elif 'mode' in additional_data:
-                is_write = (additional_data['mode'] == True) or (additional_data['mode'] == 'w') 
+                is_write = (additional_data['mode'] == True) or (additional_data['mode'] == 'w')
+        folder_destination = fu.extract_folder_from_full_path(destination)
+        fu.check_and_make_folder(folder_destination)
         with open(destination, 'w' if is_write else 'a') as f:
             if isinstance(what, str):
                 f.write(what)

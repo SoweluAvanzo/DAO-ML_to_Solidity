@@ -11,11 +11,17 @@ class CompiledSolidityCommittee(cgd.CompiledUnitWithID):
         super().__init__(id, template_name)
         self.compiled = compiled
         
+    def get_compiled(self):
+        return self.compiled
+    
     def get_committee_id_from_data(self, committee_data:dict) -> str:
         """
         Overridable
         """
-        return committee_data[KEY_ID] if KEY_ID in committee_data else self.id
+        if isinstance(committee_data, CompiledSolidityCommittee):
+            return committee_data.id
+        return committee_data[KEY_ID] if isinstance(committee_data, dict) and KEY_ID in committee_data else self.id
+
     def __tojson__(self, **kwargs):
         j = super().__tojson__()
         j[KEY_COMPILED] = self.compiled
@@ -28,20 +34,28 @@ class CompiledSolidityDAO(cgd.CompiledUnitWithID):
         self.compiled = compiled
         self.committees:dict[str, CompiledSolidityCommittee] = {}
         
-    def get_dao_id_from_data(self, dao_data:dict) -> str:
+    def get_compiled(self):
+        return self.compiled
+    
+    def get_dao_id_from_data(self, dao_data) -> str:
         """
         Overridable
         """
-        return dao_data[KEY_ID] if KEY_ID in dao_data else self.id
+        if isinstance(dao_data, CompiledSolidityDAO):
+            return dao_data.id
+        return dao_data[KEY_ID] if isinstance(dao_data, dict) and KEY_ID in dao_data else self.id
+    
     def get_dao_committees_from_data(self, dao_data:dict) -> dict[str, CompiledSolidityCommittee]:
         """
         Overridable
         """
         return self.committees # dao_data[KEY_DAO_COMMITTEES]
+    
     def get_committee_id_from_data(self, committee_data:dict):
         return typing.cast(CompiledSolidityCommittee, committee_data).get_committee_id_from_data(committee_data) \
             if isinstance(committee_data, CompiledSolidityCommittee) \
             else committee_data[KEY_ID]
+    
     def add_committee_data_to_dao(self, committee_data:dict):
         committees = self.get_dao_committees_from_data(self.compiled)
         c_id = self.get_committee_id_from_data(committee_data)
@@ -59,22 +73,20 @@ class CompiledSolidityDAO(cgd.CompiledUnitWithID):
 class CompiledSolidityDiagram(cgd.CompiledUnitWithID):
     def __init__(self, id:str, template_name:str, compiled:dict=None):
         super().__init__(id, template_name)
-        self.diagram_data = compiled
-        self.daos_data_by_id:dict[str, CompiledSolidityDAO] = {}
+        self.compiled = compiled
+        self.daos_compiled_by_id:dict[str, CompiledSolidityDAO] = {}
 
-    def get_diagram_data(self):
-        return self.diagram_data
-    def get_daos_data_by_id(self):
-        return self.daos_data_by_id
+    def get_compiled(self):
+        return self.compiled
     
-    def set_diagram_data(self, diagram_data):
-        self.diagram_data = diagram_data
-
+    def get_daos_compiled_by_id(self):
+        return self.daos_compiled_by_id
+    
     def add_dao(self, dao_data:CompiledSolidityDAO):
-        self.daos_data_by_id[dao_data.get_dao_id_from_data(dao_data)] = dao_data
+        self.daos_compiled_by_id[dao_data.get_dao_id_from_data(dao_data)] = dao_data
 
     def get_dao_by_id(self, dao_id:str) -> dict:
-        return self.daos_data_by_id[dao_id]
+        return self.daos_compiled_by_id[dao_id]
     
     def add_committee_data_to_dao(self, dao_id:str, committee_data:CompiledSolidityCommittee):
         dao = self.get_dao_by_id(dao_id)
@@ -85,7 +97,7 @@ class CompiledSolidityDiagram(cgd.CompiledUnitWithID):
         j = super().__tojson__()
         j[KEY_COMPILED] = self.compiled
         j[KEY_DAOS_BY_ID] = {
-            c.id: c.__tojson__() for c in self.get_daos_data_by_id().values()
+            c.id: c.__tojson__() for c in self.get_daos_compiled_by_id().values()
         }
         return j
     
