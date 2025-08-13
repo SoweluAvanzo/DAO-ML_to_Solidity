@@ -5,8 +5,6 @@ import traceback
 from XMLValidator import ConstraintValidator
 
 from antlr4 import *
-from XMLLexer import XMLLexer
-from XMLParser import XMLParser
 
 #from parse_xml import DAO_ML_Visitor
 from DAOVisitor2 import DAOVisitor2
