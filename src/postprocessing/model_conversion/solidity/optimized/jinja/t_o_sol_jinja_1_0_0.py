@@ -236,10 +236,10 @@ class SolidityConverterOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityConvert
         # START translateCommittee ...
         voting_permission_key = committee.get_id() + "VotingRight"
         proposal_permission_key = committee.get_id() + "ProposalRight"
-        voting_permission_index = self.context.permission_to_index[voting_permission_key]
-        proposal_permission_index = self.context.permission_to_index[proposal_permission_key]
+        voting_permission_index = -42 # self.context.permission_to_index[voting_permission_key]
+        proposal_permission_index = -42 # self.context.permission_to_index[proposal_permission_key]
         
-        #
+        # ... preparation og generate_voting_protocol_from_template
         contract_name = committee.committee_description.replace(" ","_")
         self.prepare_committee_voting_protocol(diagram, dao, committee, committee_translated)
         decision_making_method = committee.decision_making_method
