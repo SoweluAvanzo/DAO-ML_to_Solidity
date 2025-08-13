@@ -19,15 +19,9 @@ class TemplateJinjaSolidity(tjb.TemplateJinjaBase):
                 key_diagram_model:str=None \
                 ):
         super().__init__(pipeline_item_data, optional_external_data=optional_external_data,\
-                key_diagram_instance_data=key_diagram_instance_data, \
+                key_template_instance_data=key_diagram_instance_data, \
                 key_template_skeleton=key_template_skeleton \
             )
         self.key_diagram_model = key_diagram_model
 
     #
-
-    def run(self, inputs):
-        return self.compile_template(\
-            self.get_ith_input(inputs, 0) if self.key_diagram_instance_data is None else inputs[self.key_diagram_instance_data], \
-            additional_data=inputs \
-        )

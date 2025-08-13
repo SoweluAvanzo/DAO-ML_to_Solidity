@@ -3,6 +3,9 @@ class CompiledUnitWithID:
     def __init__(self, id:str, template_name:str):
         self.id = id
         self.template_name = template_name
+
+    def get_compiled(self):
+        raise Exception("Not implemented yet")
     
     def get_template_name(self):
         """

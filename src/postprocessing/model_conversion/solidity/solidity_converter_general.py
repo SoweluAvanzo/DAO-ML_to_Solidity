@@ -12,7 +12,7 @@ import src.model.committee as c
 
 class TranslatedSubpart(mcb.ModelConversionResultBase):
     def __init__(self, entity: base_entity_module.BaseEntity, entity_specific_data:dict):
-        self.entity = entity
+        self.entity: base_entity_module.BaseEntity = entity
         self.entity_specific_data = entity_specific_data
     def get_id(self) -> str:
         return self.entity.get_id()

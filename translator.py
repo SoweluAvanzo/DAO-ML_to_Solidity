@@ -18,7 +18,7 @@ class EntityTypeControllable(Enum):
 
 def newEntityData(final_id=0, name="", index=-1, original_id="", address="", entity_type:EntityTypeControllable=None):
     if entity_type == None:
-        entity_type = EntityTypeControllable.ROLE # default
+        entity_type = EntityTypeControllable.ROLE.value # default
     return {\
         "final_id": final_id, \
         "name": name, \

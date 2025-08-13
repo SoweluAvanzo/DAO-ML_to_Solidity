@@ -1,4 +1,4 @@
-import model.enums.extended_enum as ext_enum
+import src.model.enums.extended_enum as ext_enum
 
 class UserFunctionalitiesGroupSize(ext_enum.ExtendedEnum):
     SMALL = (32,5)

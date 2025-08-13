@@ -1,4 +1,4 @@
-import model.enums.extended_enum as ext_enum
+import src.model.enums.extended_enum as ext_enum
 
 class GraphType(ext_enum.ExtendedEnum):
     LIST = 0

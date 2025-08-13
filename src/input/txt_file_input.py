@@ -7,6 +7,8 @@ class TextFileInput(FileInput):
         super().__init__(pipeline_item_data, filepath)
     
     def get_input_as_iterable(self):
-        file = self.open_file()
-        for line in file:
-            yield line.strip()
+        with self.open_file() as file:
+            if file is None:
+                yield None
+            for line in file:
+                yield line.strip()
