@@ -135,8 +135,14 @@ class PipelineManager:
                             job_queues.append(dependant_node)
             except Exception as e:
                 job.status_run = NodeRunStatus.CRASHED
-                print(f"ERROR while running job: {job.item.get_key()}")
+                print(f"ERROR EXCEPTION while running job: {job.item.get_key()}")
                 print(e)
                 import traceback
                 traceback.print_exception(e)
         
+            except TypeError as e:
+                job.status_run = NodeRunStatus.CRASHED
+                print(f"ERROR TYPE-ERROR while running job: {job.item.get_key()}")
+                print(e)
+                import traceback
+                traceback.print_exception(e)

@@ -6,7 +6,7 @@ import src.parsers.xml.XMLParser as xmlP
 import src.parsers.xml.XMLParserVisitor as xmlPV
 
 import src.pipeline.pipeline_item as pi
-import src.generators.base_generator as bg
+import src.model_generators.base_generator as bg
 #import src.utilities.utils as u
 import src.model.diagram_manager as dm
 import src.model.dao as d
@@ -139,12 +139,6 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
 
     def visitRelations(self, ctx):
     #visits associated to relations and stores them in the dictionary
-
-        # TODO: usa "RelationType" nella invocazione
-        # " addRelation(self.current_dao, RelationType.AGGREGATION, id, content) "
-        # iterata nei vari cicli for
-        # (qui il " RelationType.AGGREGATION" e' SOLO un ruolo di esempio)
-        
         if ctx.associated_to():
             for assoc in ctx.associated_to():
                 content = self.aggregate_texts(assoc.content().chardata())

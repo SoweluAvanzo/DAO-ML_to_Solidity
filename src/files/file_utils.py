@@ -23,3 +23,9 @@ def list_files_in(folder_path:str):
 
 def delete_file(file_path:str):
     return os.remove(file_path)
+
+def extract_folder_from_full_path(full_path:str):
+    index_start_filename = full_path.rfind(os.sep)
+    if index_start_filename <= 0:
+        return full_path
+    return full_path[:index_start_filename]

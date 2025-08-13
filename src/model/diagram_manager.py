@@ -17,6 +17,11 @@ class DiagramManager(base_entity_module.BaseEntity):
         self.relations_by_dao: map[str, list[tuple[rt.RelationType, str, str]]] = {}
         self.controGraphGenerator = controGraphGenerator
 
+        
+    def get_name(self) -> str:
+        return self.uniqueID
+    
+
     def get_dao_by(self, daoOrID):
         dao = None
         if isinstance(daoOrID, dao_module.DAO):
@@ -33,13 +38,16 @@ class DiagramManager(base_entity_module.BaseEntity):
         dao_id = dao.get_id()
         self.relations_by_dao[dao_id] = []
     
+
     def addRole(self, daoOrID, role: role_module.Role):
         dao = self.get_dao_by(daoOrID)
         dao.add_role(role)
 
+
     def addCommittee(self, daoOrID, committee: committee_module.Committee):
         dao = self.get_dao_by(daoOrID)
         dao.add_committee(committee)
+
 
     def addPermission(self, daoOrID, permission: permission_module.Permission ):
         dao = self.get_dao_by(daoOrID)
@@ -53,18 +61,26 @@ class DiagramManager(base_entity_module.BaseEntity):
     
 
     #
-    def createControlGraph(self, daoOrID):
-        dao: dao_module.DAO = self.get_dao_by(daoOrID)
+    def createControlGraph(self, daoOrID:str, dao: dao_module.DAO=None):
+        if dao is None:
+            if isinstance(daoOrID, str):
+                dao = self.get_dao_by(daoOrID)
+            elif isinstance(daoOrID, dao_module.DAO):
+                dao = daoOrID
+            else:
+                raise Exception("Can't create Control Graph with no provided DAO")
         cg = cgb.ControlGraphBasic(dao) if self.controGraphGenerator is None else self.controGraphGenerator(dao)
         dao.dao_control_graph = cg
         return cg
 
 
-    def get_aggregated_permissions(self, role_or_committee: role_module.Role | committee_module.Committee):
+    def get_aggregated_permissions(self, role_or_committee):
         """
         get and collect recursively all "decendants", all members
         of inclusion relations that this Diagram could have.
         """
+        if not (isinstance(role_or_committee, role_module.Role) or isinstance(role_or_committee, committee_module.Committee)):
+            raise Exception(f"The provided role_or_committe is not a Role nor a Committe: {type(role_or_committee)}")
         for aggregated in role_or_committee.aggregated:
             self.get_aggregated_permissions(aggregated)
             #the aggregator inherits permissions from the aggregated
@@ -85,7 +101,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         # TODO 20/06/2025: rafactor away this creation because it's not DiagramManager's responsibility to perfor all of this "management"
         for daooo in self.daoByID.values():
             dao: dao_module.DAO = daooo
-            dao_id = dao.get_id()
+            dao_id:str = dao.get_id()
             for relation in self.relations_by_dao[dao_id]:
                 fromID = relation[1]
                 content = relation[2]
@@ -168,7 +184,7 @@ class DiagramManager(base_entity_module.BaseEntity):
             self.generate_conditions(dao)
             #generate owner role
             self.generateOwnerRole(dao)
-            self.createControlGraph(dao_id)
+            self.createControlGraph(dao_id, dao)
 
 
     def generateOwnerRole(self, dao: dao_module.DAO):
