@@ -1,5 +1,5 @@
-from enum import Enum
+import src.model.enums.extended_enum as ext_enum
 
-class GovernancePermission(Enum):
+class GovernancePermission(ext_enum.ExtendedEnum):
     VOTING="Voting"
     PROPOSAL="Proposal"

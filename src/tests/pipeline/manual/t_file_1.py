@@ -1,17 +1,26 @@
 import os
+import src.utilities.constants as consts
 import src.files.file_utils as files
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
 import src.input.txt_file_input as tfi
 import src.input.xml_file_input as xfi
-import src.validators.xml_dao_validator as xvi
-import src.generators.json_string_model_generator as jg
-import src.generators.xml_string_model_generator as xsmg
-import src.utilities.constants as consts
+import src.output.text_file_output as tfo
+import src.output.jinja_text_file_output as jtfo
 import src.cli.cli_executor as clie
 #import src.cli.antlr_invoker as grammar_compiler
-import src.postprocessing.serialization.model_to_json as m_json
-import src.output.text_file_output as tfo
+import src.validators.xml_dao_validator as xvi
+import src.model_generators.json_string_model_generator as jg
+import src.model_generators.xml_string_model_generator as xsmg
+import src.postprocessing.output_preparation.model_to_json as m_json
+#import src.postprocessing.model_conversion.translation_types as transl_types
+import src.postprocessing.model_conversion.model_converter_configurable as mcc
+import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
+import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+
+import src.postprocessing.model_conversion.conversion_types as ct
+import src.postprocessing.output_preparation.templates.jinja.template_providers.tpbn_txt_file as template_by_name_txt
+import src.postprocessing.output_preparation.templates.jinja.solidity.t_j_sol_1_0_0 as t_j_sol_1_0_0
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
@@ -19,16 +28,22 @@ import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
+"""
+import src.model.diagram_manager as dm
+import src.model.dao as d
+import src.model.committee as c
+"""
+
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
-FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".","data","tests","pipeline")
+FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".", "data","tests","pipeline")
 
 FILE_NAME_XML_1 = "Travelhive_final_model" # "Travelhive_final_model_mini"
 EXTENSION_XML = "xml"
-FILE_PATH_XML = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
+FILE_PATH_XML = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
-FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.','data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
+FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
 
 XML_DAO_GRAMMAR_FILENAME = "XMLParser"
 XML_DAO_GRAMMAR_EXTENSION = "g4"
@@ -37,6 +52,14 @@ XML_DAO_GRAMMAR_FILEPATH = files.concat_folder_filename('.', 'src', 'parsers', '
 FILE_OUTPUT_MODEL_NAME = f"{FILE_NAME_XML_1}_JSONed"
 FILE_OUTPUT_MODEL_EXTENSION = "json"
 FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename('.', 'outputs', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
+
+TEMPLATE_BASE_FOLDER = files.concat_folder_filename(".", "Templates")
+
+# def setup_input(pm:pmp.PipelineManager):
+# def setup_model_generation(pm:pmp.PipelineManager):
+# def set up_input(pm:pmp.PipelineManager):
+
+
 
 if __name__ == "__main__":
     print("AAAAAAAAAAAAAA")
@@ -69,7 +92,7 @@ if __name__ == "__main__":
     # 3 )[V] XML_to_model_generator
     # 4 )[V] model_to_json_repr
     # 5 )[V] txt file_output
-    # 6 )[ ] IL TRADUTTORE
+    # 6 )[T] IL TRADUTTORE
     # 7 )[ ] jinja_outputter
     # 8 )[ ] etc
     
@@ -111,6 +134,7 @@ if __name__ == "__main__":
     # 3)
 
     k_xml_generator = "k_xml_generator"
+    k_model_generator = k_xml_generator # just an alias, to standardize a bit more everything else
     xml_generator = xsmg.XmlStringModelGenerator(pi.PIData(k_xml_generator, [k_xml_validator]))
     pm.addItem(xml_generator)
 
@@ -118,7 +142,7 @@ if __name__ == "__main__":
     string_model_printdebug = pstr.PIStr(pi.PIData(k_string_model_printdebug, None), "\n\nModel created from XML!")
     pm.addItem(string_model_printdebug)
     k_toarray_model_printdebug = "k_toarray_model_printdebug"
-    toarray_model_printdebug = parr.PIInputToArray(pi.PIData(k_toarray_model_printdebug, [k_string_model_printdebug, k_xml_generator]))
+    toarray_model_printdebug = parr.PIInputToArray(pi.PIData(k_toarray_model_printdebug, [k_string_model_printdebug, k_model_generator]))
     pm.addItem(toarray_model_printdebug)
 
     k_printer_model_printdebug = "k_printer_model_printdebug"
@@ -128,7 +152,7 @@ if __name__ == "__main__":
     #4)
 
     k_model_to_json="k_model_to_json"
-    model_to_json = m_json.JsonStringModelGenerator(pi.PIData(k_model_to_json, [k_xml_generator]), True, indent="\t")
+    model_to_json = m_json.JsonStringModelGenerator(pi.PIData(k_model_to_json, [k_model_generator]), True, indent="\t")
     pm.addItem(model_to_json)
     k_model_to_json_printer = "k_model_to_json_printer"
     printer_model_jsonified = pri.PIPrinter(pi.PIData(k_model_to_json_printer, [k_model_to_json]), None, True)
@@ -168,6 +192,108 @@ if __name__ == "__main__":
     pm.addItem(cli_exec)
     
     
+
+    # 6) TRADUTTORE
+
+    # TODO generare gli inputs (per le key_ROBE del costruttore)
+
+    converter_type = ct.ConversionTypes.SOLIDITY.value
+    k_translator_type = "k_translator_type"
+    pi_translator_type = pstr.PIStr(pi.PIData(k_translator_type, None), converter_type)
+    pm.addItem(pi_translator_type)
+
+    jinja_translator_version = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
+    k_version_translator = "k_version_translator"
+    pi_version_translator = pstr.PIStr(pi.PIData(k_version_translator, None), jinja_translator_version)
+    pm.addItem(pi_version_translator)
+
+    k_translator_target = "k_translator_target"
+    pi_translator_target = pstr.PIStr(pi.PIData(k_translator_target, None), "1.0.0")
+    pm.addItem(pi_translator_target)
+
+    converter_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
+    k_converter_solidity_subtype = "k_converter_solidity_subtype"
+    pi_converter_solidity_subtype = pstr.PIStr(pi.PIData(k_converter_solidity_subtype, None), converter_solidity_subtype)
+    pm.addItem(pi_converter_solidity_subtype)
+
+    k_translator = "k_translator"
+    #translator = translator_sol_opt.SolidityConverterOptimized( \
+    #translator = to_sol_j_1_0_0.SolidityConverterOptimizedJinja_1_0_0( \
+    translator = mcc.ModelConverterConfigurable( \
+            pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator, k_translator_target, k_converter_solidity_subtype]), \
+            key_model = k_model_generator, \
+            key_converter_type = k_translator_type, \
+            key_converter_version = k_version_translator, \
+            key_converter_target = k_translator_target                     
+        )
+    pm.addItem(translator)
+
+    #
+
+    k_printer__pre__translated_sol_opt = "k_printer__pre__translated_sol_opt"
+    printer__pre__translated_sol_opt = pri.PIPrinter(pi.PIData(k_printer__pre__translated_sol_opt, [k_translator]), "\nPRINTING THE TRANSLATED STUFF\n", False)
+    pm.addItem(printer__pre__translated_sol_opt)
+    k_printer_translated_sol_opt = "k_printer_translated_sol_opt"
+    printer_translated_sol_opt = pri.PIPrinter(pi.PIData(k_printer_translated_sol_opt, [k_translator]), None, True)
+    pm.addItem(printer_translated_sol_opt)
+
+    # TODO: 2025-07-26 FARE L'OUTPUT E LA TRADUZIONE
+
+    # 7) template compiling
+    """
+    model_to_template_filename_jinja = mtt_mapper_j.ModelToTemplateMapperJinja()
+    # TODO: it's STILL NEEDED TO DEFINE HOW TO PROVIDE (and retrieve?) ALL THE NECESSARY DATA 
+    # .... maybe inside that ModelToTemplateMapperJinja instance?
+     
+    # model_to_template_filename_jinja[dm.DiagramManager.__class__.__name__] = None # no template for Diagram, at the moment
+    model_to_template_filename_jinja[d.DAO.__class__.__name__] = files.concat_folder_filename(".", "Templates","DAOOptimizedGeneric.jinja")
+    model_to_template_filename_jinja[c.Committee.__class__.__name__] = files.concat_folder_filename(".", "Templates","WHAT ELSE?.jinja")
+    # NOTE: other entries might be ID of "things" (Committees, usually) that are known in advance (even their ID as well) to have a specific, custom, user-defined
+    # template rather than the "generic" pre-defined one 
+    
+    k_model_to_template_filename_jinja = "k_model_to_template_filename_jinja"
+    model_to_template_filename_jinja_submitter = pval.PIAnyValue(pi.PIData(k_model_to_template_filename_jinja, [k_xml_generator]), model_to_template_filename_jinja)
+    pm.addItem(model_to_template_filename_jinja_submitter)
+
+    tjs = template_jinja_solidity.TemplateJinjaSolidity(... TODO ...)
+    """
+
+    k_template_provider = "k_template_provider"
+    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(base_template_folder=TEMPLATE_BASE_FOLDER)
+    k_PI_template_provider = "k_PI_template_provider"
+    # the template provider must be added to the chain so that the template compiler could retrieve it and use it
+    PI_template_provider = pval.PIAnyValue(pi.PIData(k_PI_template_provider, None), template_provider)
+    pm.addItem(PI_template_provider)
+
+    k_template_compiler = "k_template_compiler"
+    template_compiler = t_j_sol_1_0_0.TemplateJinjaSolidity_1_0_0(pi.PIData(k_template_compiler, [ \
+            k_translator, \
+            k_model_generator, \
+            k_PI_template_provider \
+        ]), \
+        key_diagram_instance_data=k_translator, \
+        key_diagram_model=k_model_generator, \
+        key_template_skeleton_provider_by_name=k_PI_template_provider \
+    )
+    pm.addItem(template_compiler)
+    # TODO: 2025-07-26 FARE L'OUTPUT E LA TRADUZIONE
+
+    #TODO 225-08-13 DA FARE OUTPUT
+    k_compiled_output_txt = "k_compiled_output_txt"
+    compiled_base_destination = files.concat_folder_filename("out", "solidity")
+    compiled_output_txt = jtfo.JinjaTextFileOutput(pi.PIData(k_compiled_output_txt, [k_template_compiler]), \
+        key_translated_diagram=k_template_compiler,
+        base_destination=compiled_base_destination
+    )
+    pm.addItem(compiled_output_txt)
+
+
+    # THE END
+    end_printer = pri.PIPrinter(pi.PIData("k_end_printer", [k_compiled_output_txt]), \
+        text="TRANSLATION FINISHED", \
+        from_input=False\
+    )
+    pm.addItem(end_printer)
 
     print("RUN\n\n\n")
     pm.runPipeline()
