@@ -1,0 +1,8 @@
+import src.files.file_utils as file_utils
+
+
+NAME_FOLDER_TEMPLATES = "Templates"
+DEFAULT_BASE_FOLDER_TEMPLATES = file_utils.concat_folder_filename(".", NAME_FOLDER_TEMPLATES)
+NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL = "voting_protocols"
+DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL = file_utils.concat_folder_filename(DEFAULT_BASE_FOLDER_TEMPLATES, NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL)
+
