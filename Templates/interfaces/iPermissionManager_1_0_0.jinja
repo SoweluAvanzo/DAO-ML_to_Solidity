@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;"
+interface IPermissionManager {{"{"}}
+    function has_permission(address user,{{perm_var_type}} permissionIndex) external view returns (bool);
+    {% if committees | length > 0 %}
+    function canVote(address user, {self.perm_var_type} permissionIndex) external view returns (bool);
+    function canPropose(address user, {self.perm_var_type} permissionIndex) external view returns (bool);
+    {% endif %}
+{{"}"}}

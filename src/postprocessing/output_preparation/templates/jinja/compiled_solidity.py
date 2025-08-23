@@ -8,12 +8,9 @@ KEY_COMPILED = "compiled"
 
 class CompiledSolidityCommittee(cgd.CompiledUnitWithID):
     def __init__(self, id:str, template_name:str, compiled:dict):
-        super().__init__(id, template_name)
-        self.compiled = compiled
-        
-    def get_compiled(self):
-        return self.compiled
-    
+        super().__init__(id, template_name, compiled)
+        self.compiled_conditions_by_name:dict[str, cgd.CompiledUnitWithID]={}
+
     def get_committee_id_from_data(self, committee_data:dict) -> str:
         """
         Overridable
@@ -30,12 +27,9 @@ class CompiledSolidityCommittee(cgd.CompiledUnitWithID):
 
 class CompiledSolidityDAO(cgd.CompiledUnitWithID):
     def __init__(self, id:str, template_name:str, compiled:dict):
-        super().__init__(id, template_name)
-        self.compiled = compiled
+        super().__init__(id, template_name, compiled)
         self.committees:dict[str, CompiledSolidityCommittee] = {}
-        
-    def get_compiled(self):
-        return self.compiled
+        self.interfaces_and_dao_related_compiled_contracts:dict[str, cgd.CompiledUnitWithID]={}
     
     def get_dao_id_from_data(self, dao_data) -> str:
         """
@@ -72,12 +66,8 @@ class CompiledSolidityDAO(cgd.CompiledUnitWithID):
 
 class CompiledSolidityDiagram(cgd.CompiledUnitWithID):
     def __init__(self, id:str, template_name:str, compiled:dict=None):
-        super().__init__(id, template_name)
-        self.compiled = compiled
+        super().__init__(id, template_name, compiled)
         self.daos_compiled_by_id:dict[str, CompiledSolidityDAO] = {}
-
-    def get_compiled(self):
-        return self.compiled
     
     def get_daos_compiled_by_id(self):
         return self.daos_compiled_by_id

@@ -49,7 +49,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                     translated_diagram = None
 
         if not isinstance(translated_diagram, compiled_sol.CompiledSolidityDiagram):
-            raise Exception(f"The provided translated diagram should be an instance of TranslatedDiagram, but it's a: {type(translated_diagram)}")
+            raise Exception(f"The provided translated diagram should be an instance of ConvertedDiagram, but it's a: {type(translated_diagram)}")
         
         #def append_template_filename_output(array:list, translated_data:mcb.ModelConversionResultBase, template_filename ):
         def append_template_filename_output(array:list, compiled_thing:str, template_filename ):
@@ -76,17 +76,29 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                 dao.get_compiled(), \
                 dao.get_template_name() \
             )
+            for filename, thing_compiled_struct in dao_compiled_struct.interfaces_and_dao_related_compiled_contracts.items():
+                append_template_filename_output( \
+                    content_and_filepath_to_output, \
+                    thing_compiled_struct.get_compiled(), \
+                    thing_compiled_struct.get_template_name() \
+                )
             # ... then committees ...
             for committee_id, committee_compiled_struct in dao.committees.items():
-                    committee = committee_compiled_struct
+                committee = committee_compiled_struct
+                append_template_filename_output( \
+                    content_and_filepath_to_output, \
+                    committee.get_compiled(), \
+                    committee.get_template_name() \
+                )
+                for filename, compiled_conditions in committee.compiled_conditions_by_name.items():
                     append_template_filename_output( \
                         content_and_filepath_to_output, \
-                        committee.get_compiled(), \
-                        committee.get_template_name() \
+                        compiled_conditions.get_compiled(), \
+                        compiled_conditions.get_template_name() \
                     )
-                # ... then ... what? is there something specific to each committee?
                 # TODO: (202-08-13) STILL MISSING, WAITING FOR "TemplateJinjaSolidity_1_0_0" TO FINISH IMPLEMENTATION
-        # then, produce the output  
+        # then, produce the output
+        print(f"\n\n\n PRODUCING {len(content_and_filepath_to_output)} outputs in total")
         for output_and_filepath in content_and_filepath_to_output:
             output_to_print = output_and_filepath[0]
             filepath = output_and_filepath[1]
