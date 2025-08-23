@@ -18,6 +18,7 @@ import src.postprocessing.model_conversion.model_converter_configurable as mcc
 import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
 
+import src.postprocessing.model_conversion.consts_template as consts_t
 import src.postprocessing.model_conversion.conversion_types as ct
 import src.postprocessing.output_preparation.templates.jinja.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.output_preparation.templates.jinja.solidity.t_j_sol_1_0_0 as t_j_sol_1_0_0
@@ -52,8 +53,6 @@ XML_DAO_GRAMMAR_FILEPATH = files.concat_folder_filename('.', 'src', 'parsers', '
 FILE_OUTPUT_MODEL_NAME = f"{FILE_NAME_XML_1}_JSONed"
 FILE_OUTPUT_MODEL_EXTENSION = "json"
 FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename('.', 'outputs', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
-
-TEMPLATE_BASE_FOLDER = files.concat_folder_filename(".", "Templates")
 
 # def setup_input(pm:pmp.PipelineManager):
 # def setup_model_generation(pm:pmp.PipelineManager):
@@ -216,15 +215,32 @@ if __name__ == "__main__":
     pi_converter_solidity_subtype = pstr.PIStr(pi.PIData(k_converter_solidity_subtype, None), converter_solidity_subtype)
     pm.addItem(pi_converter_solidity_subtype)
 
+    k_all_voting_protocols_submitter = "k_all_voting_protocols_submitter"
+    all_voting_protocols_folder = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
+    files_vp = files.list_files_in(all_voting_protocols_folder)
+    # just the filename
+    files_vp = set([ \
+        f[:f.find(".")] \
+        for f in files_vp \
+    ])
+    print(f"all_voting_protocol read: {files_vp}")
+    all_voting_protocols_submitter = pval.PIAnyValue(pi.PIData(k_all_voting_protocols_submitter, None), files_vp)
+    files_vp = None
+    pm.addItem(all_voting_protocols_submitter)
+
     k_translator = "k_translator"
     #translator = translator_sol_opt.SolidityConverterOptimized( \
     #translator = to_sol_j_1_0_0.SolidityConverterOptimizedJinja_1_0_0( \
+    additional_metadata_model_converter = {
+        "key_all_voting_protocols": k_all_voting_protocols_submitter
+    }
     translator = mcc.ModelConverterConfigurable( \
-            pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator, k_translator_target, k_converter_solidity_subtype]), \
+            pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator, k_translator_target, k_converter_solidity_subtype, k_all_voting_protocols_submitter]), \
             key_model = k_model_generator, \
             key_converter_type = k_translator_type, \
             key_converter_version = k_version_translator, \
-            key_converter_target = k_translator_target                     
+            key_converter_target = k_translator_target, \
+            additional_data=additional_metadata_model_converter                     
         )
     pm.addItem(translator)
 
@@ -259,12 +275,13 @@ if __name__ == "__main__":
     """
 
     k_template_provider = "k_template_provider"
-    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(base_template_folder=TEMPLATE_BASE_FOLDER)
+    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES)
     k_PI_template_provider = "k_PI_template_provider"
     # the template provider must be added to the chain so that the template compiler could retrieve it and use it
     PI_template_provider = pval.PIAnyValue(pi.PIData(k_PI_template_provider, None), template_provider)
     pm.addItem(PI_template_provider)
 
+    # TODO: (2025-08-23) NOTE: EVEN THE COMPILER SHOULD BE "configurable" IN THE SAME WAY AS THE CONVERTER DOES
     k_template_compiler = "k_template_compiler"
     template_compiler = t_j_sol_1_0_0.TemplateJinjaSolidity_1_0_0(pi.PIData(k_template_compiler, [ \
             k_translator, \
@@ -273,7 +290,8 @@ if __name__ == "__main__":
         ]), \
         key_diagram_instance_data=k_translator, \
         key_diagram_model=k_model_generator, \
-        key_template_skeleton_provider_by_name=k_PI_template_provider \
+        key_template_skeleton_provider_by_name=k_PI_template_provider, \
+        base_folder_templates=None # use the default values
     )
     pm.addItem(template_compiler)
     # TODO: 2025-07-26 FARE L'OUTPUT E LA TRADUZIONE

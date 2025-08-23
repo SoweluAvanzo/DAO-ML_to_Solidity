@@ -16,12 +16,14 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
                 key_model:str=None, \
                 key_converter_type:str=None, \
                 key_converter_version:str=None, \
-                key_converter_target:str=None \
+                key_converter_target:str=None, \
+                additional_data:dict=None \
             ):
         super().__init__(pipeline_item_data, key_model)
         self.key_converter_type = key_converter_type
         self.key_converter_version = key_converter_version
         self.key_converter_target = key_converter_target
+        self.additional_data = additional_data
 
     #
 
@@ -118,6 +120,11 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
     def convert(self, diagram:dm.DiagramManager, additional_data:dict=None) -> mcb.ModelConversionResultBase:
         if additional_data is None:
             additional_data = {}
+        if self.additional_data is not None:
+            additional_data = {
+                **additional_data,
+                **(self.additional_data)
+            }
         converter_type = self.get_converter_type(diagram, additional_data)
         converter_version = self.get_converter_version(diagram, converter_type, additional_data)
         converter_target = self.get_converter_target(diagram, converter_type, converter_version, additional_data)
