@@ -36,7 +36,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         elif "mode" not in additional_data:
             additional_data["mode"] = "w"
         # now, sanity checks
-        print(f"outputting a {type(what)} in jinja :D")
+        print(f"outputting a {type(translated_diagram)} in jinja :D")
         if not isinstance(translated_diagram, compiled_sol.CompiledSolidityDiagram):
             if self.key_translated_diagram is None :
                 print(f"WARNING: is missing key_translated_diagram : {self.key_translated_diagram }")
@@ -62,7 +62,10 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
             return array
 
         # start with diagram ....
-        # TODO (225-08-13) AGGIUSTAREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+        # TODO (2025-08-13) AGGIUSTAREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+        # TODO (2025-08-30) QUESTA STRUTTURA PROFONDAMENTE INNESTATA DOVREBBE ESSERE GENERALIZZATA
+        # TRAMITE L'UTILIZZO DI UN Generator (o comunque di una lista di cose, già "srotolata")
+        # CHE QUINDI FA APPENDERE TUTTE LE COSE  DA COMPILARE IN "content_and_filepath_to_output"
         content_and_filepath_to_output = append_template_filename_output( \
             [], \
             translated_diagram.get_compiled(), \

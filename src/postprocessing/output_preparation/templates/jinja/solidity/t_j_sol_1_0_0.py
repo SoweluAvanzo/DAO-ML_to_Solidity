@@ -35,6 +35,10 @@ class TemplateJinjaSolidity_1_0_0(tjs.TemplateJinjaSolidity):
 
     #
 
+    # TODO: (2025-08-30) DEFINE IN A SUPER-CLASS A METHOD RETURNING
+    # A Generator OF THINGS TO BE COMPILED, THEN IMPLEMENT THAT METHOD WITH 
+    # THE DEEPLY-NESTED ITERATIONS CURRENTLY INSIDE THIS METHOD
+
     def compile_template(self, \
             diagram_instance_data:stg.ConvertedDiagram, \
             additional_data=None \
@@ -49,10 +53,6 @@ class TemplateJinjaSolidity_1_0_0(tjs.TemplateJinjaSolidity):
         tpbn = self.get_ith_input(additional_data, 2) if self.key_template_skeleton_provider_by_name is None else additional_data[self.key_template_skeleton_provider_by_name]
         if not isinstance(tpbn, template_provider.TemplateProviderByName):
             raise Exception("template provider by name needed")
-        #
-        # TODO 2025-08-10 perform the actual compilation for each "thing" inside "diagram_instance_data"
-        # TODO (2025-08-23) do all Committees and Conditions
-
         id = 1
         name = diagram_instance_data.get_name()
         diagram_compied = "" # we don't compile the Diagram: onlu
@@ -90,6 +90,8 @@ class TemplateJinjaSolidity_1_0_0(tjs.TemplateJinjaSolidity):
                 template_skeleton_dao = tpbn.provide_template_skeleton_by_name(template_name=[template_folder_path_base, template_filename_dao_extension])
                 print(f"\n  on {type(self)} : AFTER getting the template skeletons for DAO")
                 # join the template into a single string
+                if template_skeleton_dao is None:
+                    raise Exception(f"CAN'T FIND TEMPLATE {file_utils.concat_folder_filename(template_folder_path_base, template_filename_dao_extension)}")
                 if isinstance(template_skeleton_dao, list):
                     template_skeleton_dao = "\n".join(template_skeleton_dao)
                 dao_templates_loaded_by_filename[template_filename_dao_in] = template_skeleton_dao
@@ -101,24 +103,22 @@ class TemplateJinjaSolidity_1_0_0(tjs.TemplateJinjaSolidity):
             compiled_dao_struct = tcs.CompiledSolidityDAO(dao_id, compiled_dao_filename, compiled_dao)
             # TODO: (2025-08-23) ADD ALL INTERFACES AND OTHER CONTRACTS IN DAO INTO "dao_translated.interfaces_and_dao_related_compiled_contracts"
             if isinstance(dao_translated, conv_sol_jinja_1_0_0.ConvertedDAO_Jinja_1_0_0):
-                # TODO: (2025-08-23) COMPILE ALL OF THE FOLLOWING
-                for filename, converted_i in dao_translated.interfaces_and_fullpath_by_filenames.items():
-                    template_skeleton = tpbn.provide_template_skeleton_by_name(template_name=[\
-                        converted_i.template_full_folders_path_from_base, \
-                        converted_i.template_filename_input
-                        ])
-                    if isinstance(template_skeleton, list):
-                        template_skeleton = "\n".join(template_skeleton)
-                    compiled_thing = super().compile_single_template(template_skeleton_dao, dao_translated.entity_specific_data)
-                    compiled_filename = fu.concat_folder_filename(converted_i.template_full_folders_path_from_base, f"{converted_i.template_filename_output}.sol")
-                    compiled_thing_wrapper = cgd.CompiledUnitWithID(None, compiled_filename, compiled_thing)
-                    compiled_dao_struct.interfaces_and_dao_related_compiled_contracts[filename] = compiled_thing_wrapper
-                """
-                for ... in dao_translated.conditions_converted_by_dao_id:
-                    # TODO  (2025-08-23) THOSE ARE TOTALLY MISSING FROM CONVERSION, AT THE MOMENT
-                    pass
-                    compiled_dao_struct.interfaces_and_dao_related_compiled_contracts[todo] = TODO
-                """
+                # COMPILE ALL OF THE FOLLOWING ANYTHING RELATED WITH A DAO (but not the DAO itself)
+                for map_compiled_adjacent_contracts in [\
+                        dao_translated.interfaces_and_fullpath_by_filenames, \
+                        dao_translated.conditions_converted_by_name \
+                    ]:
+                    for filename, converted_thing in map_compiled_adjacent_contracts.items():
+                        template_skeleton = tpbn.provide_template_skeleton_by_name(template_name=[\
+                            converted_thing.template_full_folders_path_from_base, \
+                            converted_thing.template_filename_input
+                            ])
+                        if isinstance(template_skeleton, list):
+                            template_skeleton = "\n".join(template_skeleton)
+                        compiled_thing = super().compile_single_template(template_skeleton, converted_thing.entity_specific_data)
+                        compiled_filename = fu.concat_folder_filename(converted_thing.template_full_folders_path_from_base, f"{converted_thing.template_filename_output}.sol")
+                        compiled_thing_wrapper = cgd.CompiledUnitWithID(None, compiled_filename, compiled_thing)
+                        compiled_dao_struct.interfaces_and_dao_related_compiled_contracts[filename] = compiled_thing_wrapper
             compilated.add_dao(compiled_dao_struct)
 
             # TODO: (2025-08-13) compile each Committee
@@ -149,8 +149,9 @@ class TemplateJinjaSolidity_1_0_0(tjs.TemplateJinjaSolidity):
                 compiled_committee = super().compile_single_template(template_skeleton_committee, committee_translated.entity_specific_data)
                 compiled_committee_struct = tcs.CompiledSolidityCommittee(committee_id, compiled_committee_filename, compiled_committee)
                 # TODO: compiled_committee_struct
-                committee_translated.additional_modules_instances_by_name # TODO: WHAT TO DO WITH IT?
                 """
+                #TODO: WHAT TO DO WITH IT?
+                committee_translated.additional_modules_instances_by_name
                 """
                 compiled_dao_struct.add_committee_data_to_dao(compiled_committee_struct)
 
