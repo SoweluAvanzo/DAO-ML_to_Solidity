@@ -13,7 +13,7 @@ class TemplateBase(pi.PipelineItem):
         self.key_template_instance_data = key_template_instance_data
 
     def compile_template(self, instance_data:dict, additional_data=None):
-        raise Exception("Not implemented yet")
+        raise Exception(f"Not implemented yet on instance: {type(instance_data)}")
     
     def run(self, inputs):
         return self.compile_template(\

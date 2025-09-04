@@ -1,16 +1,6 @@
 import src.pipeline.pipeline_item as pi
 import src.model.diagram_manager as dm
-
-
-class ModelConversionResultBase:
-    def get_id(self) -> str:
-        return None
-
-    def get_name(self):
-        return ""
-    
-    def __repr__(self):
-        return ""
+import src.postprocessing.model_conversion.shared.conversion_result_base as crb
 
 
 class ModelConverterBase(pi.PipelineItem):
@@ -23,7 +13,7 @@ class ModelConverterBase(pi.PipelineItem):
         super().__init__(pipeline_item_data)
         self.key_model = key_model
 
-    def convert(self, model:dm.DiagramManager, additional_data=None) -> ModelConversionResultBase:
+    def convert(self, model:dm.DiagramManager, additional_data=None) -> crb.ModelConversionResultBase:
         raise Exception(f"convert function not implemented yet in {type(self)}")
 
     def run(self, inputs):

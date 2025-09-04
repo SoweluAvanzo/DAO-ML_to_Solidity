@@ -1,6 +1,6 @@
 import src.pipeline.pipeline_item as pi
 import src.input.txt_file_input as tfi
-import src.postprocessing.output_preparation.templates.jinja.template_providers.template_provider_by_name as tpbn
+import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as tpbn
 import src.files.file_utils as fu
 
 class TemplateProviderFromTxtFile(tpbn.TemplateProviderByName):
@@ -15,9 +15,13 @@ class TemplateProviderFromTxtFile(tpbn.TemplateProviderByName):
     def set_filename(self, filename:str):
         full_path = ""
         if isinstance(filename, str):
-            full_path = fu.concat_folder_filename(self.base_template_folder, filename)
+            full_path = fu.concat_folder_filename(self.base_template_folder, filename).replace(f"{fu.PATH_SEPARATOR_CHAR}{fu.PATH_SEPARATOR_CHAR}", fu.PATH_SEPARATOR_CHAR)
         elif isinstance(filename, list):
-            full_path = fu.concat_folder_filename(self.base_template_folder, *filename)
+            cleaned_filename_list = [f.strip() for f in filename if isinstance(f, str) and f.strip() != ""]
+            if len(cleaned_filename_list) <= 0:
+                full_path = self.base_template_folder
+            else:
+                full_path = fu.concat_folder_filename(self.base_template_folder, *cleaned_filename_list)
         self.input_template_provider.filepath = full_path
 
     def actual__provide_template_skeleton_by_name(self, template_name):

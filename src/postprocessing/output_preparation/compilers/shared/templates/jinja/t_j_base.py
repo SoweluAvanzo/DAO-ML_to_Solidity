@@ -1,7 +1,9 @@
 from jinja2 import Template
 
 import src.pipeline.pipeline_item as pi
-import src.postprocessing.output_preparation.templates.template_base as tb
+import src.postprocessing.output_preparation.compilers.shared.templates.template_base as tb
+
+JINJA_EXTENSION_DEFAULT = "jinja"
 
 class TemplateJinjaBase(tb.TemplateBase):
     """
@@ -11,8 +13,14 @@ class TemplateJinjaBase(tb.TemplateBase):
             key_template_instance_data:str=None, \
             key_template_skeleton:str=None\
         ):
-        super().__init__(pipeline_item_data, optional_external_data, key_template_instance_data)
+        #super().__init__( \
+        tb.TemplateBase.__init__(self, \
+            pipeline_item_data, \
+            optional_external_data=optional_external_data, \
+            key_template_instance_data=key_template_instance_data \
+        )
         self.key_template_skeleton = key_template_skeleton
+        self.jinja_extension:str = JINJA_EXTENSION_DEFAULT
         
     def compile_single_template(self, template_skeleton, instance_data:dict):
         if not isinstance(template_skeleton, str):

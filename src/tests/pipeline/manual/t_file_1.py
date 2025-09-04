@@ -18,10 +18,10 @@ import src.postprocessing.model_conversion.model_converter_configurable as mcc
 import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
 
-import src.postprocessing.model_conversion.consts_template as consts_t
+import src.postprocessing.model_conversion.shared.templates.consts_template as consts_t
 import src.postprocessing.model_conversion.conversion_types as ct
-import src.postprocessing.output_preparation.templates.jinja.template_providers.tpbn_txt_file as template_by_name_txt
-import src.postprocessing.output_preparation.templates.jinja.solidity.t_j_sol_1_0_0 as t_j_sol_1_0_0
+import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
+import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.t_j_sol_1_0_0 as t_j_sol_1_0_0
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
@@ -290,8 +290,7 @@ if __name__ == "__main__":
         ]), \
         key_diagram_instance_data=k_translator, \
         key_diagram_model=k_model_generator, \
-        key_template_skeleton_provider_by_name=k_PI_template_provider, \
-        base_folder_templates=None # use the default values
+        key_template_skeleton_provider_by_name=k_PI_template_provider \
     )
     pm.addItem(template_compiler)
     # TODO: 2025-07-26 FARE L'OUTPUT E LA TRADUZIONE

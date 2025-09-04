@@ -1,5 +1,5 @@
 import typing
-import src.postprocessing.output_preparation.templates.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
 
 KEY_ID = "id"
 KEY_DAO_COMMITTEES = "committees"
