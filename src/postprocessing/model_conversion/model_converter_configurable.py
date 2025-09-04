@@ -1,5 +1,6 @@
 import src.pipeline.pipeline_item as pi
-import src.postprocessing.model_conversion.model_converter_base as mcb
+import src.postprocessing.model_conversion.shared.model_converter_base as mcb
+import src.postprocessing.model_conversion.shared.conversion_result_base as crb
 import src.postprocessing.model_conversion.conversion_types as ct
 import src.model.diagram_manager as dm                    
 
@@ -117,7 +118,7 @@ class ModelConverterConfigurable(mcb.ModelConverterBase):
         return impl
 
 
-    def convert(self, diagram:dm.DiagramManager, additional_data:dict=None) -> mcb.ModelConversionResultBase:
+    def convert(self, diagram:dm.DiagramManager, additional_data:dict=None) -> crb.ModelConversionResultBase:
         if additional_data is None:
             additional_data = {}
         if self.additional_data is not None:
