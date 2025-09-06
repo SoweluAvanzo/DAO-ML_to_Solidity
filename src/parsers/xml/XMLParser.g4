@@ -108,8 +108,8 @@ attribute
     ; // Our STRING is AttValue in spec
 
 unique_id:
-    UNIQUEID_LITERAL EQUALS DOUBLE_TICK UNIQUEID DOUBLE_TICK
-    | UNIQUEID_LITERAL EQUALS STRING
+    (UNIQUEID_LITERAL EQUALS DOUBLE_TICK UNIQUEID DOUBLE_TICK)
+    | (UNIQUEID_LITERAL EQUALS STRING)
     ;
 
 /** ``All text that is not markup constitutes the character data of

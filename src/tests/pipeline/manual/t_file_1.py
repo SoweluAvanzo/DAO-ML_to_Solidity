@@ -1,4 +1,4 @@
-import os
+
 import src.utilities.constants as consts
 import src.files.file_utils as files
 import src.pipeline.pipeline_manager as pmp
@@ -8,12 +8,10 @@ import src.input.xml_file_input as xfi
 import src.output.text_file_output as tfo
 import src.output.jinja_text_file_output as jtfo
 import src.cli.cli_executor as clie
-#import src.cli.antlr_invoker as grammar_compiler
 import src.validators.xml_dao_validator as xvi
 import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
 import src.postprocessing.output_preparation.model_to_json as m_json
-#import src.postprocessing.model_conversion.translation_types as transl_types
 import src.postprocessing.model_conversion.model_converter_configurable as mcc
 import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
@@ -29,19 +27,22 @@ import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
-"""
-import src.model.diagram_manager as dm
-import src.model.dao as d
-import src.model.committee as c
-"""
+import src.model.enums.extended_enum as ex_enum
+
+DAO_TESTS_FOLDER = "tests"
+class DAO_TESTS(ex_enum.ExtendedEnum):
+    TRAVELWARE = "Travelhive_final_model"
+    TRAVELWARE_MINI = "Travelhive_final_model_mini"
+    T_DAO_1 = files.concat_folder_filename(DAO_TESTS_FOLDER, "t_dao_1")
 
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
-FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".", "data","tests","pipeline")
+FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".", "data", "tests", "pipeline")
 
-FILE_NAME_XML_1 = "Travelhive_final_model" # "Travelhive_final_model_mini"
+FILE_NAME_XML_1 = DAO_TESTS.T_DAO_1.value
 EXTENSION_XML = "xml"
 FILE_PATH_XML = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
+print(f"FILE_PATH_XML: {FILE_PATH_XML}")
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
 FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
@@ -61,12 +62,12 @@ FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename('.', 'outputs', f"{FIL
 
 
 if __name__ == "__main__":
-    print("AAAAAAAAAAAAAA")
+    print("START")
 
     pm = pmp.PipelineManager()
 
     k_txt_file_input_pi = "k_txt_file_input_pi_1"
-    file_path = f"{FOLDER_PATH_TXT_TEST}{os.sep}{FILE_NAME_TXT_TEST}.{EXTENSION_JSON}"
+    file_path = files.concat_folder_filename(f"{FOLDER_PATH_TXT_TEST}", f"{FILE_NAME_TXT_TEST}.{EXTENSION_JSON}")
     txt_file_input_pi = tfi.TextFileInput(pi.PIData(k_txt_file_input_pi, None), file_path)
     pm.addItem(txt_file_input_pi)
 
@@ -175,7 +176,7 @@ if __name__ == "__main__":
     k_commands_inputs = "k_commands_inputs"
     commands_inputs = {
         "k_dir": "dir",
-        "k_anltr": f"java -jar {os.path.join(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1.jar')}",
+        "k_anltr": f"java -jar {files.concat_folder_filename(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1.jar')}",
         "k_echo": "echo ciao mamma",
         "k_multiple": "cd data & dir & cd .."
     }
