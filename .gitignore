@@ -176,6 +176,10 @@ node_modules/
 translated/
 translated/*
 out
+outputs
+outputs*
+outputs/
+outputs/*
 test/
 test/*
 */test/*

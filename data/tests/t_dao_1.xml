@@ -1,0 +1,94 @@
+<DAO-ML_diagram name="Test 1" 
+    uniqueID="dao_a10f2b1a_ee5b_4b99_b531_a704edb909ca" 
+    xsi:noNamespaceSchemaLocation="XSD_DAO_ML.xsd" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" x="0" y="0" width="0" height="0"
+>
+
+	<DAO 
+        DAO_ID="dao_01234567_0123_3210_9876_9876543210fg"
+        DAO_name="DAO 1"
+        mission_statement="Testing a single DAO"
+        hierarchical_inheritance="false"
+        x="403.51017869275967" y="405.68447847623025" width="1232.5552658266886" height="777.1958192318468"
+    >
+
+        <Role
+            role_ID="dao_00000000_0000_0000_bbb1_001100220033"
+            role_name="R_1_in_C_1"
+            n_agent_min="0" n_agent_max="0" agent_type="human"
+            aggregation_level="0" federation_level="0"
+            x="495.556296307872" y="1001.9362619875442" width="50" height="80"
+            >
+            <federates_into _id="dao_778143a6_28ca_4964_beae_e04a5edd8c76">dao_00000000_0000_0000_bbb3_001100220033</federates_into>
+            <associated_to _id="dao_1cadc62e_7bfe_4903_9a92_3f34b5c75ffd">dao_00000000_0000_0000_bbb3_001100220033</associated_to>
+            <aggregates _id="dao_63c4cc53_1a33_4eaa_96a7_bc275b2473f5">dao_88e4a6f9_b82e_4227_b8bb_3c1065471ace</aggregates>
+        </Role>
+
+        
+		<Role 
+            role_ID="dao_00000000_0000_0000_bbb2_001100220033"
+            role_name="R_2_in_C_1"
+            n_agent_min="0" n_agent_max="0"
+            agent_type="human"
+            aggregation_level="0" federation_level="0"
+            x="192.35590138907529" y="361.7863776984612" width="50" height="80"
+        >
+			<federates_into _id="dao_a61651aa_50a0_4950_b58e_6e70d7f5f809">dao_00000000_0000_0000_ccc1_001100220033</federates_into>
+			<aggregates _id="dao_238729db_7c8d_4812_8def_c0820593a680">dao_00000000_0000_0000_bbb3_001100220033</aggregates>
+			<associated_to _id="dao_0ee5c19f_86a5_42b8_bd77_24e616a0b4bd">dao_ce969c91_5e5e_4922_9302_6084a778fb95</associated_to>
+		</Role>
+        
+		<Role 
+            role_ID="dao_00000000_0000_0000_bbb3_001100220033"
+            role_name="Super_Role"
+            n_agent_min="0" n_agent_max="0"
+            agent_type="human"
+            aggregation_level="0" federation_level="0"
+            x="192.35590138907529" y="361.7863776984612" width="50" height="80"
+        >
+			<federates_into _id="dao_a61651aa_50a0_4950_b58e_6e70d7f5f809">dao_00000000_0000_0000_ccc1_001100220033</federates_into>
+			<associated_to _id="dao_0ee5c19f_86a5_42b8_bd77_24e616a0b4bd">dao_ce969c91_5e5e_4922_9302_6084a778fb95</associated_to>
+		</Role>
+
+
+        <Committee
+            committee_ID="dao_00000000_0000_0000_ccc1_001100220033"
+            committee_description="Committee 1"
+            aggregation_level="0" federation_level="0" x="748.5821811320366" y="97.83346679343697" width="112" height="49">
+			<aggregates _id="dao_f81a6293_ba86_436c_9f96_501410200f29">dao_88e4a6f9_b82e_4227_b8bb_3c1065471ace</aggregates>
+			<is_controlled_by _id="dao_bae263c0_f04c_4570_a3b9_9ca8a9430773">dao_88e4a6f9_b82e_4227_b8bb_3c1065471ace</is_controlled_by>
+			<associated_to _id="dao_b04c6b0f_d3b0_4aba_ae68_950680f739b9">dao_ce969c91_5e5e_4922_9302_6084a778fb95</associated_to>
+		</Committee>
+
+        <Permission
+            permission_ID="dao_ce969c91_5e5e_4922_9302_6084a778fb95"
+            allowed_action="Permission minor"
+            permission_type="strategic"
+            ref_gov_area="dao_00000000_0000_0000_ggg1_001100220033"
+            x="40.687710798292635" y="419.28101732639414" width="91" height="49"
+        />
+
+
+        <Committee committee_ID="dao_88e4a6f9_b82e_4227_b8bb_3c1065471ace"
+            committee_description="Comm super-aggregate"
+            aggregation_level="0" federation_level="0" x="393.4130467328496" y="368.08973270360997" width="112" height="49">
+			<aggregates _id="dao_ef1657dc_4c5a_4187_8cbc_eb4d0f624a71">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</aggregates>
+			<is_controlled_by _id="dao_bae263c0_f04c_4570_a3b9_9ca8a9430773">dao_381786b9_effe_4564_9200_cf2e74ef3c1f</is_controlled_by>
+			<associated_to _id="dao_c6d8a55f_626e_49d7_8af3_67c657dd28ea">dao_0ab24a59_0b5b_485d_9976_00e0cf5a0af4</associated_to>
+		</Committee>
+        <Permission
+            permission_ID="dao_0ab24a59_0b5b_485d_9976_00e0cf5a0af4"
+            allowed_action="Permission over everything"
+            permission_type="operational"
+            ref_gov_area="dao_00000000_0000_0000_ggg1_001100220033"
+            x="375.5199425537032" y="286.50008724834646" width="91" height="49"
+        />
+
+		<GovernanceArea
+            gov_area_ID="dao_00000000_0000_0000_ggg1_001100220033"
+            gov_area_description="Governance Area 1"
+            implementation="off-chain"
+            x="37.343464189043644" y="548.9801915434043" width="172.8" height="222" />
+		
+	</DAO>
+</DAO-ML_diagram>
