@@ -193,7 +193,9 @@ class OptimizedSolidityTranslator(Translator):
 
     def translate(self) -> list[TranslatedSmartContract]:
             #print("TRANSLATE() -- invocato")
-            all_smart_contracts: list[TranslatedSmartContract] = []
+            all_smart_contracts: list[TranslatedSmartContract] = [
+
+            ]
 
             # at first, translate all Committees
             ct = CommitteeTranslator(self.context)
@@ -603,6 +605,8 @@ class OptimizedSolidityTranslator(Translator):
 
     def generate_closure(self):
         return "}"
+
+    
 
 class ConditionTranslator:
     def __init__(self, context: TranslationContext):

@@ -60,7 +60,7 @@ class Translator:
     def translate(self) -> list[TranslatedSmartContract]:
         pass
 
-    def generate_file_from_template(self, template_path: str, name: str, output_folder: str, extension=".sol") -> TranslatedSmartContract:
+    def generate_file_from_template(self, template_path: str, name: str, output_folder: str, extension=".sol", additional_parametrs=None) -> TranslatedSmartContract:
         # Define the full path to the template file
         
         file_name_and_path = template_path + name + extension + ".jinja"
