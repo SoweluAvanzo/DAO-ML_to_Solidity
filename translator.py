@@ -60,7 +60,8 @@ class Translator:
     def translate(self) -> list[TranslatedSmartContract]:
         pass
 
-    def generate_file_from_template(self, template_path: str, name: str, output_folder: str, extension=".sol", additional_parametrs=None) -> TranslatedSmartContract:
+    def generate_file_from_template(self, template_path: str, name: str, output_folder: str, extension=".sol",
+            additional_parametrs=None, reuse_additional_params_dit=True) -> TranslatedSmartContract:
         # Define the full path to the template file
         
         file_name_and_path = template_path + name + extension + ".jinja"
@@ -75,7 +76,11 @@ class Translator:
                 # Create a Jinja2 template object for each line
                 template = Template(line)
                 # Render the line with any dynamic content (e.g., Solidity version)
-                rendered_line = template.render(solidity_version=self.context.solidity_version)
+                template_data = {} if additional_parametrs is None else (\
+                    additional_parametrs if reuse_additional_params_dit else {**additional_parametrs}
+                )
+                template_data["solidity_version"] = self.context.solidity_version
+                rendered_line = template.render(**template_data)
                 # Append the rendered line to the list of rendered lines
                 rendered_lines.append(rendered_line)
         # Return a TranslatedSmartContract object with the list of rendered lines

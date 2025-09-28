@@ -29,7 +29,7 @@ class SolidityOptimizedTranslationContext(TranslationContext):
         
 
 class OptimizedSolidityTranslator(Translator):
-    def __init__(self, dao):
+    def __init__(self, dao: DAO):
         self.context = SolidityOptimizedTranslationContext(dao, solidity_version = "^0.8.0", daoOwner = True)
         self.group_size = self.context.dao.metadata.user_functionalities_group_size
         self.id_mask = self.recalculate_id_mask()
@@ -194,9 +194,8 @@ class OptimizedSolidityTranslator(Translator):
     def translate(self) -> list[TranslatedSmartContract]:
             #print("TRANSLATE() -- invocato")
             all_smart_contracts: list[TranslatedSmartContract] = [
-
+                self.translate_DAO_to_ASM(self.context.dao)
             ]
-
             # at first, translate all Committees
             ct = CommitteeTranslator(self.context)
             for c in self.context.dao.committees.values():
@@ -606,7 +605,49 @@ class OptimizedSolidityTranslator(Translator):
     def generate_closure(self):
         return "}"
 
-    
+
+    def translate_DAO_to_ASM(self, dao:DAO) -> TranslatedSmartContract:
+        asm_data = {}
+        template_path = os.path.join("Templates", "asm", "")
+        name = "DAOML"
+        output_folder = "ASM"
+        #
+        asm_data["roles"] = [
+            {
+                "name": r.role_name,
+                "permissions": [p.permission_id for p in r.permissions],
+                "controls": "",
+                "aggregation":""
+            }
+            for r in dao.roles.items()
+        ]
+        asm_data["committees"] = [
+            {
+                "name": c.role_name,
+                "permissions": [p.permission_id for p in c.permissions],
+                "controls": "",
+                "aggregation":""
+            }
+            for c in dao.committees.items()
+        ] 
+        asm_data["permissions"] = [
+            {
+                "name": p.permission_id,
+                "governanceArea": p.ref_gov_area
+            }
+            for p in dao.permissions.items()
+        ] 
+        asm_data["users"] = [] # no user pre-defined (apart from the Owner) at this stage of development
+        asm_data["custom_operations"] = [] # no custom operation defined at this stage of development
+        #
+        return super().generate_file_from_template(
+            template_path=template_path,
+            name=name,
+            name=output_folder,
+            extension = ".asm",
+            additional_parametrs=asm_data,
+            reuse_additional_params_dit=True
+        )
 
 class ConditionTranslator:
     def __init__(self, context: TranslationContext):

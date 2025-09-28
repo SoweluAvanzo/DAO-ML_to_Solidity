@@ -123,7 +123,12 @@ def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should
                     solidity_code = tsc.get_code_as_lines()
                     if solidity_code is not None:
                         try:
-                            filename = tsc.name + ".sol"
+                            ext = tsc.extension
+                            if ext is None:
+                                ext = ".sol"
+                            elif not ext.startswith('.'):
+                                ext = f".{ext}"
+                            filename = tsc.name + ext
                             full_path = f'{folder_path_with_subfolder}/{filename}'
 
                             with open(full_path, 'w') as f:
