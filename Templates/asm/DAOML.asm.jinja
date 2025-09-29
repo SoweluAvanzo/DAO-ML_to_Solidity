@@ -1,3 +1,7 @@
+asm DAOML
+
+{{"import ../lib/StandardLibrary"}}
+
 /*
 Complete Model : 
     The complete DAO-ML model, it implements : 
@@ -55,10 +59,6 @@ Complete Model :
     }
 */
 
-
-asm DAOML
-
-import ../lib/StandardLibrary
 
 signature : 
     abstract domain User
@@ -321,7 +321,7 @@ default init s0:
         
     function type ($e in Entity) =
         switch $e
-            {% if roles | length > committees | length%}
+            {% if (roles | length) > (committees | length) %}
                 {% for committee_data in committees %}
             case {{committee_data.name}} : COMMITTEE
                 {% endfor %}

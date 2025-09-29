@@ -608,7 +608,7 @@ class OptimizedSolidityTranslator(Translator):
 
     def translate_DAO_to_ASM(self, dao:DAO) -> TranslatedSmartContract:
         asm_data = {}
-        template_path = os.path.join("Templates", "asm", "")
+        template_path = os.path.join('.', "Templates", "asm", "")
         name = "DAOML"
         output_folder = "ASM"
         #
@@ -616,26 +616,26 @@ class OptimizedSolidityTranslator(Translator):
             {
                 "name": r.role_name,
                 "permissions": [p.permission_id for p in r.permissions],
-                "controls": "",
+                "controls": [],
                 "aggregation":""
             }
-            for r in dao.roles.items()
+            for r in dao.roles.values()
         ]
         asm_data["committees"] = [
             {
-                "name": c.role_name,
+                "name": c.committee_description,
                 "permissions": [p.permission_id for p in c.permissions],
-                "controls": "",
+                "controls": [],
                 "aggregation":""
             }
-            for c in dao.committees.items()
+            for c in dao.committees.values()
         ] 
         asm_data["permissions"] = [
             {
                 "name": p.permission_id,
                 "governanceArea": p.ref_gov_area
             }
-            for p in dao.permissions.items()
+            for p in dao.permissions.values()
         ] 
         asm_data["users"] = [] # no user pre-defined (apart from the Owner) at this stage of development
         asm_data["custom_operations"] = [] # no custom operation defined at this stage of development
@@ -643,7 +643,7 @@ class OptimizedSolidityTranslator(Translator):
         return super().generate_file_from_template(
             template_path=template_path,
             name=name,
-            name=output_folder,
+            output_folder=output_folder,
             extension = ".asm",
             additional_parametrs=asm_data,
             reuse_additional_params_dit=True

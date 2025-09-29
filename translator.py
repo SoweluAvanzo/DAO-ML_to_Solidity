@@ -65,6 +65,8 @@ class Translator:
         # Define the full path to the template file
         
         file_name_and_path = template_path + name + extension + ".jinja"
+
+        print(f"generating template from fullpath: {file_name_and_path}")
         
         # Initialize an empty list to store each rendered line
         rendered_lines = []
