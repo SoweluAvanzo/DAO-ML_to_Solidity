@@ -114,7 +114,6 @@ class DiagramManager:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
                         if content in dao.roles:
-                        
                             role.add_aggregated(dao.roles[content])
                         elif content in dao.committees:
                             role.add_aggregated(dao.committees[content])

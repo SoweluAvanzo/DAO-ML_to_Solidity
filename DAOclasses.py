@@ -10,13 +10,13 @@ class RelationType(Enum):
     FEDERATION = 4
 
 class BaseEntity:
-    def __init__(self, id):
-        self.id = id
-    def get_id(self):
-        return self.id
+    def get_id(self) -> str:
+        raise Exception("not implemented")
+    def get_name(self) -> str:
+        raise Exception("not implemented")
 
 #stores permission metadata
-class Permission: #(BaseEntity):
+class Permission(BaseEntity):
     def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None, voting_right = False, proposal_right = False):
         #super.__init__(self, permission_id)
         self.permission_id = permission_id
@@ -25,6 +25,10 @@ class Permission: #(BaseEntity):
         self.ref_gov_area = ref_gov_area
         self.voting_right = voting_right
         self.proposal_right = proposal_right
+    def get_id(self) -> str:
+        return self.permission_id
+    def get_name(self) -> str:
+        return self.permission_id
 
     def __str__(self):
         return f'Permission(permission_id={self.permission_id}, allowed_action={self.allowed_action}, permission_type={self.permission_type}, ref_gov_area={self.ref_gov_area})'
@@ -41,7 +45,7 @@ class Permission: #(BaseEntity):
 
 
 #stores role information with control relations and associated permissions
-class Role:
+class Role(BaseEntity):
     def __init__(self, role_id, role_name, role_assignment_method, n_agent_min, n_agent_max, agent_type):
         self.role_id = role_id
         self.role_name = role_name
@@ -57,7 +61,9 @@ class Role:
         
     def get_id(self):
         return self.role_id
-
+    def get_name(self) -> str:
+        return self.role_name
+ 
     def add_permission(self, permission: Permission):
         #print(f'Adding permission {str(permission)} to role {self.role_id}')
         self.permissions.append(permission)
@@ -117,7 +123,7 @@ class Role:
         }
 
 #stores committee information with control relations and permissions
-class Committee:
+class Committee(BaseEntity):
     #removed n_agent_min, n_agent_max
     def __init__(self, committee_id, committee_description, voting_condition, proposal_condition, decision_making_method):
         self.committee_id = committee_id
@@ -136,6 +142,8 @@ class Committee:
 
     def get_id(self):
         return self.committee_id
+    def get_name(self) -> str:
+        return self.committee_description
 
     def add_permission(self, permission):
         #print(f'Adding permission {str(permission)} to committee {self.committee_id}')

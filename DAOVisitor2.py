@@ -4,8 +4,10 @@ from antlr4 import *
 from antlr4.tree.Tree import TerminalNodeImpl
 if __name__ is not None and "." in __name__:
     from .XMLParserVisitor import XMLParserVisitor
+    from .XMLParser import XMLParser
 else:
     from XMLParserVisitor import XMLParserVisitor
+    from XMLParser import XMLParser
 from DAOclasses import*
 from DiagramManager import DiagramManager
 
@@ -98,6 +100,11 @@ class DAOVisitor2(XMLParserVisitor):
                 self.diagramManager.addRelation(self.current_dao, RelationType.FEDERATION, id, content)
         return self.visitChildren(ctx)
     
+    # Visit a parse tree produced by XMLParser#gov.
+    def visitGov(self, ctx:XMLParser.GovContext):
+        return self.visitChildren(ctx)
+
+
     def visitDao(self, ctx):
         dao_id = ctx.dao_id()[0].STRING().getText().strip('"')
         dao_name = ctx.dao_name()[0].STRING().getText().strip('"')
