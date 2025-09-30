@@ -2,71 +2,14 @@ asm DAOML
 
 {{"import ../lib/StandardLibrary"}}
 
-/*
-Complete Model : 
-    The complete DAO-ML model, it implements : 
-    - All the permissions
-    - All the roles/committees
-    - Actors
-    - Governance Areas
-
-    - Control relations
-    - Association Relation
-    - Aggregation Relation
-    - Into relation (associates permissions inside governance areas)
-    - Roles to Actors association
-    - Entity type (ROLE, COMMITTEE)
-
-    - Supported operations : (ASSIGNROLE, REVOKEROLE, GRANTPERM, REVOKEPERM)
-
-    The Permission and Control association inheritance is checked through recursive derived functions (Not supported by NuSMV)
-
-
-    TEMPLATE VARIABLES:
-
-    -) roles:
-    dict of {
-        "name": string,
-        "permissions": string[], // of names; maybe a set/map
-        "controls": string[], // of names of other Roles
-        "aggregation": string, // a Role name
-    }
-    -) Committees are kind of the same: {
-        "name": string,
-        "permissions": string[], // of names; maybe a set/map
-        "controls": string[], // of names of other Committees
-        "aggregation": string, // a Committee name
-    }
-
-    -) Permissions
-    dict {
-        "name": string,
-        "governanceArea": string // a name
-    }
-
-    -) Users
-    {
-        "name": string,
-        "address": string, //necessary?
-        "defaultRole": string
-    }
-
-    -) custom_operations:
-    {
-        "name": string,
-        "rule_invokation_name": string,
-        "parameters_list: string[]
-    }
-*/
-
 
 signature : 
     abstract domain User
     abstract domain Permission
     abstract domain Entity
     abstract domain GovernanceArea
-    enum domain EntityType = {ROLE, COMMITTEE}
-    enum domain Operation = {ASSIGNROLE, REVOKEROLE, GRANTPERM, REVOKEPERM{% if custom_operations is not None %}{% for c_o.name in custom_operations %}, {{c_o}}{% endfor %}{% endif %}}
+    enum domain EntityType = {{"{"}}ROLE, COMMITTEE{{"}"}}
+    enum domain Operation = {{"{"}}ASSIGNROLE, REVOKEROLE, GRANTPERM, REVOKEPERM{% if custom_operations is not none %}{% for c_o in custom_operations %}, {{c_o.name}}{% endfor %}{% endif %} {{"}"}}
 
 	
     controlled controls : Prod(Entity, Entity) -> Boolean
@@ -103,11 +46,12 @@ signature :
     static {{governanceArea_data.name}} : Entity
     {% endfor %}
     
-
     // Users
-    {% if user_data %}{% for user_data in users %}
+    {% if users %}
+        {% for user_data in users %}
     static {{user_data.name}} : Entity
-    {% endfor %}{% endif %}
+        {% endfor %}
+    {% endif %}
     static owner : User
 
     derived controlledBy : Prod(Entity, Entity) -> Boolean
@@ -123,7 +67,7 @@ signature :
 definitions : 
 
     function controlledBy ($e in Entity, $sender in Entity) =
-        if controls($sender, $e) then
+        if controls{{"("}}$sender, $e{{")"}} then
             true
         else
         	if isDef(aggregationRole($sender)) then
@@ -186,8 +130,6 @@ definitions :
     invariant over hasPermission : (not hasPermission(institutional_representative, update_duration_user_block)) and (not hasPermission(institutional_representative, update_number_council_partecipants))
 
 
-
-
     main rule r_Main = 
         if isDef(roles(sender)) then
             switch mOperation
@@ -195,15 +137,15 @@ definitions :
                 case REVOKEROLE : r_revokeRole[mUser, mEntity]
                 case GRANTPERM : r_grantPermission[mEntity, mPermission]
                 case REVOKEPERM : r_revokePermission[mEntity, mPermission]
-                {% if custom_operations is not None %}{% for c_o.name in custom_operations %}{% set loopParam = 0 %}
-                case {{c_o,name}} : r_{{c_o.rule_invokation_name}}[ {% for p in c_o.parameters_list %}{% loopParam > 0 %}, {% endif%}{{p}}{% set loopParam = loopParam + 1 %}{% endfor %} ]
-                {% endfor %}{% endif %}
+                {% if custom_operations is not none %}
+                    {% for c_o in custom_operations %}
+                case {{c_o.name}} : r_{{c_o.rule_invokation_name}}[ {% for p in c_o.parameters_list %} {% if loop.first %}, {% endif %} {{p}} {% endfor %} ]
+                    {% endfor %}
+                {% endif %}
             endswitch
         endif
 
         
-
-
 
 
 default init s0:
@@ -212,7 +154,7 @@ default init s0:
         switch $owner
             {% for committee_data in committees %}
             case {{committee_data.name}} :
-                {% if committee_data.controls | length > 0 %}
+                {% if (committee_data.controls | length) > 0 %}
                 switch $control
                     {% for controlled_by_committee in committee_data.controls %}
                     case {{controlled_by_committee}} : true
@@ -235,7 +177,7 @@ default init s0:
 
             {% for role_data in roles %}
             case {{role_data.name}} :
-                {% if role_data.controls | length > 0 %}
+                {% if (role_data.controls | length) > 0 %}
                 switch $control
                     {% for controlled_by_role in role_data.controls %}
                     case {{controlled_by_role}} : true
@@ -247,24 +189,36 @@ default init s0:
             otherwise false
         endswitch
 
-    function associate ($e in Entity, $p in Permission) = 
+    function associate($e in Entity, $p in Permission) = 
         switch $e
             {% for role_data in roles %}
-            {% if role_data.permissions | length > 0 %}
+                {% if (role_data.permissions | length) > 0 %}
             case {{role_data.name}} :
                 switch $p
-                {% for perm in role_data.permissions %}
+                    {% for perm in role_data.permissions %}
                     case {{perm}} : true
-                {% endfor %}
+                    {% endfor %}
                     otherwise false
                 endswitch
-            {% endif %}
+                {% endif %}
+            {% endfor %}
+            
+            {% for committee_data in committees %}
+                {% if (committee_data.permissions | length) > 0 %}
+            case {{committee_data.name}} :
+                switch $p
+                    {% for perm in committee_data.permissions %}
+                    case {{perm}} : true
+                    {% endfor %}
+                    otherwise false
+                endswitch
+                {% endif %}
             {% endfor %}
 
             case owner_role : 
                 switch $p
                 {% for perm in permissions %}
-                    case {{perm}} : true
+                    case {{perm.name}} : true
                 {% endfor %}
                     otherwise false
                 endswitch
@@ -274,24 +228,28 @@ default init s0:
 
     function aggregationRole ($e in Entity) =
 	    if type($e) = ROLE then
-            {% if roles | length > 0}
+            {% if (roles | length) > 0 %}
 	        switch $e
                 {% for role_data in roles %}
+                    {% if (role_data.aggregation | default('', true)) != '' %}
                 case {{role_data.name}} : {{role_data.aggregation}}
+                    {% endif %}
                 {% endfor %}
 	            otherwise undef
 	        endswitch
             {% else %}
             undef
             {% endif %}
-	     endif
+        endif
         
     function aggregationCommittee ($e in Entity) =
         if type($e) = COMMITTEE then
-            {% if committees | length > 0}
+            {% if (committees | length) > 0 %}
         	switch $e
                 {% for committee_data in committees %}
+                    {% if (committee_data.aggregation | default('', true)) != '' %}
                 case {{committee_data.name}} : {{committee_data.aggregation}}
+                    {% endif %}
                 {% endfor %}
 	            otherwise undef
 	        endswitch
@@ -301,7 +259,7 @@ default init s0:
        	endif
 
     function into ($p in Permission) = 
-        {% if permissions | length > 0}
+        {% if (permissions | length) > 0 %}
         switch $p
             {% for permission_data in permissions %}
             case {{permission_data.name}} : {{permission_data.governanceArea}}
@@ -315,7 +273,7 @@ default init s0:
         switch $u 
             case owner : owner_role
             {% for user_data in users %}
-            {% if user_data.name != "owner" %}case {{user_data.name}} : {{user_data.defaultRole}}{% endif %}
+                {% if user_data.name != "owner" %}case {{user_data.name}} : {{user_data.defaultRole}}{% endif %}
             {% endfor %}
         endswitch
         
@@ -331,7 +289,5 @@ default init s0:
             case {{role_data.name}} : ROLE
                 {% endfor %}
             otherwise COMMITTEE
-            {% else %}
-            undef
             {% endif %}
         endswitch

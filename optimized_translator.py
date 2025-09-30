@@ -199,6 +199,7 @@ class OptimizedSolidityTranslator(Translator):
             # at first, translate all Committees
             ct = CommitteeTranslator(self.context)
             for c in self.context.dao.committees.values():
+                print(f"\t translating committee: {c.committee_description}")
                 voting_permission_key = c.committee_id + "VotingRight"
                 proposal_permission_key = c.committee_id + "ProposalRight"
                 voting_permission_index = self.context.permission_to_index[voting_permission_key]
@@ -612,12 +613,25 @@ class OptimizedSolidityTranslator(Translator):
         name = "DAOML"
         output_folder = "ASM"
         #
+        controls_relation:dict[str, set[str]] = {} # reverse directio of "is_controlled_by"
+        entities_controllable:list[list[BaseEntity]] = [dao.roles.values(),  dao.committees.values()]
+        for entities in entities_controllable:
+            for e_slave in entities:
+                masters:list[str] = e_slave.controllers
+                for master_controller in masters:
+                    slaves_set:set[str] = None
+                    if master_controller in controls_relation:
+                        slaves_set = controls_relation[master_controller]
+                    else:
+                        slaves_set = set()
+                        controls_relation[master_controller] = slaves_set
+                    slaves_set.add(e_slave.get_id())
         asm_data["roles"] = [
             {
                 "name": r.role_name,
                 "permissions": [p.permission_id for p in r.permissions],
-                "controls": [],
-                "aggregation":""
+                "controls": list(controls_relation[r.get_id()]) if r.get_id() in controls_relation else [],
+                "aggregation": "" if len(r.aggregated) <= 0 else r.aggregated[0].get_name()
             }
             for r in dao.roles.values()
         ]
@@ -625,8 +639,8 @@ class OptimizedSolidityTranslator(Translator):
             {
                 "name": c.committee_description,
                 "permissions": [p.permission_id for p in c.permissions],
-                "controls": [],
-                "aggregation":""
+                "controls":  list(controls_relation[c.get_id()]) if c.get_id() in controls_relation else [],
+                "aggregation": "" if len(c.aggregated) <= 0 else c.aggregated[0].get_name()
             }
             for c in dao.committees.values()
         ] 
@@ -636,14 +650,15 @@ class OptimizedSolidityTranslator(Translator):
                 "governanceArea": p.ref_gov_area
             }
             for p in dao.permissions.values()
-        ] 
+        ]
+        asm_data["governanceAreas"] = [] # no governance area management defined at this stage of development
         asm_data["users"] = [] # no user pre-defined (apart from the Owner) at this stage of development
         asm_data["custom_operations"] = [] # no custom operation defined at this stage of development
         #
         return super().generate_file_from_template(
-            template_path=template_path,
-            name=name,
-            output_folder=output_folder,
+            template_path,
+            name,
+            output_folder,
             extension = ".asm",
             additional_parametrs=asm_data,
             reuse_additional_params_dit=True

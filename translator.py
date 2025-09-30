@@ -74,17 +74,19 @@ class Translator:
         # Open the template file and read it line by line
         with open(file_name_and_path, 'r', encoding='utf-8') as f:
             # For each line in the template, render it individually
-            for line in f:
-                # Create a Jinja2 template object for each line
-                template = Template(line)
-                # Render the line with any dynamic content (e.g., Solidity version)
-                template_data = {} if additional_parametrs is None else (\
-                    additional_parametrs if reuse_additional_params_dit else {**additional_parametrs}
-                )
-                template_data["solidity_version"] = self.context.solidity_version
-                rendered_line = template.render(**template_data)
-                # Append the rendered line to the list of rendered lines
-                rendered_lines.append(rendered_line)
+            #for line in f:
+            lines = "\n".join(f.readlines())
+            # Create a Jinja2 template object for each line
+            template = Template(lines)
+            # Render the line with any dynamic content (e.g., Solidity version)
+            template_data = {} if additional_parametrs is None else (\
+                additional_parametrs if reuse_additional_params_dit else {**additional_parametrs}
+            )
+            template_data["solidity_version"] = self.context.solidity_version
+            rendered_lines = template.render(**template_data)
+            if isinstance(rendered_lines, str):
+                rendered_lines = rendered_lines.split("\n")
+            # Append the rendered line to the list of rendered lines
         # Return a TranslatedSmartContract object with the list of rendered lines
         return TranslatedSmartContract(rendered_lines, name, folder=output_folder, extension=extension)
 
@@ -93,6 +95,7 @@ class CommitteeTranslator:
     def __init__(self, context: TranslationContext):
         self.context = context
         self.committee: Committee = None
+        self.voting_protocols_list:set=None
 
     def generate_smart_contract_header(self, title_comment = "") -> list[str]:
         lines:list[str] = []
@@ -103,17 +106,15 @@ class CommitteeTranslator:
         
         
     def get_voting_protocol_list(self):
-        directory_path = './Templates/voting_protocols'
+        if self.voting_protocols_list is not None:
+            return self.voting_protocols_list
+        directory_path = os.path.join('.', 'Templates', 'voting_protocols')
 
         # Get a list of all files and directories
         items = os.listdir(directory_path)
-        for item in items:
-            # Check if the item is a file
-            if os.path.isfile(item):
-
-                # Print the item name
-                print(item)
-        return items
+        self.voting_protocols_list = set([p for p in items if os.path.isfile(os.path.join(directory_path, p))])
+        return self.voting_protocols_list
+      
     
     def generate_voting_protocol_from_template(self, committee_name, decision_making_method_name, 
                                            state_var_declarations = " ", dao_name =" ", imports = " ", 
@@ -122,10 +123,10 @@ class CommitteeTranslator:
                                            proposal_requirement =" ", template_path : str="Templates/voting_protocols/", 
                                            name: str= "", output_folder: str ="", extension=".sol", custom=False) -> list[str]:
             # Define the full path to the template file
-            if custom == False:
-                file_name_and_path = template_path + decision_making_method_name + extension + ".jinja"
-            else:
+            if custom:
                 file_name_and_path = template_path + "custom_decision_making_template" + extension + ".jinja"
+            else:
+                file_name_and_path = template_path + decision_making_method_name + extension + ".jinja"
             
             # Initialize an empty list to store the rendered result
             rendered_lines = []
@@ -140,7 +141,8 @@ class CommitteeTranslator:
             # Render the template with all dynamic variables
             rendered_content = template.render(
                 contract_name=u.camel_case(committee_name), 
-                solidity_version=self.context.solidity_version,decision_making_method_name = decision_making_method_name,
+                solidity_version=self.context.solidity_version,
+                decision_making_method_name = "" if custom else  decision_making_method_name,
                 state_var_declarations=state_var_declarations,
                 dao_name=dao_name,
                 imports=imports,
@@ -172,7 +174,7 @@ class CommitteeTranslator:
 
 
 
-    def translateCommittee(self,committee: Committee, voting_permission_index=None, proposal_permission_index=None, decision_making_method=None,optimized=False ) -> TranslatedSmartContract:
+    def translateCommittee(self,committee: Committee, voting_permission_index=None, proposal_permission_index=None, optimized=False ) -> TranslatedSmartContract:
         self.committee = committee
         contract_name = committee.committee_description.replace(" ","_")
         decision_making_method = committee.decision_making_method
@@ -184,7 +186,6 @@ class CommitteeTranslator:
         state_var_declarations = "IPermissionManager public permissionManager;"
         constructor_actions= "permissionManager = IPermissionManager(_permissionManager); "
         inherited_contracts=""
-        name = committee.committee_description.replace(" ","_")
         constructor_parameters = ", address _permissionManager"
         imports=self.generate_import_statements()
         dao_name= self.context.dao.dao_name
@@ -192,10 +193,10 @@ class CommitteeTranslator:
             decision_making_method = "custom_decision_making_method"
         template_name = decision_making_method + ".sol.jinja"
         if template_name in self.get_voting_protocol_list():
-            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_description.replace(" ","_"), decision_making_method_name=decision_making_method, state_var_declarations= state_var_declarations,dao_name= dao_name,imports= imports, constructor_parameters= constructor_parameters, inherited_contracts=inherited_contracts, constructor_actions= constructor_actions,vote_requirement= vote_requirement, proposal_requirement=proposal_requirement, template_path=template_path, name= contract_name, output_folder="", extension=".sol"))
+            lines.extend(self.generate_voting_protocol_from_template(committee_name=contract_name, decision_making_method_name=decision_making_method, state_var_declarations= state_var_declarations,dao_name= dao_name,imports= imports, constructor_parameters= constructor_parameters, inherited_contracts=inherited_contracts, constructor_actions= constructor_actions,vote_requirement= vote_requirement, proposal_requirement=proposal_requirement, template_path=template_path, name= contract_name, output_folder="", extension=".sol"))
         else:
-            lines.extend(self.generate_voting_protocol_from_template(committee_name=committee.committee_description.replace(" ","_"), decision_making_method_name=committee.decision_making_method,dao_name= dao_name, template_path=template_path, name= contract_name, custom=True))
-        return TranslatedSmartContract(lines, name, testable=True)
+            lines.extend(self.generate_voting_protocol_from_template(committee_name=contract_name, decision_making_method_name=decision_making_method,dao_name= dao_name, template_path=template_path, name= contract_name, custom=True))
+        return TranslatedSmartContract(lines, contract_name, testable=True)
     
 
 class CommitteeTranslatorDiamond(CommitteeTranslator):

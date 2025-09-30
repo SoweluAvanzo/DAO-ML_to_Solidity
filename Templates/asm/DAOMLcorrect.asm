@@ -223,7 +223,7 @@ default init s0:
             otherwise false
         endswitch
 
-    function associate ($e in Entity, $p in Permission) = 
+    function associate($e in Entity, $p in Permission) = 
         switch $e
             case worker : 
                 false
