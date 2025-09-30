@@ -176,4 +176,6 @@ test/
 test/*
 sim/
 sim/*
+data/test/
+data/test*
 

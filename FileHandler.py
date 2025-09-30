@@ -139,7 +139,7 @@ def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should
                             print(f"Exception while writing the source code of {name}")
                             print(ex)
                             print("the solidity code:")
-                            for line in solidity_code:
+                            for line in translated_code:
                                 if isinstance(line, str):
                                     print(line)
                                 else:
