@@ -639,14 +639,14 @@ class OptimizedSolidityTranslator(Translator):
             {
                 "name": c.committee_description,
                 "permissions": [p.permission_id for p in c.permissions],
-                "controls":  list(controls_relation[c.get_id()]) if c.get_id() in controls_relation else [],
+                "controls":  list(controls_relation[c.committee_description()]) if c.committee_description() in controls_relation else [],
                 "aggregation": "" if len(c.aggregated) <= 0 else c.aggregated[0].get_name()
             }
             for c in dao.committees.values()
         ] 
         asm_data["permissions"] = [
             {
-                "name": p.permission_id,
+                "name": p.allowed_action.replace(" ","_").lower(),
                 "governanceArea": p.ref_gov_area
             }
             for p in dao.permissions.values()
