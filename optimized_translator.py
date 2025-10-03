@@ -628,26 +628,26 @@ class OptimizedSolidityTranslator(Translator):
                     slaves_set.add(e_slave.get_id())
         asm_data["roles"] = [
             {
-                "name": r.role_name,
-                "permissions": [p.permission_id for p in r.permissions],
-                "controls": list(controls_relation[r.get_id()]) if r.get_id() in controls_relation else [],
-                "aggregation": "" if len(r.aggregated) <= 0 else r.aggregated[0].get_name()
+                "name": r.get_name().replace(" ", "_").lower(),
+                "permissions": [p.allowed_action.replace(" ", "_").lower() for p in r.permissions],
+                "controls": list(controls_relation[r.get_name().replace(" ", "_").lower()]) if r.get_name().replace(" ", "_").lower() in controls_relation else [],
+                "aggregation": "" if len(r.aggregated) <= 0 else r.aggregated[0].get_name().replace(" ", "_").lower() 
             }
             for r in dao.roles.values()
         ]
         asm_data["committees"] = [
             {
-                "name": c.committee_description,
-                "permissions": [p.permission_id for p in c.permissions],
-                "controls":  list(controls_relation[c.committee_description()]) if c.committee_description() in controls_relation else [],
-                "aggregation": "" if len(c.aggregated) <= 0 else c.aggregated[0].get_name()
+                "name": c.get_name().replace(" ", "_").lower(),
+                "permissions": [p.allowed_action.replace(" ", "_").lower() for p in c.permissions],
+                "controls":  list(controls_relation[c.get_name().replace(" ", "_").lower()]) if c.get_name().replace(" ", "_").lower() in controls_relation else [],
+                "aggregation": "" if len(c.aggregated) <= 0 else c.aggregated[0].get_name().replace(" ", "_").lower()
             }
             for c in dao.committees.values()
         ] 
         asm_data["permissions"] = [
             {
                 "name": p.allowed_action.replace(" ","_").lower(),
-                "governanceArea": p.ref_gov_area
+            #    "governanceArea": if p.ref_gov_area in dao.governance_areas
             }
             for p in dao.permissions.values()
         ]

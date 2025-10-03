@@ -35,17 +35,15 @@ signature :
     {% for committee_data in committees %}
     static {{committee_data.name}} : Entity
     {% endfor %}
-
     // Permissions
     {% for permission_data in permissions %}
     static {{permission_data.name}} : Entity
-    {% endfor %}    
+    {% endfor %}   
 
     // Governance Areas
     {% for governanceArea_data in governanceAreas %}
     static {{governanceArea_data.name}} : Entity
     {% endfor %}
-    
     // Users
     {% if users %}
         {% for user_data in users %}
@@ -53,7 +51,6 @@ signature :
         {% endfor %}
     {% endif %}
     static owner : User
-
     derived controlledBy : Prod(Entity, Entity) -> Boolean
     derived hasPermission : Prod(Entity, Permission) -> Boolean
 
@@ -257,7 +254,7 @@ default init s0:
             undef
             {% endif %}
        	endif
-
+{# 
     function into ($p in Permission) = 
         {% if (permissions | length) > 0 %}
         switch $p
@@ -268,7 +265,7 @@ default init s0:
         {% else %}
         undef
         {% endif %}
-
+         #}
     function roles ($u in User) = 
         switch $u 
             case owner : owner_role
