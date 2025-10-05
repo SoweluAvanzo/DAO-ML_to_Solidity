@@ -23,6 +23,7 @@ mode INSIDE;
 
 //
 DIAGRAM: 'DAO-ML_diagram';
+DIAGRAMUNIQUEID : 'uniqueID';
 DAO: 'DAO';
 ROLE: 'Role';
 COMMITTEE: 'Committee';
@@ -44,6 +45,9 @@ ROLENAME : 'role_name';
 ROLEASSIGNMENTMETHOD : 'role_assignment_method';
 COMMITTEEID : 'committee_ID';
 COMMITTEEDESCRIPTION : 'committee_description';
+GOVAREAID : 'gov_area_ID';
+GOVAREADESCRIPTION : 'gov_area_description';
+IMPLEMENTATION : 'implementation';
 NAGENTMIN : 'n_agent_min';
 NAGENTMAX : 'n_agent_max';
 DMMETHOD : 'decision_making_method';

@@ -206,6 +206,30 @@ signature :
 
     
 
+    static task_execution : Entity
+
+    
+
+    static dispute_resolution : Entity
+
+    
+
+    static ddmo_restructuring : Entity
+
+    
+
+    static destination_data_management : Entity
+
+    
+
+    static council_governance : Entity
+
+    
+
+    static ddmo_membership : Entity
+
+    
+
     // Users
 
     
@@ -1393,6 +1417,104 @@ default init s0:
             
 
        	endif
+
+
+
+    function into ($p in Permission) = 
+
+        
+
+        switch $p
+
+            
+
+            case supply_service : task_execution
+
+            
+
+            case propose_task_delegation : task_execution
+
+            
+
+            case execute_task : task_execution
+
+            
+
+            case share_task : task_execution
+
+            
+
+            case report_task_unaccomplishment : dispute_resolution
+
+            
+
+            case block_user : dispute_resolution
+
+            
+
+            case trigger_dispute_resolution : dispute_resolution
+
+            
+
+            case oversee_dispute : dispute_resolution
+
+            
+
+            case approve_kyb : dispute_resolution
+
+            
+
+            case resolve_dispute : dispute_resolution
+
+            
+
+            case suspend_ddmo : ddmo_restructuring
+
+            
+
+            case liquidate_ddmo : ddmo_restructuring
+
+            
+
+            case merge_ddmo : ddmo_restructuring
+
+            
+
+            case access_data : destination_data_management
+
+            
+
+            case update_destination_portal : destination_data_management
+
+            
+
+            case approve_ai_recommendations : destination_data_management
+
+            
+
+            case update_duration_of_user_block : council_governance
+
+            
+
+            case update_number_of_council_participants : council_governance
+
+            
+
+            case request_ddmo_change : ddmo_membership
+
+            
+
+            case ddmo_council_voting_right : None
+
+            
+
+            case ddmo_council_proposal_right : None
+
+            
+
+        endswitch
+
+        
 
 
 

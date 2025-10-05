@@ -1612,6 +1612,132 @@ default init s0:
 
 
 
+    function into ($p in Permission) = 
+
+        
+
+        switch $p
+
+            
+
+            case modify_salary_distribution_policy : None
+
+            
+
+            case upgrade_platform_feature : None
+
+            
+
+            case transfer_tokens : None
+
+            
+
+            case approve_project_budget : None
+
+            
+
+            case cut_project_funding : None
+
+            
+
+            case modify_salary_distribution_policy : None
+
+            
+
+            case supply_service : None
+
+            
+
+            case execute_task : None
+
+            
+
+            case assign_task : None
+
+            
+
+            case post_event : None
+
+            
+
+            case verify_institutional_profile : None
+
+            
+
+            case appoint_destination_committee : None
+
+            
+
+            case create_new_ddmo : None
+
+            
+
+            case propose_campaign_budget : None
+
+            
+
+            case veto_proposal : None
+
+            
+
+            case apply_for_governance_role : None
+
+            
+
+            case activate_role_delegation : None
+
+            
+
+            case request_task_delegation : None
+
+            
+
+            case dao_council_voting_right : None
+
+            
+
+            case dao_council_proposal_right : None
+
+            
+
+            case marketing_board_voting_right : None
+
+            
+
+            case marketing_board_proposal_right : None
+
+            
+
+            case financial_board_voting_right : None
+
+            
+
+            case financial_board_proposal_right : None
+
+            
+
+            case travelware_board_voting_right : None
+
+            
+
+            case travelware_board_proposal_right : None
+
+            
+
+            case development_board_voting_right : None
+
+            
+
+            case development_board_proposal_right : None
+
+            
+
+        endswitch
+
+        
+
+
+
     function roles ($u in User) = 
 
         switch $u 

@@ -60,11 +60,11 @@ class Translator:
     def translate(self) -> list[TranslatedSmartContract]:
         pass
 
-    def generate_file_from_template(self, template_path: str, name: str, output_folder: str, extension=".sol",
-            additional_parametrs=None, reuse_additional_params_dit=True) -> TranslatedSmartContract:
+    def generate_file_from_template(self, template_path: str, name_template: str, output_folder: str, extension=".sol",
+            name_output:str=None, additional_parametrs=None, reuse_additional_params_dit=True) -> TranslatedSmartContract:
         # Define the full path to the template file
         
-        file_name_and_path = template_path + name + extension + ".jinja"
+        file_name_and_path = template_path + name_template + extension + ".jinja"
 
         print(f"generating template from fullpath: {file_name_and_path}")
         
@@ -88,7 +88,7 @@ class Translator:
                 rendered_lines = rendered_lines.split("\n")
             # Append the rendered line to the list of rendered lines
         # Return a TranslatedSmartContract object with the list of rendered lines
-        return TranslatedSmartContract(rendered_lines, name, folder=output_folder, extension=extension)
+        return TranslatedSmartContract(rendered_lines, name if name_output is None else name_output, folder=output_folder, extension=extension)
 
 
 class CommitteeTranslator:

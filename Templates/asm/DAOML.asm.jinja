@@ -41,8 +41,8 @@ signature :
     {% endfor %}   
 
     // Governance Areas
-    {% for governanceArea_data in governanceAreas %}
-    static {{governanceArea_data.name}} : Entity
+    {% for governanceArea_name in governanceAreas %}
+    static {{governanceArea_name}} : Entity
     {% endfor %}
     // Users
     {% if users %}
@@ -254,7 +254,7 @@ default init s0:
             undef
             {% endif %}
        	endif
-{# 
+
     function into ($p in Permission) = 
         {% if (permissions | length) > 0 %}
         switch $p
@@ -265,7 +265,7 @@ default init s0:
         {% else %}
         undef
         {% endif %}
-         #}
+
     function roles ($u in User) = 
         switch $u 
             case owner : owner_role

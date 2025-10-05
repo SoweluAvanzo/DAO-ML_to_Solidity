@@ -1,4 +1,4 @@
-# Generated from XMLParser.g4 by ANTLR 4.13.0
+# Generated from ./XMLParser.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .XMLParser import XMLParser
@@ -104,6 +104,11 @@ class XMLParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by XMLParser#diagram_uniqueID.
+    def visitDiagram_uniqueID(self, ctx:XMLParser.Diagram_uniqueIDContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by XMLParser#dao_id.
     def visitDao_id(self, ctx:XMLParser.Dao_idContext):
         return self.visitChildren(ctx)
@@ -206,6 +211,21 @@ class XMLParserVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLParser#ref_gov_area.
     def visitRef_gov_area(self, ctx:XMLParser.Ref_gov_areaContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#gov_area_ID.
+    def visitGov_area_ID(self, ctx:XMLParser.Gov_area_IDContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#gov_area_description.
+    def visitGov_area_description(self, ctx:XMLParser.Gov_area_descriptionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by XMLParser#gov_area_implementation.
+    def visitGov_area_implementation(self, ctx:XMLParser.Gov_area_implementationContext):
         return self.visitChildren(ctx)
 
 
