@@ -24,8 +24,7 @@ else:
     from XMLParser import XMLParser
 
 def check_and_make_folder(folder_path):
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+    os.makedirs(folder_path, exist_ok=True)
 
 def get_base_folder(folder_base):
     return folder_base if folder_base != None else os.getcwd()
@@ -101,7 +100,7 @@ def translate_SCs(xml_file, translation_logic, should_generate_tests):
         print("Error", f"An error occurred: {e}")
         
 
-def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should_generate_tests):
+def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should_generate_tests=False):
         for translation_data in contracts_to_write:
             folder_name = translation_data.folder_name
             name = translation_data.contract_name
@@ -112,20 +111,25 @@ def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should
             translated_smart_contracts = translator.translate()
             
             for tsc in translated_smart_contracts:
-                if tsc is not None and tsc.testable:
+                if tsc is not None: # and tsc.testable:
                     if tsc.folder is not None:
                         folder_path_with_subfolder = f'{folder_path}/{tsc.folder}'
                         check_and_make_folder(folder_path_with_subfolder)
                     else:
                         folder_path_with_subfolder = folder_path
-                    solidity_code = tsc.get_code_as_lines()
-                    if solidity_code is not None:
+                    translated_code = tsc.get_code_as_lines()
+                    if translated_code is not None:
                         try:
-                            filename = tsc.name + ".sol"
+                            ext = tsc.extension
+                            if ext is None:
+                                ext = ".sol"
+                            elif not ext.startswith('.'):
+                                ext = f".{ext}"
+                            filename = tsc.name + ext
                             full_path = f'{folder_path_with_subfolder}/{filename}'
-
+                            print(f"outputting translated smart contract to: {full_path}")
                             with open(full_path, 'w') as f:
-                                for line in solidity_code:
+                                for line in translated_code:
                                     f.write(line)
                                     f.write('\n')
                                     f.flush()
@@ -133,7 +137,7 @@ def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should
                             print(f"Exception while writing the source code of {name}")
                             print(ex)
                             print("the solidity code:")
-                            for line in solidity_code:
+                            for line in translated_code:
                                 if isinstance(line, str):
                                     print(line)
                                 else:
@@ -150,7 +154,9 @@ def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should
                             for t in all_translated_smart_contract__tests:
                                 try:
                                     check_and_make_folder(t.folder)
-                                    with open( f"{t.folder}/{t.name}{t.extension}", "w") as f:
+                                    output_file_path = f"{t.folder}/{t.name}{t.extension}"
+                                    print(f"outputting test to: {output_file_path}")
+                                    with open(output_file_path, "w") as f:
                                         for line in t.lines_of_code:
                                             f.write(line)
                                             f.write('\n')

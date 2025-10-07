@@ -22,7 +22,7 @@ element
     ;
 
 
-diagram: OPEN DIAGRAM misc* (attribute+ unique_id)? attribute* misc* CLOSE chardata? ((dao | reference | comments_and_stuff | attribute) misc* chardata?)* OPEN SLASH DIAGRAM CLOSE
+diagram: OPEN DIAGRAM misc* ((diagram_uniqueID | attribute)+ misc*)* CLOSE chardata? ((dao | reference | comments_and_stuff | attribute) misc* chardata?)* OPEN SLASH DIAGRAM CLOSE
     ;
 
 dao
@@ -42,7 +42,7 @@ permission
     ;
 
 gov
-    : OPEN GOV set_of_attributes SLASH_CLOSE
+    : OPEN GOV misc* ((gov_area_ID | gov_area_description | comments_and_stuff | gov_area_implementation | attribute) misc* )*  SLASH_CLOSE
     ;
 
 daocontent
@@ -73,6 +73,9 @@ reference
 comments_and_stuff : CDATA | PI | COMMENT;
 set_of_attributes : misc* ((comments_and_stuff | attribute) misc* )* ;
 
+// Diagram attributes
+diagram_uniqueID : DIAGRAMUNIQUEID EQUALS STRING ;
+
 // DAO attributes
 dao_id : DAOID EQUALS STRING ;
 dao_name : DAONAME EQUALS STRING ;
@@ -100,7 +103,12 @@ federation_level : FEDERATIONLEVEL EQUALS STRING;
 permission_id : PERMISSIONID EQUALS STRING ;
 allowed_action : ALLOWEDACTION EQUALS STRING ;
 permission_type: PERMISSIONTYPE EQUALS STRING;
-ref_gov_area : REF_GOV_AREA EQUALS STRING; 
+ref_gov_area : REF_GOV_AREA EQUALS STRING;
+
+// Governance Area attributes
+gov_area_ID : GOVAREAID EQUALS STRING ;
+gov_area_description : GOVAREADESCRIPTION EQUALS STRING ;
+gov_area_implementation : IMPLEMENTATION EQUALS STRING ;
 
 //generic attribute definition
 attribute

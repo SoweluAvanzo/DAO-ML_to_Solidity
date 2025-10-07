@@ -1,0 +1,58 @@
+
+/*
+Complete Model : 
+    The complete DAO-ML model, it implements : 
+    - All the permissions
+    - All the roles/committees
+    - Actors
+    - Governance Areas
+
+    - Control relations
+    - Association Relation
+    - Aggregation Relation
+    - Into relation (associates permissions inside governance areas)
+    - Roles to Actors association
+    - Entity type (ROLE, COMMITTEE)
+
+    - Supported operations : (ASSIGNROLE, REVOKEROLE, GRANTPERM, REVOKEPERM)
+
+    The Permission and Control association inheritance is checked through recursive derived functions (Not supported by NuSMV)
+
+
+    TEMPLATE VARIABLES:
+
+    -) roles:
+    dict of {
+        "name": string,
+        "permissions": string[], // of names; maybe a set/map
+        "controls": string[], // of names of other Roles
+        "aggregation": string, // a Role name
+    }
+    -) Committees are kind of the same: {
+        "name": string,
+        "permissions": string[], // of names; maybe a set/map
+        "controls": string[], // of names of other Committees
+        "aggregation": string, // a Committee name
+    }
+
+    -) Permissions
+    dict {
+        "name": string,
+        "governanceArea": string // a name
+    }
+
+    -) Users
+    {
+        "name": string,
+        "address": string, //necessary?
+        "defaultRole": string
+    }
+
+    -) custom_operations:
+    {
+        "name": string,
+        "rule_invokation_name": string,
+        "parameters_list: string[]
+    }
+*/
+

@@ -226,12 +226,13 @@ class XMLParser ( Parser ):
 
     literalNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                      "<INVALID>", "<INVALID>", "<INVALID>", "'<'", "<INVALID>", 
-                     "<INVALID>", "'DAO-ML_diagram'", "'DAO'", "'Role'", 
-                     "'Committee'", "'Permission'", "'GovernanceArea'", 
+                     "<INVALID>", "'DAO-ML_diagram'", "'uniqueID'", "'DAO'", 
+                     "'Role'", "'Committee'", "'Permission'", "'GovernanceArea'", 
                      "'associated_to'", "'is_controlled_by'", "'aggregates'", 
                      "'federates_into'", "'DAO_ID'", "'DAO_name'", "'mission_statement'", 
                      "'hierarchical_inheritance'", "'role_ID'", "'role_name'", 
                      "'role_assignment_method'", "'committee_ID'", "'committee_description'", 
+                     "'gov_area_ID'", "'gov_area_description'", "'implementation'", 
                      "'n_agent_min'", "'n_agent_max'", "'decision_making_method'", 
                      "'voting_condition'", "'proposal_condition'", "'permission_ID'", 
                      "'ref_gov_area'", "'allowed_action'", "'agent_type'", 
@@ -241,12 +242,13 @@ class XMLParser ( Parser ):
 
     symbolicNames = [ "<INVALID>", "COMMENT", "CDATA", "DTD", "EntityRef", 
                       "CharRef", "SEA_WS", "OPEN", "XMLDeclOpen", "TEXT", 
-                      "DIAGRAM", "DAO", "ROLE", "COMMITTEE", "PERMISSION", 
-                      "GOV", "ASSOCIATION", "CONTROL", "AGGREGATES", "FEDERATES", 
-                      "DAOID", "DAONAME", "MISSIONSTATEMENT", "HIERARCHICALINHERITANCE", 
-                      "ROLEID", "ROLENAME", "ROLEASSIGNMENTMETHOD", "COMMITTEEID", 
-                      "COMMITTEEDESCRIPTION", "NAGENTMIN", "NAGENTMAX", 
-                      "DMMETHOD", "VOTINGCONDITION", "PROPOSALCONDITION", 
+                      "DIAGRAM", "DIAGRAMUNIQUEID", "DAO", "ROLE", "COMMITTEE", 
+                      "PERMISSION", "GOV", "ASSOCIATION", "CONTROL", "AGGREGATES", 
+                      "FEDERATES", "DAOID", "DAONAME", "MISSIONSTATEMENT", 
+                      "HIERARCHICALINHERITANCE", "ROLEID", "ROLENAME", "ROLEASSIGNMENTMETHOD", 
+                      "COMMITTEEID", "COMMITTEEDESCRIPTION", "GOVAREAID", 
+                      "GOVAREADESCRIPTION", "IMPLEMENTATION", "NAGENTMIN", 
+                      "NAGENTMAX", "DMMETHOD", "VOTINGCONDITION", "PROPOSALCONDITION", 
                       "PERMISSIONID", "REF_GOV_AREA", "ALLOWEDACTION", "AGENTTYPE", 
                       "PERMISSIONTYPE", "FEDERATIONLEVEL", "AGGREGATIONLEVEL", 
                       "CLOSE", "SPECIAL_CLOSE", "SLASH_CLOSE", "SLASH", 
@@ -856,6 +858,20 @@ class XMLParser ( Parser ):
                 return self.getTypedRuleContexts(XMLParser.Comments_and_stuffContext)
             else:
                 return self.getTypedRuleContext(XMLParser.Comments_and_stuffContext,i)
+
+
+        def attribute(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.AttributeContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.AttributeContext,i)
+
+
+        def diagram_uniqueID(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.Diagram_uniqueIDContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.Diagram_uniqueIDContext,i)
 
 
         def getRuleIndex(self):
@@ -1853,12 +1869,50 @@ class XMLParser ( Parser ):
         def GOV(self):
             return self.getToken(XMLParser.GOV, 0)
 
-        def set_of_attributes(self):
-            return self.getTypedRuleContext(XMLParser.Set_of_attributesContext,0)
-
-
         def SLASH_CLOSE(self):
             return self.getToken(XMLParser.SLASH_CLOSE, 0)
+
+        def misc(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.MiscContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.MiscContext,i)
+
+
+        def gov_area_ID(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.Gov_area_IDContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.Gov_area_IDContext,i)
+
+
+        def gov_area_description(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.Gov_area_descriptionContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.Gov_area_descriptionContext,i)
+
+
+        def comments_and_stuff(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.Comments_and_stuffContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.Comments_and_stuffContext,i)
+
+
+        def gov_area_implementation(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.Gov_area_implementationContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.Gov_area_implementationContext,i)
+
+
+        def attribute(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(XMLParser.AttributeContext)
+            else:
+                return self.getTypedRuleContext(XMLParser.AttributeContext,i)
+
 
         def getRuleIndex(self):
             return XMLParser.RULE_gov
@@ -1884,6 +1938,7 @@ class XMLParser ( Parser ):
 
         localctx = XMLParser.GovContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_gov)
+        self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 353
@@ -2771,6 +2826,63 @@ class XMLParser ( Parser ):
         return localctx
 
 
+    class Diagram_uniqueIDContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def DIAGRAMUNIQUEID(self):
+            return self.getToken(XMLParser.DIAGRAMUNIQUEID, 0)
+
+        def EQUALS(self):
+            return self.getToken(XMLParser.EQUALS, 0)
+
+        def STRING(self):
+            return self.getToken(XMLParser.STRING, 0)
+
+        def getRuleIndex(self):
+            return XMLParser.RULE_diagram_uniqueID
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterDiagram_uniqueID" ):
+                listener.enterDiagram_uniqueID(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitDiagram_uniqueID" ):
+                listener.exitDiagram_uniqueID(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitDiagram_uniqueID" ):
+                return visitor.visitDiagram_uniqueID(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def diagram_uniqueID(self):
+
+        localctx = XMLParser.Diagram_uniqueIDContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 38, self.RULE_diagram_uniqueID)
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 485
+            self.match(XMLParser.DIAGRAMUNIQUEID)
+            self.state = 486
+            self.match(XMLParser.EQUALS)
+            self.state = 487
+            self.match(XMLParser.STRING)
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
     class Dao_idContext(ParserRuleContext):
         __slots__ = 'parser'
 
@@ -2810,7 +2922,7 @@ class XMLParser ( Parser ):
     def dao_id(self):
 
         localctx = XMLParser.Dao_idContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 38, self.RULE_dao_id)
+        self.enterRule(localctx, 40, self.RULE_dao_id)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 460
@@ -2867,7 +2979,7 @@ class XMLParser ( Parser ):
     def dao_name(self):
 
         localctx = XMLParser.Dao_nameContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 40, self.RULE_dao_name)
+        self.enterRule(localctx, 42, self.RULE_dao_name)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 464
@@ -2924,7 +3036,7 @@ class XMLParser ( Parser ):
     def mission_statement(self):
 
         localctx = XMLParser.Mission_statementContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 42, self.RULE_mission_statement)
+        self.enterRule(localctx, 44, self.RULE_mission_statement)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 468
@@ -2981,7 +3093,7 @@ class XMLParser ( Parser ):
     def hierarchical_inheritance(self):
 
         localctx = XMLParser.Hierarchical_inheritanceContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 44, self.RULE_hierarchical_inheritance)
+        self.enterRule(localctx, 46, self.RULE_hierarchical_inheritance)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 472
@@ -3038,7 +3150,7 @@ class XMLParser ( Parser ):
     def role_id(self):
 
         localctx = XMLParser.Role_idContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 46, self.RULE_role_id)
+        self.enterRule(localctx, 48, self.RULE_role_id)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 476
@@ -3095,7 +3207,7 @@ class XMLParser ( Parser ):
     def role_name(self):
 
         localctx = XMLParser.Role_nameContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 48, self.RULE_role_name)
+        self.enterRule(localctx, 50, self.RULE_role_name)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 480
@@ -3152,7 +3264,7 @@ class XMLParser ( Parser ):
     def role_assignment_method(self):
 
         localctx = XMLParser.Role_assignment_methodContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 50, self.RULE_role_assignment_method)
+        self.enterRule(localctx, 52, self.RULE_role_assignment_method)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 484
@@ -3209,7 +3321,7 @@ class XMLParser ( Parser ):
     def n_agent_min(self):
 
         localctx = XMLParser.N_agent_minContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 52, self.RULE_n_agent_min)
+        self.enterRule(localctx, 54, self.RULE_n_agent_min)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 488
@@ -3266,7 +3378,7 @@ class XMLParser ( Parser ):
     def n_agent_max(self):
 
         localctx = XMLParser.N_agent_maxContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 54, self.RULE_n_agent_max)
+        self.enterRule(localctx, 56, self.RULE_n_agent_max)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 492
@@ -3323,7 +3435,7 @@ class XMLParser ( Parser ):
     def agent_type(self):
 
         localctx = XMLParser.Agent_typeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 56, self.RULE_agent_type)
+        self.enterRule(localctx, 58, self.RULE_agent_type)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 496
@@ -3380,7 +3492,7 @@ class XMLParser ( Parser ):
     def committee_id(self):
 
         localctx = XMLParser.Committee_idContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 58, self.RULE_committee_id)
+        self.enterRule(localctx, 60, self.RULE_committee_id)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 500
@@ -3437,7 +3549,7 @@ class XMLParser ( Parser ):
     def committee_description(self):
 
         localctx = XMLParser.Committee_descriptionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 60, self.RULE_committee_description)
+        self.enterRule(localctx, 62, self.RULE_committee_description)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 504
@@ -3494,7 +3606,7 @@ class XMLParser ( Parser ):
     def voting_condition(self):
 
         localctx = XMLParser.Voting_conditionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 62, self.RULE_voting_condition)
+        self.enterRule(localctx, 64, self.RULE_voting_condition)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 508
@@ -3551,7 +3663,7 @@ class XMLParser ( Parser ):
     def proposal_condition(self):
 
         localctx = XMLParser.Proposal_conditionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 64, self.RULE_proposal_condition)
+        self.enterRule(localctx, 66, self.RULE_proposal_condition)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 512
@@ -3608,7 +3720,7 @@ class XMLParser ( Parser ):
     def decision_making_method(self):
 
         localctx = XMLParser.Decision_making_methodContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 66, self.RULE_decision_making_method)
+        self.enterRule(localctx, 68, self.RULE_decision_making_method)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 516
@@ -3665,7 +3777,7 @@ class XMLParser ( Parser ):
     def aggregation_level(self):
 
         localctx = XMLParser.Aggregation_levelContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 68, self.RULE_aggregation_level)
+        self.enterRule(localctx, 70, self.RULE_aggregation_level)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 520
@@ -3722,7 +3834,7 @@ class XMLParser ( Parser ):
     def federation_level(self):
 
         localctx = XMLParser.Federation_levelContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 70, self.RULE_federation_level)
+        self.enterRule(localctx, 72, self.RULE_federation_level)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 524
@@ -3779,7 +3891,7 @@ class XMLParser ( Parser ):
     def permission_id(self):
 
         localctx = XMLParser.Permission_idContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 72, self.RULE_permission_id)
+        self.enterRule(localctx, 74, self.RULE_permission_id)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 528
@@ -3836,7 +3948,7 @@ class XMLParser ( Parser ):
     def allowed_action(self):
 
         localctx = XMLParser.Allowed_actionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 74, self.RULE_allowed_action)
+        self.enterRule(localctx, 76, self.RULE_allowed_action)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 532
@@ -3893,7 +4005,7 @@ class XMLParser ( Parser ):
     def permission_type(self):
 
         localctx = XMLParser.Permission_typeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 76, self.RULE_permission_type)
+        self.enterRule(localctx, 78, self.RULE_permission_type)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 536
@@ -3950,7 +4062,7 @@ class XMLParser ( Parser ):
     def ref_gov_area(self):
 
         localctx = XMLParser.Ref_gov_areaContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 78, self.RULE_ref_gov_area)
+        self.enterRule(localctx, 80, self.RULE_ref_gov_area)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 540
@@ -4007,7 +4119,7 @@ class XMLParser ( Parser ):
     def attribute(self):
 
         localctx = XMLParser.AttributeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 80, self.RULE_attribute)
+        self.enterRule(localctx, 88, self.RULE_attribute)
         try:
             self.enterOuterAlt(localctx, 1)
             self.state = 544

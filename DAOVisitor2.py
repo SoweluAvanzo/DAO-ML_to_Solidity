@@ -4,14 +4,17 @@ from antlr4 import *
 from antlr4.tree.Tree import TerminalNodeImpl
 if __name__ is not None and "." in __name__:
     from .XMLParserVisitor import XMLParserVisitor
+    from .XMLParser import XMLParser
 else:
     from XMLParserVisitor import XMLParserVisitor
+    from XMLParser import XMLParser
 from DAOclasses import*
 from DiagramManager import DiagramManager
 
 
 class DAOVisitor2(XMLParserVisitor):
     def __init__(self):
+        print("DAOVisitor2 instantiated")
         self.current_dao = None
         self.translation_results = []
         self.diagramManager = None
@@ -25,6 +28,15 @@ class DAOVisitor2(XMLParserVisitor):
         # ... then, process and "link" all the raw data
         diagramManager.processRawInstances()
         self.diagramManager = None # just to clean the memory
+
+        
+
+    # Visit a parse tree produced by XMLParser#diagram.
+    def visitDiagram(self, ctx:XMLParser.DiagramContext):
+        uniqueID = ctx.diagram_uniqueID()[0].STRING().getText().strip('"')
+        print(f"Diagram uniqueID: {uniqueID}")
+        return self.visitChildren(ctx)
+    
 
     def visitRole(self, ctx):
         role_id = ctx.role_id()[0].STRING().getText().strip('"')
@@ -56,6 +68,15 @@ class DAOVisitor2(XMLParserVisitor):
         permission = Permission(permission_id, allowed_action, permission_type, ref_gov_area)
         self.diagramManager.addPermission(self.current_dao, permission)
         return self.visitChildren(ctx)
+    
+    def visitGov(self, ctx:XMLParser.GovContext):
+        gov_area_ID = ctx.gov_area_ID()[0].STRING().getText().strip('"')
+        gov_area_description = ctx.gov_area_description()[0].STRING().getText().strip('"')
+        gov_area_implementation = ctx.gov_area_implementation()[0].STRING().getText().strip('"')
+        governance_area = GovernanceArea(gov_area_ID, gov_area_description, gov_area_implementation)
+        self.diagramManager.addGovernanceArea(self.current_dao, governance_area=governance_area)
+        return self.visitChildren(ctx)
+
 
     def __extract_ID(self, node) -> str:
         beholderID = None
@@ -98,6 +119,7 @@ class DAOVisitor2(XMLParserVisitor):
                 self.diagramManager.addRelation(self.current_dao, RelationType.FEDERATION, id, content)
         return self.visitChildren(ctx)
     
+
     def visitDao(self, ctx):
         dao_id = ctx.dao_id()[0].STRING().getText().strip('"')
         dao_name = ctx.dao_name()[0].STRING().getText().strip('"')
