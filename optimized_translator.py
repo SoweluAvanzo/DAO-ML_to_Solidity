@@ -211,7 +211,11 @@ class OptimizedSolidityTranslator(Translator):
                 for condition in self.context.dao.conditions:
                     if condition is not None:
                         c= ConditionTranslator(self.context)
-                        condition_sc = c.generate_condition_from_template("Templates/", condition_name= u.camel_case(condition), condition_logic="//TODO: Implement the condition smart contract logic here", return_value = "true", extension=".sol")
+                        condition_sc = c.generate_condition_from_template("Templates/", \
+                            condition_name= u.camel_case(condition), \
+                            condition_logic="//TODO: Implement the condition smart contract logic here", \
+                            return_value = "true", \
+                            extension=".sol")
                         all_smart_contracts.append(condition_sc)
             # in the end, the DAO itself
             all_smart_contracts.append(self.translateDao())
@@ -334,7 +338,7 @@ class OptimizedSolidityTranslator(Translator):
             lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity}) {name_sanitized} -> ID : {functionalities_ids[role.role_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
             index_entity += 1
 
-            self.context.entity_to_data[role.role_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE)
+            self.context.entity_to_data[role.role_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE.value)
             
         for committee in self.context.dao.committees.values():
             mask_shifted_for_id_bits, original_mask = self.get_control_bitflags(committee, committee.committee_id, self.group_size, functionalities_ids)
@@ -342,7 +346,7 @@ class OptimizedSolidityTranslator(Translator):
             name_sanitized = committee.committee_description.replace(" ","_")
             lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity})  {name_sanitized} -> ID : {functionalities_ids[committee.committee_id]} , control bitmask: { '{0:b}'.format( original_mask ) }")
             index_entity += 1
-            self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
+            self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=final_id, name=name_sanitized, index=index_entity, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE.value)
 
         #print(self.context.entity_to_data)
 
@@ -525,9 +529,7 @@ class OptimizedSolidityTranslator(Translator):
         # otherwise, "role_permission" is a straightforward "mapping", i.e. the "role" as a whole is used
         # as the mapping's key
         is_role_access_optimized = self.group_size is not None
-        role_to_index_fn = lambda r, index_role: f"{index_role}" \
-            if is_role_access_optimized \
-            else lambda r, index_role: r
+        role_to_index_fn = lambda irao, r, index_role: f"{index_role}" if irao else r
         # Generate the Solidity code to set the role_permissions mapping
         lines = []
         for index_entity, entity_data in enumerate(entities_permissions, start=0):
@@ -538,7 +540,7 @@ class OptimizedSolidityTranslator(Translator):
                 # Set the bit for each permission index
                 for index in permission_indices:
                     bitflag |= (1 << index)
-                lines.append(f"        role_permissions[{role_to_index_fn(role, index_entity)}] = {bitflag}; // #{index_entity}) {role} \n")
+                lines.append(f"        role_permissions[{role_to_index_fn(is_role_access_optimized,role, index_entity)}] = {bitflag}; // #{index_entity}) {role} \n")
         return "\n".join(lines)
     
     def generate_user_role_condition_evaluation(self, condition_mapping_name, user_variable_name, roleInConditionCheckType: RoleInConditionCheckType = RoleInConditionCheckType.RETURN):
