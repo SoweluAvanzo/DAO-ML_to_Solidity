@@ -1,6 +1,6 @@
 import src.pipeline.pipeline_item as pi
 import src.model.diagram_manager as dm
-import src.postprocessing.model_conversion.model_converter_base as mcb
+import src.postprocessing.model_conversion.shared.model_converter_base as mcb
 import src.postprocessing.model_conversion.model_converter_configurable as mcc
 #import src.postprocessing.model_conversion.solidity.solidity_translator_general as sol_transl_general
 import src.postprocessing.model_conversion.solidity.conversion_types_solidity as tts

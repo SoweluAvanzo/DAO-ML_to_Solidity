@@ -199,6 +199,7 @@ class OptimizedSolidityTranslator(Translator):
             # at first, translate all Committees
             ct = CommitteeTranslator(self.context)
             for c in self.context.dao.committees.values():
+                print(f"\t translating committee: {c.committee_description}")
                 voting_permission_key = c.committee_id + "VotingRight"
                 proposal_permission_key = c.committee_id + "ProposalRight"
                 voting_permission_index = self.context.permission_to_index[voting_permission_key]

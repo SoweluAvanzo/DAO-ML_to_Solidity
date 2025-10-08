@@ -8,7 +8,10 @@ class TextFileInput(FileInput):
     
     def get_input_as_iterable(self):
         with self.open_file() as file:
-            if file is None:
+            f = file
+            if f is None:
+                print(f" FILE IS NONE: {self.filepath}")
                 yield None
-            for line in file:
-                yield line.strip()
+            else:
+                for line in f:
+                    yield line.strip()

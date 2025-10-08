@@ -1,4 +1,3 @@
-import os
 import src.utilities.constants as consts
 import src.files.file_utils as files
 import src.pipeline.pipeline_manager as pmp
@@ -13,14 +12,14 @@ import src.validators.xml_dao_validator as xvi
 import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
 import src.postprocessing.output_preparation.model_to_json as m_json
-#import src.postprocessing.model_conversion.translation_types as transl_types
 import src.postprocessing.model_conversion.model_converter_configurable as mcc
 import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
 import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
 
+import src.postprocessing.model_conversion.shared.templates.consts_template as consts_t
 import src.postprocessing.model_conversion.conversion_types as ct
-import src.postprocessing.output_preparation.templates.jinja.template_providers.tpbn_txt_file as template_by_name_txt
-import src.postprocessing.output_preparation.templates.jinja.solidity.t_j_sol_1_0_0 as t_j_sol_1_0_0
+import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
+import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.t_j_sol_1_0_0 as t_j_sol_1_0_0
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
@@ -28,17 +27,19 @@ import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
-"""
-import src.model.diagram_manager as dm
-import src.model.dao as d
-import src.model.committee as c
-"""
+import src.model.enums.extended_enum as ex_enum
+
+DAO_TESTS_FOLDER = "tests"
+class DAO_TESTS(ex_enum.ExtendedEnum):
+    TRAVELWARE = "Travelhive_final_model"
+    TRAVELWARE_MINI = "Travelhive_final_model_mini"
+    T_DAO_1 = files.concat_folder_filename(DAO_TESTS_FOLDER, "t_dao_1")
 
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
-FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".", "data","tests","pipeline")
+FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".", "data", "tests", "pipeline")
 
-FILE_NAME_XML_1 = "Travelhive_final_model" # "Travelhive_final_model_mini"
+FILE_NAME_XML_1 = DAO_TESTS.T_DAO_1.value
 EXTENSION_XML = "xml"
 FILE_PATH_XML = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
@@ -53,8 +54,6 @@ FILE_OUTPUT_MODEL_NAME = f"{FILE_NAME_XML_1}_JSONed"
 FILE_OUTPUT_MODEL_EXTENSION = "json"
 FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename('.', 'outputs', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
 
-TEMPLATE_BASE_FOLDER = files.concat_folder_filename(".", "Templates")
-
 # def setup_input(pm:pmp.PipelineManager):
 # def setup_model_generation(pm:pmp.PipelineManager):
 # def set up_input(pm:pmp.PipelineManager):
@@ -62,12 +61,12 @@ TEMPLATE_BASE_FOLDER = files.concat_folder_filename(".", "Templates")
 
 
 if __name__ == "__main__":
-    print("AAAAAAAAAAAAAA")
+    print("START")
 
     pm = pmp.PipelineManager()
 
     k_txt_file_input_pi = "k_txt_file_input_pi_1"
-    file_path = f"{FOLDER_PATH_TXT_TEST}{os.sep}{FILE_NAME_TXT_TEST}.{EXTENSION_JSON}"
+    file_path = files.concat_folder_filename(f"{FOLDER_PATH_TXT_TEST}", f"{FILE_NAME_TXT_TEST}.{EXTENSION_JSON}")
     txt_file_input_pi = tfi.TextFileInput(pi.PIData(k_txt_file_input_pi, None), file_path)
     pm.addItem(txt_file_input_pi)
 
@@ -176,7 +175,7 @@ if __name__ == "__main__":
     k_commands_inputs = "k_commands_inputs"
     commands_inputs = {
         "k_dir": "dir",
-        "k_anltr": f"java -jar {os.path.join(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1.jar')}",
+        "k_anltr": f"java -jar {files.concat_folder_filename(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1.jar')}",
         "k_echo": "echo ciao mamma",
         "k_multiple": "cd data & dir & cd .."
     }
@@ -216,15 +215,32 @@ if __name__ == "__main__":
     pi_converter_solidity_subtype = pstr.PIStr(pi.PIData(k_converter_solidity_subtype, None), converter_solidity_subtype)
     pm.addItem(pi_converter_solidity_subtype)
 
+    k_all_voting_protocols_submitter = "k_all_voting_protocols_submitter"
+    all_voting_protocols_folder = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
+    files_vp = files.list_files_in(all_voting_protocols_folder)
+    # just the filename
+    files_vp = set([ \
+        f[:f.find(".")] \
+        for f in files_vp \
+    ])
+    print(f"all_voting_protocol read: {files_vp}")
+    all_voting_protocols_submitter = pval.PIAnyValue(pi.PIData(k_all_voting_protocols_submitter, None), files_vp)
+    files_vp = None
+    pm.addItem(all_voting_protocols_submitter)
+
     k_translator = "k_translator"
     #translator = translator_sol_opt.SolidityConverterOptimized( \
     #translator = to_sol_j_1_0_0.SolidityConverterOptimizedJinja_1_0_0( \
+    additional_metadata_model_converter = {
+        "key_all_voting_protocols": k_all_voting_protocols_submitter
+    }
     translator = mcc.ModelConverterConfigurable( \
-            pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator, k_translator_target, k_converter_solidity_subtype]), \
+            pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator, k_translator_target, k_converter_solidity_subtype, k_all_voting_protocols_submitter]), \
             key_model = k_model_generator, \
             key_converter_type = k_translator_type, \
             key_converter_version = k_version_translator, \
-            key_converter_target = k_translator_target                     
+            key_converter_target = k_translator_target, \
+            additional_data=additional_metadata_model_converter                     
         )
     pm.addItem(translator)
 
@@ -259,12 +275,13 @@ if __name__ == "__main__":
     """
 
     k_template_provider = "k_template_provider"
-    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(base_template_folder=TEMPLATE_BASE_FOLDER)
+    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES)
     k_PI_template_provider = "k_PI_template_provider"
     # the template provider must be added to the chain so that the template compiler could retrieve it and use it
     PI_template_provider = pval.PIAnyValue(pi.PIData(k_PI_template_provider, None), template_provider)
     pm.addItem(PI_template_provider)
 
+    # TODO: (2025-08-23) NOTE: EVEN THE COMPILER SHOULD BE "configurable" IN THE SAME WAY AS THE CONVERTER DOES
     k_template_compiler = "k_template_compiler"
     template_compiler = t_j_sol_1_0_0.TemplateJinjaSolidity_1_0_0(pi.PIData(k_template_compiler, [ \
             k_translator, \

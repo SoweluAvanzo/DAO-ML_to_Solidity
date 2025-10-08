@@ -22,5 +22,5 @@ class FileInput(ib.InputBase):
                 f.close()
         except Exception as err :
             print(err)
-            return None
+            yield None
         
