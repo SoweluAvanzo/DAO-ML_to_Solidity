@@ -1,7 +1,7 @@
-regex==2025.8.29
+regex==2025.9.18
 networkx==3.5
 xmlschema==4.1.0
-lxml==6.0.1
-antlr4-python3-runtime==4.13.0
+lxml==6.0.2
+antlr4-python3-runtime==4.13.1
 typing==3.7.4
 jinja2==3.1.6
