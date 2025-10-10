@@ -51,6 +51,7 @@ signature :
         {% endfor %}
     {% endif %}
     static owner : User
+
     derived controlledBy : Prod(Entity, Entity) -> Boolean
     derived hasPermission : Prod(Entity, Permission) -> Boolean
 

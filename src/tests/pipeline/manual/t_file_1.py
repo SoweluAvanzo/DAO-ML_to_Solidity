@@ -1,3 +1,4 @@
+
 import src.utilities.constants as consts
 import src.files.file_utils as files
 import src.pipeline.pipeline_manager as pmp
@@ -7,7 +8,6 @@ import src.input.xml_file_input as xfi
 import src.output.text_file_output as tfo
 import src.output.jinja_text_file_output as jtfo
 import src.cli.cli_executor as clie
-#import src.cli.antlr_invoker as grammar_compiler
 import src.validators.xml_dao_validator as xvi
 import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
@@ -42,6 +42,7 @@ FOLDER_PATH_TXT_TEST = files.concat_folder_filename(".", "data", "tests", "pipel
 FILE_NAME_XML_1 = DAO_TESTS.T_DAO_1.value
 EXTENSION_XML = "xml"
 FILE_PATH_XML = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_1)}.{EXTENSION_XML}"
+print(f"FILE_PATH_XML: {FILE_PATH_XML}")
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
 FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.', 'data',FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"

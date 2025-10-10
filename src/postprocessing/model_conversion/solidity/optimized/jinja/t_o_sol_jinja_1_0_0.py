@@ -8,6 +8,7 @@ import src.postprocessing.model_conversion.model_converter_configurable as mcc
 import src.postprocessing.model_conversion.solidity.solidity_converter_general as stg
 #import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
 import src.postprocessing.model_conversion.solidity.optimized.jinja.solidity_converter_optimized_jinja as sol_transl_opt_jinja
+
 import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 import src.model.enums.entity_type_controllable as etc
 import src.model.aggregable_entity as aggregable_e
