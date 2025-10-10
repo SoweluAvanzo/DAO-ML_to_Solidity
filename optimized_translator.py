@@ -612,7 +612,7 @@ class OptimizedSolidityTranslator(Translator):
     def translate_DAO_to_ASM(self, dao:DAO) -> TranslatedSmartContract:
         asm_data = {}
         template_path = os.path.join('.', "Templates", "asm", "")
-        name = "DAOML"
+        name = dao.dao_name
         output_folder = "ASM"
         #
         controls_relation:dict[str, set[str]] = {} # reverse directio of "is_controlled_by"
@@ -630,38 +630,46 @@ class OptimizedSolidityTranslator(Translator):
                     slaves_set.add(e_slave.get_id())
         asm_data["roles"] = [
             {
-                "name": r.role_name,
-                "permissions": [p.permission_id for p in r.permissions],
-                "controls": list(controls_relation[r.get_id()]) if r.get_id() in controls_relation else [],
-                "aggregation": "" if len(r.aggregated) <= 0 else r.aggregated[0].get_name()
+                "name": u.to_keyword(r.get_name()),
+                "permissions": [u.to_keyword(p.allowed_action) for p in r.permissions],
+                "controls": list(controls_relation[u.to_keyword(r.get_name())]) if u.to_keyword(r.get_name()) in controls_relation else [],
+                "aggregation": "" if len(r.aggregated) <= 0 else u.to_keyword(r.aggregated[0].get_name()) 
             }
             for r in dao.roles.values()
         ]
         asm_data["committees"] = [
             {
-                "name": c.committee_description,
-                "permissions": [p.permission_id for p in c.permissions],
-                "controls":  list(controls_relation[c.get_id()]) if c.get_id() in controls_relation else [],
-                "aggregation": "" if len(c.aggregated) <= 0 else c.aggregated[0].get_name()
+                "name": u.to_keyword(c.get_name()),
+                "permissions": [u.to_keyword(p.allowed_action) for p in c.permissions],
+                "controls":  list(controls_relation[u.to_keyword(c.get_name())]) if u.to_keyword(c.get_name()) in controls_relation else [],
+                "aggregation": "" if len(c.aggregated) <= 0 else u.to_keyword(c.aggregated[0].get_name())
             }
             for c in dao.committees.values()
         ] 
         asm_data["permissions"] = [
             {
-                "name": p.permission_id,
-                "governanceArea": p.ref_gov_area
+                "name": u.to_keyword(p.allowed_action),
+                "governanceArea": u.to_keyword(dao.governance_areas[p.ref_gov_area].get_name()) if p.ref_gov_area in dao.governance_areas else None
             }
             for p in dao.permissions.values()
         ]
-        asm_data["governanceAreas"] = [] # no governance area management defined at this stage of development
+        print(f"\n debug {len(dao.permissions)} permissions")
+        for p in dao.permissions.values():
+            print(f"p {p.get_name()} -> {p.ref_gov_area}")
+        print(f"debug {len(dao.governance_areas)} governanceArea")
+        for p in dao.governance_areas.values():
+            print(f"g.a. -> {str(p)}")
+
+        asm_data["governanceAreas"] = [u.to_keyword(g.get_name()) for g in dao.governance_areas.values()]
         asm_data["users"] = [] # no user pre-defined (apart from the Owner) at this stage of development
         asm_data["custom_operations"] = [] # no custom operation defined at this stage of development
         #
         return super().generate_file_from_template(
             template_path,
-            name,
+            "DAOML",
             output_folder,
             extension = ".asm",
+            name_output=name, 
             additional_parametrs=asm_data,
             reuse_additional_params_dit=True
         )

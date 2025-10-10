@@ -170,7 +170,6 @@ node_modules/
 
 # nostre
 *_properties.txt
-*.txt
 !requirements.txt
 !requirements_TEMP.txt
 translated/
@@ -185,6 +184,13 @@ test/*
 */test/*
 sim/
 sim/*
+data/test/
+data/test*
+
+NO_COMMIT
+NO_COMMIT*
+NO_COMMIT/
+NO_COMMIT/*
 data/test/
 data/test*
 

@@ -51,14 +51,17 @@ class DiagramManager:
         dao = self.get_dao_by(daoOrID)
         dao.add_permission(permission)
         
-
     def addRelation(self, daoOrID, relationType: dc.RelationType, fromID: str, content:str ):
         dao = self.get_dao_by(daoOrID)
         dao_id = dao.dao_id
         self.relations_by_dao[dao_id].append( (relationType, fromID, content) )
+    
+    def addGovernanceArea(self, daoOrID, governance_area: dc.GovernanceArea):
+        dao = self.get_dao_by(daoOrID)
+        dao.add_governance_area(governance_area)
+    
     #
-    #
-    #
+    
     def createControlGraph(self):
         for dao in self.daoByID.values():
             cg_wrapper = dc.ControlGraph(dao)
@@ -83,6 +86,8 @@ class DiagramManager:
                 if controller not in role_or_committee.controllers:
                     role_or_committee.add_controller(controller)
 
+    #
+
     def processRawInstances(self):
         if not self.rowDataOnly:
             return
@@ -91,6 +96,8 @@ class DiagramManager:
 
         # Assign permissions to roles and committees in DAO based on association relations
         for dao in self.daoByID.values():
+            if not isinstance(dao, dc.DAO):
+                raise Exception(f"An instance should be a DAO, but is: {type(dao)}")
             dao_id = dao.dao_id
             for relation in self.relations_by_dao[dao_id]:
                 fromID = relation[1]

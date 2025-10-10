@@ -17,7 +17,7 @@ class BaseEntity:
 
 #stores permission metadata
 class Permission(BaseEntity):
-    def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None, voting_right = False, proposal_right = False):
+    def __init__(self, permission_id, allowed_action:str, permission_type, ref_gov_area:str = None, voting_right = False, proposal_right = False):
         #super.__init__(self, permission_id)
         self.permission_id = permission_id
         self.allowed_action = allowed_action
@@ -41,6 +41,28 @@ class Permission(BaseEntity):
             "ref_gov_area": self.ref_gov_area,
             "voting_right": self.voting_right,
             "proposal_right": self.proposal_right,
+        }
+
+#stores governance area metadata
+class GovernanceArea(BaseEntity):
+    def __init__(self, gov_area_ID:str, gov_area_description:str, implementation:str):
+        #super.__init__(self, gov_area_ID)
+        self.gov_area_ID = gov_area_ID
+        self.gov_area_description = gov_area_description
+        self.implementation = implementation
+    def get_id(self) -> str:
+        return self.gov_area_ID
+    def get_name(self) -> str:
+        return self.gov_area_description
+
+    def __str__(self):
+        return f'GovernanceArea(gov_area_ID={self.gov_area_ID}, gov_area_description={self.gov_area_description}, implementation={self.implementation})'
+
+    def toJSON(self):
+        return {
+            "gov_area_ID": self.gov_area_ID,
+            "gov_area_description": self.gov_area_description,
+            "implementation": self.implementation,
         }
 
 
@@ -309,7 +331,7 @@ class DAOMetadata:
         }
 
 class DAO:
-    def __init__(self, dao_id, dao_name, mission_statement, hierarchical_inheritance):
+    def __init__(self, dao_id:str, dao_name:str, mission_statement:str, hierarchical_inheritance:str):
         self.dao_id = dao_id
         self.dao_name = dao_name.replace(" ", "_")
         self.mission_statement = mission_statement
@@ -318,6 +340,7 @@ class DAO:
         self.roles: dict[str, Role] = {}
         self.committees: dict[str, Committee] = {}
         self.permissions: dict[str, Permission] = {}
+        self.governance_areas: dict[str, GovernanceArea] = {}
         self.dao_control_graph: ControlGraph
         self.metadata = DAOMetadata()
         self.assignment_conditions: dict[str, str] = {} # Role
@@ -330,14 +353,17 @@ class DAO:
         
 
     
-    def add_role(self, role):
+    def add_role(self, role:Role):
         self.roles[role.role_id] = role
 
-    def add_committee(self, committee):
+    def add_committee(self, committee:Committee):
         self.committees[committee.committee_id] = committee
 
-    def add_permission(self, permission):
+    def add_permission(self, permission:Permission):
         self.permissions[permission.permission_id] = permission
+
+    def add_governance_area(self, governance_area:GovernanceArea):
+        self.governance_areas[governance_area.get_id()] = governance_area
 
     def __str__(self):
         result = [
@@ -353,11 +379,14 @@ class DAO:
         for role in self.roles.values():
             result.append("\t\t" + str(role))
         result.append("\nCommittees:")
-        for committee in self.committees:
+        for committee in self.committees.values():
             result.append("\t\t" + str(committee))
         result.append("\nPermissions:")
-        for permission in self.permissions:
+        for permission in self.permissions.values():
             result.append("\t\t" + str(permission))
+        result.append("\nGovernance Areas:")
+        for governance_area in self.governance_areas.values():
+            result.append("\t\t" + str(governance_area))
         return "\n".join(result)
 
     def toJSON(self):
@@ -369,6 +398,7 @@ class DAO:
             "roles": {n: self.roles[n].toJSON() for n in self.roles},
             "committees": {n: self.committees[n].toJSON() for n in self.committees},
             "permissions": {n: self.permissions[n].toJSON() for n in self.permissions},
+            "governance_areas": {n: self.governance_areas[n].toJSON() for n in self.governance_areas},
             "dao_control_graph": None, # self.dao_control_graph -> ControlGraph
             # "metadata": self.metadata.toJSON(),
             "assignment_conditions": {r: self.assignment_conditions[r] for r in self.assignment_conditions},

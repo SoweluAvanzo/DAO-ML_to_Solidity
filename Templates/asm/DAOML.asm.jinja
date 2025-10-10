@@ -35,17 +35,15 @@ signature :
     {% for committee_data in committees %}
     static {{committee_data.name}} : Entity
     {% endfor %}
-
     // Permissions
     {% for permission_data in permissions %}
     static {{permission_data.name}} : Entity
-    {% endfor %}    
+    {% endfor %}   
 
     // Governance Areas
-    {% for governanceArea_data in governanceAreas %}
-    static {{governanceArea_data.name}} : Entity
+    {% for governanceArea_name in governanceAreas %}
+    static {{governanceArea_name}} : Entity
     {% endfor %}
-    
     // Users
     {% if users %}
         {% for user_data in users %}

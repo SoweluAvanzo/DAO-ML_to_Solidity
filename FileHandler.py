@@ -127,7 +127,7 @@ def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should
                                 ext = f".{ext}"
                             filename = tsc.name + ext
                             full_path = f'{folder_path_with_subfolder}/{filename}'
-
+                            print(f"outputting translated smart contract to: {full_path}")
                             with open(full_path, 'w') as f:
                                 for line in translated_code:
                                     f.write(line)
@@ -154,7 +154,9 @@ def write_SCs(contracts_to_write:list[TranslationData], superfolder_name, should
                             for t in all_translated_smart_contract__tests:
                                 try:
                                     check_and_make_folder(t.folder)
-                                    with open( f"{t.folder}/{t.name}{t.extension}", "w") as f:
+                                    output_file_path = f"{t.folder}/{t.name}{t.extension}"
+                                    print(f"outputting test to: {output_file_path}")
+                                    with open(output_file_path, "w") as f:
                                         for line in t.lines_of_code:
                                             f.write(line)
                                             f.write('\n')
