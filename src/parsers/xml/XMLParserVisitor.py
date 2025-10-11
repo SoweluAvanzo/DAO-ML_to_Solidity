@@ -1,4 +1,4 @@
-# Generated from ./src/parsers/xml/XMLParser.g4 by ANTLR 4.13.1
+# Generated from ./XMLParser.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .XMLParser import XMLParser
@@ -231,11 +231,6 @@ class XMLParserVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by XMLParser#attribute.
     def visitAttribute(self, ctx:XMLParser.AttributeContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by XMLParser#unique_id.
-    def visitUnique_id(self, ctx:XMLParser.Unique_idContext):
         return self.visitChildren(ctx)
 
 
