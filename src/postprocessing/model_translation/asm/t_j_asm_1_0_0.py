@@ -1,75 +1,55 @@
 import src.pipeline.pipeline_item as pi
 
-
-import src.postprocessing.model_conversion.shared.model_converter_base as mcb
-import src.postprocessing.model_conversion.shared.conversion_result_base as crb
-import src.postprocessing.model_conversion.shared.templates.conversion_result_template as crt
-import src.postprocessing.model_conversion.solidity.solidity_converter_general as stg
+import src.postprocessing.model_translation.asm.t_j_asm as t_j_asm_base
+import src.postprocessing.consts_template as c_t
 
 import src.model.dao as dao_m
 import src.model.diagram_manager as diagram_manager_m
 import src.model.aggregable_entity as aggregable_e
 
-import src.files.file_utils as fu
+# import src.files.file_utils as fu
 import src.utilities.utils as u
 
 
-class ConvertedDAO_ASM_Jinja_1_0_0(crt.ConvertedSubpartTemplated):
+class TranslatedDAO_ASM_Jinja_1_0_0(t_j_asm_base.TranslatedDAO_ASM_Jinja):
     def __init__(self, dao: dao_m.DAO, dao_specific_data: dict,
                  is_convertible: bool = True
                  ):
-        crt.ConvertedSubpartTemplated.__init__(
+        t_j_asm_base.TranslatedDAO_ASM_Jinja.__init__(
             self, dao, dao_specific_data, is_convertible=is_convertible)
-        # dict of ( output_filename, compiled_template )
-        """
-        self.other_subparts_converted_by_name: dict[str,
-            crt.ConvertedSubpartTemplated] = {}
-        """
 
 
-class ConvertedDiagram_ASM_Jinja_1_0_0(crt.ConvertedSubpartTemplated):
+class TranslatedDiagram_ASM_Jinja_1_0_0(t_j_asm_base.TranslatedDiagram_ASM_Jinja):
     def __init__(self, diagram: diagram_manager_m.DiagramManager, diagram_specific_data: dict,
                  is_convertible: bool = True
                  ):
-        crt.ConvertedSubpartTemplated.__init__(
+        t_j_asm_base.TranslatedDiagram_ASM_Jinja.__init__(
             self, diagram, diagram_specific_data, is_convertible=is_convertible)
-        self.dao_converted_by_id: dict[str, ConvertedDAO_ASM_Jinja_1_0_0] = {}
-        # dict of ( output_filename, compiled_template )
-        """
-        self.other_subparts_converted_by_name: dict[str,
-            crt.ConvertedSubpartTemplated] = {}
-        """
-
-    def add_dao_converted(self, dao_c: ConvertedDAO_ASM_Jinja_1_0_0):
-        self.dao_converted_by_id[dao_c.get_id()] = dao_c
-
-#
 
 
-class ConverterJinjaASM(mcb.ModelConverterBase):
+class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
     def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
                  key_model: str = None
                  ):
         super().__init__(pipeline_item_data,
+                         optional_external_data=optional_external_data,
                          key_model=key_model
                          )
-        self.optional_external_data = optional_external_data
 
-    def new_translated_diagram(self, diagram: diagram_manager_m.DiagramManager, other_data=None) -> ConvertedDiagram_ASM_Jinja_1_0_0:
-        return ConvertedDiagram_ASM_Jinja_1_0_0(diagram, other_data)
+    def new_translated_diagram(self, diagram: diagram_manager_m.DiagramManager, other_data=None) -> t_j_asm_base.TranslatedDiagram_ASM_Jinja:
+        return TranslatedDiagram_ASM_Jinja_1_0_0(diagram, other_data)
 
-    def new_translated_dao(self, diagram: diagram_manager_m.DiagramManager, dao: dao_m.DAO, other_data=None) -> ConvertedDAO_ASM_Jinja_1_0_0:
-        return ConvertedDAO_ASM_Jinja_1_0_0(dao, other_data)
+    def new_translated_dao(self, diagram: diagram_manager_m.DiagramManager, dao: dao_m.DAO, other_data=None) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
+        return TranslatedDAO_ASM_Jinja_1_0_0(dao, other_data)
 
-    #
-
-    def translate_DAO_to_ASM(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO) -> ConvertedDAO_ASM_Jinja_1_0_0:
+    def translate_DAO_to_ASM(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
         asm_data = {}
         converted_dao = self.new_translated_dao(
             diagram, dao, other_data=asm_data)
-        converted_dao.template_filename_input = ""  # TODO
-        converted_dao.template_filename_output = ""  # TODO
-        converted_dao.template_full_folders_path_from_base = ""  # TODO
+        asm_dao_template_filename = "DAOML"
+        converted_dao.template_filename_input = f"{asm_dao_template_filename}.{c_t.ASM_FILE_EXTENSION}"
+        converted_dao.template_filename_output = f"{dao.get_name()}.{c_t.ASM_FILE_EXTENSION}"
+        converted_dao.template_full_folders_path_from_base = c_t.FOLDER_NAME_ASM
         # reverse direction of "is_controlled_by"
         controls_relation: dict[str, set[str]] = {}
         entities_controllable: list[list[aggregable_e.AggregableEntity]] = [
@@ -127,15 +107,3 @@ class ConverterJinjaASM(mcb.ModelConverterBase):
         asm_data["custom_operations"] = []
         #
         return converted_dao
-
-    def convert(self, model: diagram_manager_m.DiagramManager, additional_data=None) -> crb.ModelConversionResultBase:
-        diagram_specific_data = None
-        diagram_converted = self.new_translated_diagram(
-            model, other_data=diagram_specific_data)
-        diagram_converted.template_filename_input = ""  # TODO
-        diagram_converted.template_filename_output = ""  # TODO
-        diagram_converted.template_full_folders_path_from_base = ""  # TODO
-        for dao in model.daoByID.values():
-            dao_converted = self.translate_DAO_to_ASM(model, dao)
-            diagram_converted.add_dao_converted(dao_converted)
-        return diagram_converted

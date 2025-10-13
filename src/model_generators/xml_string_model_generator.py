@@ -179,6 +179,8 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             0].STRING().getText().strip('"')
         gov_area_implementation = ctx.gov_area_implementation()[
             0].STRING().getText().strip('"')
+        print(
+            f"visitGov: gov_area_ID: {gov_area_ID} --- gov_area_description: {gov_area_description}")
         governance_area = ga.GovernanceArea(
             gov_area_ID, gov_area_description, gov_area_implementation)
         self.diagramManager.addGovernanceArea(

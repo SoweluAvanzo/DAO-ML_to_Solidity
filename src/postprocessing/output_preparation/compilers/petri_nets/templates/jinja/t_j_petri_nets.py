@@ -7,6 +7,6 @@ No differences at the moment from the super (Jinja Base) class.
 
 
 class TemplateJinjaPetriNets(tjb.CompilerTemplateJinjaBase):
-    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None, key_template_name: str = None, key_template_skeleton: str = None, key_template_instance_data: str = None):
+    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None, key_template_skeleton: str = None, key_template_instance_data: str = None):
         super().__init__(pipeline_item_data, optional_external_data,
-                         key_template_name, key_template_skeleton, key_template_instance_data)
+                         key_template_skeleton, key_template_instance_data)

@@ -1,6 +1,7 @@
 from enum import Enum
 
-class ConversionTypes(Enum):
+
+class TranslationTypes(Enum):
     SOLIDITY = 1
     ASM = 2
     PETRI_NETS = 3

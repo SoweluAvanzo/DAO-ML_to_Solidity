@@ -20,5 +20,9 @@ def to_camel_case(s: str):
     )
 
 
+def sanitize_name(name: str):
+    return name.replace(" ", "_")
+
+
 def to_keyword(name: str):
-    return name.replace(" ", "_").lower()
+    return sanitize_name(name).lower()

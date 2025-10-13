@@ -12,14 +12,16 @@ import src.validators.xml_dao_validator as xvi
 import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
 import src.postprocessing.output_preparation.model_to_json as m_json
-import src.postprocessing.model_conversion.model_converter_configurable as mcc
-import src.postprocessing.model_conversion.solidity.conversion_types_solidity as transl_types_sol
-import src.postprocessing.model_conversion.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.model_translator_configurable as mcc
+import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
+import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 
-import src.postprocessing.model_conversion.shared.templates.consts_template as consts_t
-import src.postprocessing.model_conversion.conversion_types as ct
+import src.postprocessing.consts_template as consts_t
+import src.postprocessing.model_translation.translation_types as ct
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_sol_t_j_1_0_0 as c_sol_t_j_1_0_0
+import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
@@ -43,9 +45,10 @@ EXTENSION_JSON = "json"
 FOLDER_PATH_TXT_TEST = files.concat_folder_filename(
     ".", "data", "tests", "pipeline")
 
-FILE_NAME_XML_1 = DAO_TESTS.T_DAO_1.value
+FILE_NAME_XML_1 = DAO_TESTS.TRAVELWARE.value  # T_DAO_1.value
 EXTENSION_XML = "xml"
-FILE_PATH_XML = f"{files.concat_folder_filename('.', 'data', FILE_NAME_XML_1)}.{EXTENSION_XML}"
+FILE_PATH_XML = files.concat_folder_filename(
+    '.', 'data', f"{FILE_NAME_XML_1}.{EXTENSION_XML}")
 print(f"FILE_PATH_XML: {FILE_PATH_XML}")
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
@@ -71,6 +74,8 @@ if __name__ == "__main__":
 
     pm = pmp.PipelineManager()
 
+    """
+    # TEST JSON
     k_txt_file_input_pi = "k_txt_file_input_pi_1"
     file_path = files.concat_folder_filename(
         f"{FOLDER_PATH_TXT_TEST}", f"{FILE_NAME_TXT_TEST}.{EXTENSION_JSON}")
@@ -92,6 +97,7 @@ if __name__ == "__main__":
     printer_json = pri.PIPrinter(
         pi.PIData(k_printer_echo_2, [k_to_json]), None, True)
     pm.addItem(printer_json)
+    """
 
     # TODO: aggiungere valudazione generator che cerca di costruire gli oggetti del modello usando le giuste classi a partire dai dict generati dal JsonStringModelGenerator
 
@@ -199,10 +205,11 @@ if __name__ == "__main__":
     pm.addItem(model_text_to_file_output_ok_printer)
 
     # 8)
+    """
     k_commands_inputs = "k_commands_inputs"
     commands_inputs = {
         "k_dir": "dir",
-        "k_anltr": f"java -jar {files.concat_folder_filename(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1.jar')}",
+        "k_anltr": f"java -jar {files.concat_folder_filename(consts.EXTERNAL_LIBS_FOLDER, 'antlr-4.13.1-complete.jar')}",
         "k_echo": "echo ciao mamma",
         "k_multiple": "cd data & dir & cd .."
     }
@@ -218,12 +225,13 @@ if __name__ == "__main__":
     cli_exec = clie.CLIExecutor(pi.PIData(
         k_cli_exec, keys_commands_submitter), inputs_as_separated_commands=True)
     pm.addItem(cli_exec)
+    """
 
     # 6) TRADUTTORE
 
     # TODO generare gli inputs (per le key_ROBE del costruttore)
 
-    converter_type = ct.ConversionTypes.SOLIDITY.value
+    converter_type = ct.TranslationTypes.SOLIDITY.value
     k_translator_type = "k_translator_type"
     pi_translator_type = pstr.PIStr(
         pi.PIData(k_translator_type, None), converter_type)
@@ -261,12 +269,12 @@ if __name__ == "__main__":
     pm.addItem(all_voting_protocols_submitter)
 
     k_translator = "k_translator"
-    # translator = translator_sol_opt.SolidityConverterOptimized( \
-    # translator = to_sol_j_1_0_0.SolidityConverterOptimizedJinja_1_0_0( \
+    # translator = translator_sol_opt.SolidityTranslatorOptimized( \
+    # translator = to_sol_j_1_0_0.SolidityTranslatorOptimizedJinja_1_0_0( \
     additional_metadata_model_converter = {
         "key_all_voting_protocols": k_all_voting_protocols_submitter
     }
-    translator = mcc.ModelConverterConfigurable(
+    translator = mcc.ModelTranslatorConfigurable(
         pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator,
                   k_translator_target, k_converter_solidity_subtype, k_all_voting_protocols_submitter]),
         key_model=k_model_generator,
@@ -340,6 +348,30 @@ if __name__ == "__main__":
                                                    base_destination=compiled_base_destination
                                                    )
     pm.addItem(compiled_output_txt)
+
+    # ASM
+    k_translator_asm = "k_translator_asm"
+    translator_asm = t_j_asm_1_0_0.TranslatorJinjaASM_1_0_0(pi.PIData(k_translator_asm, [k_model_generator]),
+                                                            optional_external_data=None,
+                                                            key_model=k_model_generator
+                                                            )
+    pm.addItem(translator_asm)
+
+    k_compiler_asm = "k_compiler_asm"
+    compiler_asm = c_asm_t_j.CompilerASMTemplateJinja(pi.PIData(k_compiler_asm, [k_translator_asm, k_PI_template_provider]),
+                                                      optional_external_data=None,
+                                                      key_template_instance_data=k_translator_asm,
+                                                      key_template_skeleton_provider_by_name=k_PI_template_provider
+                                                      )
+    pm.addItem(compiler_asm)
+
+    k_asm_compiled_output_txt = "k_asm_compiled_output_txt"
+    compiled_base_destination_asm = files.concat_folder_filename(
+        "out", consts_t.FOLDER_NAME_ASM)
+    compiled_output_txt = jtfo.JinjaTextFileOutput(pi.PIData(k_asm_compiled_output_txt, [k_compiler_asm]),
+                                                   key_translated_diagram=k_compiler_asm,
+                                                   base_destination=compiled_base_destination_asm
+                                                   )
 
     # THE END
     end_printer = pri.PIPrinter(pi.PIData("k_end_printer", [k_compiled_output_txt]),

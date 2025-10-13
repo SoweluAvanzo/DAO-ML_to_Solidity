@@ -3,7 +3,7 @@ import src.model.base_entity as base_entity
 
 class GovernanceArea(base_entity.BaseEntity):
     def __init__(self, gov_area_ID: str, gov_area_description: str, implementation: str):
-        super.__init__(self, gov_area_ID)
+        super().__init__(gov_area_ID)
         self.gov_area_ID = gov_area_ID
         self.gov_area_description = gov_area_description
         self.implementation = implementation

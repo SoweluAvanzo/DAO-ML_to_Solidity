@@ -7,7 +7,7 @@ pragma solidity {{ solidity_version}};
 
 import "./interfaces/IPermissionManager.sol";
 {% if dao_conditions|length > 0 %}
-import "./interfaces/ICondition.sol";
+import "../interfaces/ICondition.sol";
 {% endif %}
 
 contract {{dao_name}} is IPermissionManager {{"{"}}
