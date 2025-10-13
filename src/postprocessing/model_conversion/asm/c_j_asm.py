@@ -67,6 +67,9 @@ class ConverterJinjaASM(mcb.ModelConverterBase):
         asm_data = {}
         converted_dao = self.new_translated_dao(
             diagram, dao, other_data=asm_data)
+        converted_dao.template_filename_input = ""  # TODO
+        converted_dao.template_filename_output = ""  # TODO
+        converted_dao.template_full_folders_path_from_base = ""  # TODO
         # reverse direction of "is_controlled_by"
         controls_relation: dict[str, set[str]] = {}
         entities_controllable: list[list[aggregable_e.AggregableEntity]] = [
@@ -129,6 +132,9 @@ class ConverterJinjaASM(mcb.ModelConverterBase):
         diagram_specific_data = None
         diagram_converted = self.new_translated_diagram(
             model, other_data=diagram_specific_data)
+        diagram_converted.template_filename_input = ""  # TODO
+        diagram_converted.template_filename_output = ""  # TODO
+        diagram_converted.template_full_folders_path_from_base = ""  # TODO
         for dao in model.daoByID.values():
             dao_converted = self.translate_DAO_to_ASM(model, dao)
             diagram_converted.add_dao_converted(dao_converted)
