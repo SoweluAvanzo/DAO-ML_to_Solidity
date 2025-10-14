@@ -26,16 +26,16 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
     {% endif %}
 
     {% if is_role_access_optimized %}
-    {{perm_var_type}}[{total_roles_amount}] {{visibility}} role_permissions;
+    {{perm_var_type}}[{{total_roles_amount}}] {{visibility}} role_permissions;
     {% else %}
     mapping({{id_var_type}} => {{perm_var_type}}) {{visibility}} role_permissions;
     {% endif %}
     {{id_var_type}}[{{entities_amount}}] {{visibility}} all_roles = {{"["}}
     {% for role_id, role_data in roles_computed_data.items() %}
-    {{role_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{role_data.name}} -> ID : {{ states_variables__functionalities_ids[roles[role_data.original_id].id]}} , control bitmask: {{ '{0:b}'.format( role_data.mask ) }}
+    {{role_data.final_id}} {%if role_data.index != (entities_amount -1) %} , {% endif %} // # {{loop.index0}}{{")"}} {{role_data.name}} -> ID : {{ states_variables__functionalities_ids[roles[role_data.original_id].id]}} , control bitmask: {{ '{0:b}'.format( role_data.mask ) }}
     {% endfor %}
     {% for committee_id, committee_data in committees_computed_data.items() %}
-    {{committee_data.final_id}} {%if index_entity != entities_amount -1 %} , {% endif %} // #{{loop.index0}}{{")"}} {{committee_data.name}} -> ID : {{ states_variables__functionalities_ids[committees[committee_data.original_id].id]}} , control bitmask: {{ '{0:b}'.format( committee_data.mask ) }}
+    {{committee_data.final_id}} {%if committee_data.index != (entities_amount -1) %} , {% endif %} // #{{loop.index0}}{{")"}} {{committee_data.name}} -> ID : {{ states_variables__functionalities_ids[committees[committee_data.original_id].id]}} , control bitmask: {{ '{0:b}'.format( committee_data.mask ) }}
     {% endfor %}
     {{"];"}}
 
@@ -67,7 +67,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
                     sender_role_index
                 ) != 0 // final check
             )
-            , \"the given controller can\'t perform the given operation on the given controlled one\" );
+            , "the given controller can\'t perform the given operation on the given controlled one" );
         _;
     {{"}"}}
 
@@ -88,7 +88,6 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         {{cp.type}}[] memory {{cp.name}}
         {% endfor %}
     ){{"{"}}
-        
         {# generate_constructor_v2 ... generate_role_permission_mapping #}
         {% for ep in entities_permissions %}role_permissions[{{ep.index_entity_in_dao}}] = {{ep.bitflag}}; // # {{ loop.index0}}{{")"}} {{ep.entity_name}} {% endfor %}
 
@@ -107,14 +106,13 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         {% if assignment_conditions | length > 0 %}
             assignment_conditions[roleIds[i]] = ICondition(assignmentConditionAddresses[i]);
         {% endif %}
-
     {{"}"}}
         
         
     {# generate_committee_initialization_function #}
         
     function initializeCommittees( {% for c in committees %}{% if loop.index0 != 0 %}, {% endif %} address _{{space_to_underscore_fn(c)}} {% endfor %} ) {{visibility_committee_initialization_function}} {{"{"}}
-        reqiure( roles[msg.sender] == all_roles[{{ roles|length -1 }}]), "Only the owner can initialize the Dao"{{")"}}; // {{dao_name}}Owner
+        reqiure( roles[msg.sender] == all_roles[{{ roles|length -1 }}], "Only the owner can initialize the Dao"{{")"}}; // {{dao_name}}Owner
         {% if committees|length > 0 %}
         require(committee_initialization_blocked == false {% for c in committees %} && _{{space_to_underscore_fn(c)}} != address(0) {% endfor %}, "Invalid committee initialization");
         {% for c in committees %}
@@ -122,7 +120,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         {% endfor %}
         committee_initialization_blocked = true;
         {% endif %}        
-        
+    {{"}"}}
         
 
         

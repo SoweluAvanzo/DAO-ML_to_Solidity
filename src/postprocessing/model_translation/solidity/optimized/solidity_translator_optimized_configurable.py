@@ -1,6 +1,6 @@
 import src.pipeline.pipeline_item as pi
 # import src.postprocessing.model_conversion.solidity.model_to_solidity as mts
-import src.postprocessing.model_translation.shared.model_converter_base as mcb
+import src.postprocessing.model_translation.shared.model_translator_base as mcb
 import src.postprocessing.model_translation.solidity.solidity_translator_configurable as stc
 import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as j_o_v
 import src.postprocessing.model_translation.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as coj_1_0_0

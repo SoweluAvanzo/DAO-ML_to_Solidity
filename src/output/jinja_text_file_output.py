@@ -49,7 +49,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
             [],
             translated_diagram.get_compiled(),
             translated_diagram.get_template_name()
-        )
+        ) if translated_diagram.can_diagram_be_compiled else []
         # ... then DAOs ...
         for dao_id, dao_compiled_struct in translated_diagram.get_daos_compiled_by_id().items():
             dao = dao_compiled_struct

@@ -1,6 +1,6 @@
 import src.pipeline.pipeline_item as pi
-import src.postprocessing.model_translation.shared.model_converter_base as mcb
-import src.postprocessing.model_translation.shared.conversion_result_base as crb
+import src.postprocessing.model_translation.shared.model_translator_base as mcb
+import src.postprocessing.model_translation.shared.translation_result_base as crb
 import src.postprocessing.model_translation.translation_types as ct
 import src.model.diagram_manager as dm
 

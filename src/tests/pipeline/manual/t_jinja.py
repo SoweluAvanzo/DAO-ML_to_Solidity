@@ -10,7 +10,7 @@ import src.input.txt_file_input as tfi
 import src.output.text_file_output as tfo
 
 # import src.templates.template_jinja_solidity as tjs
-import src.templates.template_jinja_base as tjb
+import src.postprocessing.output_preparation.compilers.shared.templates.jinja as tjb
 
 JINJA_TEMPLATE_NAME = "test_jinja"
 JINJA_TEMPLATE_EXTENSION = "jinja"

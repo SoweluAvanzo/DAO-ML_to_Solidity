@@ -242,7 +242,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                 )] = committee.voting_condition
                 if committee.voting_condition not in conditions:
                     conditions.append(committee.voting_condition)
-            if committee.voting_condition != None:
+            if committee.proposal_condition != None:
                 dao.proposal_conditions[committee.get_id(
                 )] = committee.proposal_condition
                 if committee.proposal_condition not in conditions:

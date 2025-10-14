@@ -1,6 +1,6 @@
 import json
 
-import src.postprocessing.model_translation.shared.conversion_result_base as crb
+import src.postprocessing.model_translation.shared.translation_result_base as crb
 import src.model.base_entity as base_entity_module
 
 

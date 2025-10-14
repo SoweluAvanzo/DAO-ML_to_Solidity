@@ -1,9 +1,9 @@
 import src.pipeline.pipeline_item as pi
 
 
-import src.postprocessing.model_translation.shared.model_converter_base as mcb
-import src.postprocessing.model_translation.shared.conversion_result_base as crb
-import src.postprocessing.model_translation.shared.templates.conversion_result_template as crt
+import src.postprocessing.model_translation.shared.model_translator_base as mcb
+import src.postprocessing.model_translation.shared.translation_result_base as crb
+import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
 import src.postprocessing.consts_template as c_t
 
 import src.model.dao as dao_m

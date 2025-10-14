@@ -60,9 +60,10 @@ class CompiledSolidityDAO(cgd.CompiledUnitWithID):
 
 
 class CompiledSolidityDiagram(cgd.CompiledUnitWithID):
-    def __init__(self, id: str, template_name: str, compiled: dict = None):
+    def __init__(self, id: str, template_name: str, compiled: dict = None, can_diagram_be_compiled=True):
         super().__init__(id, template_name, compiled)
         self.daos_compiled_by_id: dict[str, CompiledSolidityDAO] = {}
+        self.can_diagram_be_compiled = can_diagram_be_compiled
 
     def get_daos_compiled_by_id(self):
         return self.daos_compiled_by_id

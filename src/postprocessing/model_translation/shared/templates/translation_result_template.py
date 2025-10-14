@@ -1,4 +1,4 @@
-import src.postprocessing.model_translation.shared.conversion_result_subpart as crsp
+import src.postprocessing.model_translation.shared.translation_result_subpart as crsp
 import src.model.base_entity as base_entity_module
 
 

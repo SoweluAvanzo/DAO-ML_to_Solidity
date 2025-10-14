@@ -8,5 +8,6 @@ class CompiledASM_DAO(cgd.CompiledUnitWithID):
 
 
 class CompiledASM_Diagram(cgd.CompiledUnitWithID):
-    def __init__(self, id: str, template_name: str, compiled: dict):
+    def __init__(self, id: str, template_name: str, compiled: dict, can_diagram_be_compiled=True):
         super().__init__(id, template_name, compiled)
+        self.can_diagram_be_compiled = can_diagram_be_compiled

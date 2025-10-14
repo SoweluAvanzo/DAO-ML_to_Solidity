@@ -12,14 +12,14 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
 import "./interfaces/IPermissionManager.sol";
 {% endif %}
 
-contract {{contract_name}}{{inherited_contracts}} {
+contract {{contract_name}} {{inherited_contracts}} {{"{"}}
     
     // TODO: implement custom {{decision_making_method_name}} logic here
 
-    { % if is_custom % }IPermissionManager public permissionManager;{% endif %}
+    {% if is_custom %}IPermissionManager public permissionManager;{% endif %}
     // Constructor
-    constructor({ % if is_custom % }{% for param in constructor_parameters%}{% if loop.index0 != 0 %}, {% endif %}{{param.param_type}} {{param.param_name}}{% endfor %} {% endif %})
-    {
-        { % if is_custom % }permissionManager = IPermissionManager(_permissionManager);{% endif %}
-    }  
-}
+    constructor({% if is_custom %}{% for param in constructor_parameters%}{% if loop.index0 != 0 %}, {% endif %}{{param.param_type}} {{param.param_name}}{% endfor %} {% endif %})
+    {{"{"}}
+        {% if is_custom %}permissionManager = IPermissionManager(_permissionManager);{% endif %}
+    {{"}"}} 
+{{"}"}}

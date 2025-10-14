@@ -62,7 +62,7 @@ XML_DAO_GRAMMAR_FILEPATH = files.concat_folder_filename(
 FILE_OUTPUT_MODEL_NAME = f"{FILE_NAME_XML_1}_JSONed"
 FILE_OUTPUT_MODEL_EXTENSION = "json"
 FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename(
-    '.', 'outputs', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
+    '.', 'out', f"{FILE_OUTPUT_MODEL_NAME}.{FILE_OUTPUT_MODEL_EXTENSION}")
 
 # def setup_input(pm:pmp.PipelineManager):
 # def setup_model_generation(pm:pmp.PipelineManager):
@@ -342,7 +342,7 @@ if __name__ == "__main__":
 
     # TODO 225-08-13 DA FARE OUTPUT
     k_compiled_output_txt = "k_compiled_output_txt"
-    compiled_base_destination = files.concat_folder_filename("out", "solidity")
+    compiled_base_destination = "out"
     compiled_output_txt = jtfo.JinjaTextFileOutput(pi.PIData(k_compiled_output_txt, [k_template_compiler]),
                                                    key_translated_diagram=k_template_compiler,
                                                    base_destination=compiled_base_destination
@@ -365,16 +365,22 @@ if __name__ == "__main__":
                                                       )
     pm.addItem(compiler_asm)
 
+    k_asm_compilation_announcer_printer = "k_asm_compilation_announcer_printer"
+    asm_compilation_announcer_printer = pri.PIPrinter(pi.PIData(k_asm_compilation_announcer_printer, [k_compiler_asm]),
+                                                      text="\n\n outputting_ASM",
+                                                      from_input=False
+                                                      )
+    pm.addItem(asm_compilation_announcer_printer)
+
     k_asm_compiled_output_txt = "k_asm_compiled_output_txt"
-    compiled_base_destination_asm = files.concat_folder_filename(
-        "out", consts_t.FOLDER_NAME_ASM)
-    compiled_output_txt = jtfo.JinjaTextFileOutput(pi.PIData(k_asm_compiled_output_txt, [k_compiler_asm]),
-                                                   key_translated_diagram=k_compiler_asm,
-                                                   base_destination=compiled_base_destination_asm
-                                                   )
+    compiled_output_txt_asm = jtfo.JinjaTextFileOutput(pi.PIData(k_asm_compiled_output_txt, [k_compiler_asm, k_asm_compilation_announcer_printer]),
+                                                       key_translated_diagram=k_compiler_asm,
+                                                       base_destination=compiled_base_destination
+                                                       )
+    pm.addItem(compiled_output_txt_asm)
 
     # THE END
-    end_printer = pri.PIPrinter(pi.PIData("k_end_printer", [k_compiled_output_txt]),
+    end_printer = pri.PIPrinter(pi.PIData("k_end_printer", [k_compiled_output_txt, k_asm_compiled_output_txt]),
                                 text="TRANSLATION FINISHED",
                                 from_input=False
                                 )

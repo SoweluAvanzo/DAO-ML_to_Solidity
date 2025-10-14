@@ -47,8 +47,9 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
         converted_dao = self.new_translated_dao(
             diagram, dao, other_data=asm_data)
         asm_dao_template_filename = "DAOML"
+        dao_name = u.sanitize_name(dao.get_name())
         converted_dao.template_filename_input = f"{asm_dao_template_filename}.{c_t.ASM_FILE_EXTENSION}"
-        converted_dao.template_filename_output = f"{dao.get_name()}.{c_t.ASM_FILE_EXTENSION}"
+        converted_dao.template_filename_output = f"{dao_name}.{c_t.ASM_FILE_EXTENSION}"
         converted_dao.template_full_folders_path_from_base = c_t.FOLDER_NAME_ASM
         # reverse direction of "is_controlled_by"
         controls_relation: dict[str, set[str]] = {}
@@ -66,6 +67,7 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
                         controls_relation[master_controller] = slaves_set
                     slaves_set.add(e_slave.get_id())
         # now, do the actual "conversion" by populating the "other_data"
+        asm_data["dao_name"] = dao_name
         asm_data["roles"] = [
             {
                 "name": u.to_keyword(r.get_name()),
