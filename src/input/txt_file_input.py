@@ -16,4 +16,4 @@ class TextFileInput(FileInput):
                 yield None
             else:
                 for line in f:
-                    yield line.strip() if self.should_strip_line else line
+                    yield line.strip() if self.should_strip_line else line.replace("\n", "").replace("\r", "")

@@ -217,11 +217,16 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         dao_specific_data_translated["voting_conditions"] = dao.voting_conditions
         dao_specific_data_translated["proposal_conditions"] = dao.proposal_conditions
         dao_specific_data_translated["assignment_conditions"] = dao.assignment_conditions
+        # ... generate_events
         # generate_has_permission_modifier
         dao_specific_data_translated["is_role_access_optimized"] = is_role_access_optimized
         dao_specific_data_translated["total_roles_amount"] = entities_amount
         dao_specific_data_translated["roles"] = dao.roles
         dao_specific_data_translated["committees"] = dao.committees
+        dao_specific_data_translated["committees_names_list"] = [
+            c.get_name() for c in dao.committees.values()]
+        print(
+            f"dao_specific_data_translated['committees_names_list'] -> {dao_specific_data_translated['committees_names_list']}")
         dao_specific_data_translated["entities_amount"] = entities_amount
         dao_specific_data_translated["states_variables__functionalities_ids"] = functionalities_ids
         # dao_specific_data_translated.update( rccd )
@@ -490,7 +495,10 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                     "index_entity_in_dao": role_to_index_fn(is_role_access_optimized, e_name, index_entity),
                     "index_entity": index_entity
                 })
-                index_entity += 0
+                index_entity += 1
+        import json
+        print(
+            f"on dao '{dao.get_name()}', entities_permissions:\n\t {json.dumps(entities_permissions, indent=2)}")
         return entities_permissions
 
     def get_dao_constructor_body(self, dao: d.DAO, id_var_type: str) -> dict:
@@ -593,8 +601,8 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                           ):
         is_custom = False
         if decision_making_method is None:
-            decision_making_method = ""
-            is_custom = True
+            decision_making_method = "custom_decision_making_method"
+            # is_custom = True
         else:
             decision_making_method = decision_making_method.strip()
             is_custom = decision_making_method == ""
@@ -602,9 +610,9 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         contract_name = utils.to_camel_case(committee_name)
         committee_specific_data["contract_name"] = contract_name
         # WAT IF IT'S NONE ? IT'S CUSTOM !!!! TODO MANAGE IT
-        template_name = decision_making_method
+        template_name = contract_name  # decision_making_method
         template_name_ext = f"{template_name}.sol.jinja"
-        if is_custom or not (
+        if not (
                 (template_name in self.all_voting_protocols) or (template_name_ext in self.all_voting_protocols)):
             template_name = FILENAME_VOTING_PROTOCOL_CUSTOM
             template_name_ext = f"{template_name}.sol.jinja"
