@@ -1,5 +1,4 @@
 
-import src.utilities.constants as consts
 import src.files.file_utils as files
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
@@ -29,7 +28,7 @@ import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
-import src.model.enums.extended_enum as ex_enum
+import src.utilities.extended_enum as ex_enum
 
 DAO_TESTS_FOLDER = "tests"
 
@@ -387,6 +386,10 @@ if __name__ == "__main__":
     pm.addItem(end_printer)
 
     print("RUN\n\n\n")
-    pm.runPipeline()
-
+    outputs = pm.runPipeline()
+    """
+    import json
+    print(
+        f"outputs:\n\t {json.dumps({k: str(v) for k, v in outputs.items()}, indent=2)}")
+    """
     print("\n\n\nEND")

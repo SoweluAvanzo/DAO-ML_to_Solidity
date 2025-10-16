@@ -5,7 +5,7 @@ import src.pipeline.pipeline_item as pi
 import src.postprocessing.model_translation.solidity.solidity_translator_general as stg
 import src.postprocessing.output_preparation.compilers.solidity.compiled_solidity_data as compiled_sol
 import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
-import src.model.enums.extended_enum as extended_enum
+import src.utilities.extended_enum as extended_enum
 
 # TODO (2025-08-10) DA SISTEMARE
 
