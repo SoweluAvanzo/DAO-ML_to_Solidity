@@ -3,14 +3,19 @@ pragma solidity {{solidity_version}};
 
 // @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
 
-{% for import in imports %}
-{{ import }}
-{% endfor %}
+{% if is_custom %}
+import "@openzeppelin/contracts/governance/Governor.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "./interfaces/IPermissionManager.sol";
+{% endif %}
 
 contract {{contract_name}} is Governor, GovernorSettings, GovernorVotes, GovernorVotesQuorumFraction {{inherited_contracts}} {
 
     // State variables
-    {{state_var_declarations}}
+    { % if is_custom % }IPermissionManager public permissionManager;{% endif %}
     struct Proposal {
         bool vetoed;
         uint256 creationTime;
@@ -21,13 +26,13 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorVotes, Governo
     mapping(uint256 => Proposal) public proposals; // Track the status of proposals
 
     // Constructor
-    constructor(IVotes _token{{constructor_parameters}}, uint256 _challengePeriod)
+    constructor(IVotes _token{ % if is_custom % }, {% for param in constructor_parameters%}{% if loop.index0 != 0 %}, {% endif %}{{param.param_type}} {{param.param_name}}{% endfor %} {% endif %}, uint256 _challengePeriod)
         Governor({{contract_name}})
         GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(0)
     {
-        {{constructor_actions}}
+        { % if is_custom % }permissionManager = IPermissionManager(_permissionManager);{% endif %}
         challengePeriod = _challengePeriod; // Set the challenge period duration
     }
 
@@ -36,7 +41,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorVotes, Governo
         override
         returns (uint256)
     {
-        {{proposal_requirement}}
+        { % if is_custom % }{% if optimized %}require(permissionManager.canPropose(msg.sender, {{proposal_permission_index}}), "User cannot propose");{% else %}require(permissionManager.isCommitteeMember(msg.sender, {{proposal_permission_index}})==2, "User cannot propose");{% endif %}{% endif %}
         uint256 proposalId = super.propose(targets, values, calldatas, description);
         // Create a new proposal in pending state, can be vetoed within the challenge period
         proposals[proposalId] = Proposal({
@@ -50,7 +55,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorVotes, Governo
 
     // Function to veto a proposal within the challenge period
     function vetoProposal(uint256 proposalId) public {
-        {{vote_requirement}}
+        { % if is_custom % }{% if optimized %}require(permissionManager.canVote(msg.sender, {{voting_permission_index}}), "User cannot vote");{% else %}require(permissionManager.isCommitteeMember(msg.sender, {{voting_permission_index}})==1, "User cannot vote");{% endif %}{% endif %}
         Proposal storage proposal = proposals[proposalId];
         require(!proposal.vetoed, "Proposal already vetoed");
         require(block.timestamp < proposal.creationTime + challengePeriod, "Challenge period expired");

@@ -175,11 +175,18 @@ node_modules/
 translated/
 translated/*
 out
+outputs
+outputs*
+outputs/
+outputs/*
 test/
 test/*
 */test/*
 sim/
 sim/*
+data/test/
+data/test*
+
 NO_COMMIT
 NO_COMMIT*
 NO_COMMIT/
@@ -187,3 +194,7 @@ NO_COMMIT/*
 data/test/
 data/test*
 
+NO_COMMIT
+NO_COMMIT*
+NO_COMMIT/
+NO_COMMIT/*

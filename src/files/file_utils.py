@@ -1,5 +1,7 @@
 import os
 
+PATH_SEPARATOR_CHAR = os.path.sep
+
 def check_and_make_folder(folder_path):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
@@ -12,7 +14,7 @@ def get_base_folder(folder_base):
     except:
         return os.getcwd()
 
-def concat_folder_filename(*parts):
+def concat_folder_filename(*parts) -> str:
     return os.path.join(*parts)
 
 def file_exists(path:str):

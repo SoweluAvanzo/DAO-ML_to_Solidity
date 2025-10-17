@@ -16,6 +16,8 @@ class JsonStringModelGenerator(pi.PipelineItem):
 
     def run(self, inputs):
         diagram_manager = self.get_ith_input(inputs, 0)
+        if diagram_manager is None:
+            raise Exception("JsonStringModelGenerator input is None")
         if not isinstance(diagram_manager, dm.DiagramManager):
             raise Exception("Input must be of an instance of DiagramManager")
         json_ed = diagram_manager.toJSON()

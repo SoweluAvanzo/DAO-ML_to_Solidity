@@ -1,4 +1,5 @@
-import src.model.enums.extended_enum as ext_enum
+import src.utilities.extended_enum as ext_enum
+
 
 class RelationType(ext_enum.ExtendedEnum):
     ASSOCIATION = 1

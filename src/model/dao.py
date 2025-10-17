@@ -2,6 +2,7 @@ import src.model.base_entity as base_entity_module
 import src.model.permission as permission_module
 import src.model.committee as committee_module
 import src.model.role as role_module
+import src.model.governance_area as governance_area_module
 import src.control_graph.control_graph_generic as control_graph_generic_module
 import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 
@@ -13,14 +14,15 @@ class DAOMetadata:
 
     def save_user_functionalities_group_size(self, roles, committees):
         self.size_user_functionalities_group = len(roles) + len(committees)
-        self.user_functionalities_group_size = user_functionalities_group_size_module.UserFunctionalitiesGroupSize.from_size(self.size_user_functionalities_group)
-    
+        self.user_functionalities_group_size = user_functionalities_group_size_module.UserFunctionalitiesGroupSize.from_size(
+            self.size_user_functionalities_group)
+
     def toJSON(self):
         return {
             "user_functionalities_group_size": self.user_functionalities_group_size,
             "size_user_functionalities_group": self.size_user_functionalities_group
         }
-    
+
     def __repr__(self):
         return self.toJSON()
 
@@ -34,33 +36,33 @@ class DAO(base_entity_module.BaseEntity):
         self.owner_role: role_module.Role = None
         self.roles: dict[str, role_module.Role] = {}
         self.committees: dict[str, committee_module.Committee] = {}
+        self.governance_areas: dict[str,
+                                    governance_area_module.GovernanceArea] = {}
         self.permissions: dict[str, permission_module.Permission] = {}
         self.dao_control_graph: control_graph_generic_module.ControlGraphGeneric = None
         self.metadata = DAOMetadata()
-        self.assignment_conditions: dict[str, str] = {} # Role
-        self.voting_conditions: dict[str, str]  = {} # Committee
-        self.proposal_conditions: dict[str, str]  = {} # Committee
-        self.decision_making_methods: dict[str, str]  = {} # Committee
-        self.conditions:list[str] = []
+        self.assignment_conditions: dict[str, str] = {}  # Role
+        self.voting_conditions: dict[str, str] = {}  # Committee
+        self.proposal_conditions: dict[str, str] = {}  # Committee
+        self.decision_making_methods: dict[str, str] = {}  # Committee
+        self.conditions: list[str] = []
         self.role_and_committee_voting_right_dict = {}
         self.role_and_committee_proposal_right_dict = {}
-
 
     def get_name(self) -> str:
         return self.dao_name
 
-
     def add_role(self, role: role_module.Role):
         self.roles[role.get_id()] = role
-
 
     def add_committee(self, committee: committee_module.Committee):
         self.committees[committee.get_id()] = committee
 
-
     def add_permission(self, permission: permission_module.Permission):
         self.permissions[permission.get_id()] = permission
 
+    def add_governance_area(self, governance_area: governance_area_module.GovernanceArea):
+        self.governance_areas[governance_area.get_id()] = governance_area
 
     def toJSON(self):
         obj = super().toJSON()
@@ -68,17 +70,24 @@ class DAO(base_entity_module.BaseEntity):
         obj["mission_statement"] = self.mission_statement
         obj["hierarchical_inheritance"] = self.hierarchical_inheritance
         obj["roles"] = {n: self.roles[n].toJSON() for n in self.roles}
-        obj["committees"] = {n: self.committees[n].toJSON() for n in self.committees}
-        obj["permissions"] = {n: self.permissions[n].toJSON() for n in self.permissions}
+        obj["committees"] = {n: self.committees[n].toJSON()
+                             for n in self.committees}
+        obj["permissions"] = {n: self.permissions[n].toJSON()
+                              for n in self.permissions}
+        obj["governance_areas"] = {
+            n: self.governance_areas[n].toJSON() for n in self.governance_areas},
         obj["dao_control_graph"] = f"DAO Graph, but not serializable, of type: {self.dao_control_graph.__class__.__name__ if self.dao_control_graph is not None else 'NONE'}"
         # obj["metadata"] = self.metadata.toJSON()
-        obj["assignment_conditions"] = {r: self.assignment_conditions[r] for r in self.assignment_conditions}
-        obj["voting_conditions"] = {n: self.voting_conditions[n] for n in self.voting_conditions} 
-        obj["proposal_conditions"] = {n: self.proposal_conditions[n] for n in self.proposal_conditions} 
-        obj["decision_making_methods"] = {n: self.decision_making_methods[n] for n in self.decision_making_methods} 
+        obj["assignment_conditions"] = {
+            r: self.assignment_conditions[r] for r in self.assignment_conditions}
+        obj["voting_conditions"] = {
+            n: self.voting_conditions[n] for n in self.voting_conditions}
+        obj["proposal_conditions"] = {
+            n: self.proposal_conditions[n] for n in self.proposal_conditions}
+        obj["decision_making_methods"] = {
+            n: self.decision_making_methods[n] for n in self.decision_making_methods}
         obj["conditions"] = self.conditions
         return obj
-
 
     def __str__(self):
         """ 
