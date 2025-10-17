@@ -1,5 +1,7 @@
 import src.pipeline.pipeline_item as pi
 
+import src.utilities.errors as e_c
+
 
 class TemplateBase(pi.PipelineItem):
     def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None, key_template_instance_data: str = None):
@@ -15,7 +17,7 @@ class TemplateBase(pi.PipelineItem):
 
     def compile_template(self, instance_data: dict, additional_data=None):
         raise Exception(
-            f"Not implemented yet on instance: {type(instance_data)}")
+            f"{e_c.ERROR_TEXT__NOT_IMPLEMENTED} on instance: {type(instance_data)}")
 
     def run(self, inputs):
         print(

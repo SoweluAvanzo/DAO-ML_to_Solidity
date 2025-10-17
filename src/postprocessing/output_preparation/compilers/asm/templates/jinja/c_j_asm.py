@@ -129,7 +129,7 @@ class CompilerASMTemplateJinja(ctjb.CompilerTemplateJinjaBase, tb_m.CompilerTemp
             diagram_instance_data, tpbn)
         # now, the CORE
         dao_templates_loaded_by_filename_cache = {}  # cache
-        for dao_id, dao_translated in diagram_instance_data.dao_converted_by_id.items():
+        for dao_id, dao_translated in diagram_instance_data.daos_by_id.items():
             if dao_translated.can_be_converted():
                 # get the template
                 if not isinstance(dao_translated, t_j_asm.TranslatedDAO_ASM_Jinja):

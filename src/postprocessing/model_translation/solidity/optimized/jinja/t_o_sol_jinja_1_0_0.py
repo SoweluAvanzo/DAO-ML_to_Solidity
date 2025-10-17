@@ -3,9 +3,10 @@ import src.pipeline.pipeline_item as pi
 
 import src.postprocessing.model_translation.shared.model_translator_base as mcb
 import src.postprocessing.model_translation.shared.translation_result_base as crb
+import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
+import src.postprocessing.model_translation.shared.translation_result_model as trm
 import src.postprocessing.model_translation.model_translator_configurable as mcc
-import src.postprocessing.model_translation.solidity.solidity_translator_general as stg
 # import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
 import src.postprocessing.model_translation.solidity.optimized.jinja.solidity_translator_optimized_jinja as sol_transl_opt_jinja
 
@@ -32,14 +33,12 @@ FILENAME_VOTING_PROTOCOL_CUSTOM = "custom_decision_making_template"
 #
 
 
-class TranslatedCommittee_Jinja_1_0_0(crt.TranslatedSubpartTemplated, stg.TranslatedCommittee):
+class TranslatedCommittee_Jinja_1_0_0(trmt.TranslatedCommitteeTemplated):
     def __init__(self, committee: c.Committee, committee_specific_data: dict,
                  voting_protocol_specific_data: dict = None,
                  is_convertible: bool = True
                  ):
-        crt.TranslatedSubpartTemplated.__init__(
-            self, committee, committee_specific_data, is_convertible=is_convertible)
-        stg.TranslatedCommittee.__init__(
+        trmt.TranslatedCommitteeTemplated.__init__(
             self, committee, committee_specific_data, is_convertible=is_convertible)
         # as of "translator.py # CommitteeTranslator", there are A LOT of additional templates to be created for each Committee
         self.additional_modules_instances_by_name: dict[str, list[dict]] = []
@@ -47,29 +46,25 @@ class TranslatedCommittee_Jinja_1_0_0(crt.TranslatedSubpartTemplated, stg.Transl
         self.voting_protocol_template_file_fullpath: str = ""
 
 
-class TranslatedDAO_Jinja_1_0_0(crt.TranslatedSubpartTemplated, stg.TranslatedDAO):
+class TranslatedDAO_Jinja_1_0_0(trmt.TranslatedDAOTemplated):
     def __init__(self, dao: d.DAO, dao_specific_data: dict,
                  is_convertible: bool = True
                  ):
-        crt.TranslatedSubpartTemplated.__init__(
-            self, dao, dao_specific_data, is_convertible=is_convertible)
-        stg.TranslatedDAO.__init__(
+        trmt.TranslatedDAOTemplated.__init__(
             self, dao, dao_specific_data, is_convertible=is_convertible)
         # dict of ( output_filename, compiled_template )
         self.conditions_converted_by_name: dict[str,
-                                                crt.TranslatedSubpartTemplated] = {}
+                                                trmt.TranslatedDAOTemplated] = {}
         # a dict of ( output_filename, compiled_template ) ; depends on dao's committees
-        self.interfaces_and_fullpath_by_filenames: dict[str, crt.TranslatedSubpartTemplated] = {
+        self.interfaces_and_fullpath_by_filenames: dict[str, trmt.TranslatedDAOTemplated] = {
         }
 
 
-class TranslatedDiagram_Jinja_1_0_0(crt.TranslatedSubpartTemplated, stg.TranslatedDiagram):
+class TranslatedDiagram_Jinja_1_0_0(trmt.TranslatedDiagramTemplated):
     def __init__(self, diagram: dm.DiagramManager, diagram_specific_data: dict,
                  is_convertible: bool = True
                  ):
-        crt.TranslatedSubpartTemplated.__init__(
-            self, diagram, diagram_specific_data, is_convertible=is_convertible)
-        stg.TranslatedDiagram.__init__(
+        trmt.TranslatedDiagramTemplated.__init__(
             self, diagram, diagram_specific_data, is_convertible=is_convertible)
         self.interfaces_converted_specific_data = {}
 
@@ -134,7 +129,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                 - - -> template_path =
         """
 
-    def translate_diagram_solidity(self, diagram: dm.DiagramManager, additional_data: dict = None) -> stg.TranslatedDiagram:
+    def translate_diagram_solidity(self, diagram: dm.DiagramManager, additional_data: dict = None) -> TranslatedDiagram_Jinja_1_0_0:
         version = additional_data[self.key_converter_target] if self.key_converter_target in additional_data \
             else additional_data[mcc.ModelTranslatorConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION]
         if version is None or version.strip() == "":
@@ -175,7 +170,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                solidity_version: str = SOLIDITY_VERSION_DEFAULT,
                                version_target: str = "",
                                version_for_file: str = ""
-                               ) -> stg.TranslatedDAO:
+                               ) -> TranslatedDAO_Jinja_1_0_0:
         dao_specific_data_translated = {}
         dao_translated: TranslatedDAO_Jinja_1_0_0 = self.new_translated_dao(
             diagram, dao, dao_specific_data_translated)
@@ -295,7 +290,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                      version_target: str = "",
                                      solidity_version: str = SOLIDITY_VERSION_DEFAULT,
                                      version_for_file: str = ""
-                                     ) -> stg.TranslatedDAO:
+                                     ) -> TranslatedDAO_Jinja_1_0_0:
         committee_specific_data_translated = {}
         voting_protocol_specific_data = {}
         committee_translated: TranslatedCommittee_Jinja_1_0_0 = self.new_translated_committee(

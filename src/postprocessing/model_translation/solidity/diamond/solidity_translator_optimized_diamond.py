@@ -1,6 +1,8 @@
 import src.pipeline.pipeline_item as pi
 import src.postprocessing.model_translation.solidity.solidity_translator_general as sol_transl_general
 
+import src.utilities.errors as e_c
+
 
 class SolidityTranslatorOptimizedDiamond(sol_transl_general.SolidityTranslatorGeneral):
 
@@ -9,4 +11,4 @@ class SolidityTranslatorOptimizedDiamond(sol_transl_general.SolidityTranslatorGe
 
     def translate(self, additional_data=None):
         raise Exception(
-            "Not implemented yet : SolidityTranslatorOptimizedDiamond")
+            f"{e_c.ERROR_TEXT__NOT_IMPLEMENTED} : SolidityTranslatorOptimizedDiamond")

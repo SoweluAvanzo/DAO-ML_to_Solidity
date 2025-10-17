@@ -3,6 +3,7 @@ from typing import Type
 import src.pipeline.pipeline_manager as pmp
 
 import src.utilities.extended_enum as ex_enum
+import src.utilities.errors as e_c
 
 
 class TranslationPhases(ex_enum.ExtendedEnum):
@@ -85,19 +86,19 @@ class TranslatorProcess:
 
     def _build_translation_pipeline(self) -> pmp.PipelineManager:
         pm = pmp.PipelineManager()
-        raise Exception("Not implemented yet")
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def _build_phase_input(self, pm: pmp.PipelineManager):
-        raise Exception("Not implemented yet")
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def _build_phase_model_generation(self, pm: pmp.PipelineManager):
-        raise Exception("Not implemented yet")
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def _build_phase_postprocessing(self, pm: pmp.PipelineManager):
-        raise Exception("Not implemented yet")
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def _build_phase_output(self, pm: pmp.PipelineManager):
-        raise Exception("Not implemented yet")
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
 
 # python -m src.translator_process

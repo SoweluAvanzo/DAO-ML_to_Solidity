@@ -8,9 +8,10 @@ import src.postprocessing.output_preparation.compilers.shared.templates.compiler
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_solidity_t_j as tjs
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
 import src.postprocessing.output_preparation.compilers.solidity.compiled_solidity_data as csd
+import src.postprocessing.model_translation.shared.translation_result_model as trm
+import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
 import src.postprocessing.model_translation.solidity.solidity_translator_general as stg
 import src.postprocessing.model_translation.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as conv_sol_jinja_1_0_0
-import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
 
 import src.postprocessing.consts_template as consts_t
 import src.files.file_utils as file_utils
@@ -226,7 +227,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
         yield compilated
 
     def compile_template(self,
-                         diagram_instance_data: stg.TranslatedDiagram,
+                         diagram_instance_data: trm.TranslatedDiagram,
                          additional_data=None
                          ) -> csd.CompiledSolidityDiagram:
         if self.key_is_result_as_list is None or additional_data is None or (self.key_is_result_as_list in additional_data and additional_data[self.key_is_result_as_list]):

@@ -4,17 +4,20 @@ import src.pipeline.pipeline_item as pi
 import src.postprocessing.model_translation.shared.model_translator_base as mcb
 import src.postprocessing.model_translation.shared.translation_result_base as crb
 import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
+import src.postprocessing.model_translation.shared.translation_result_model as trm
 import src.postprocessing.consts_template as c_t
 
 import src.model.dao as dao_m
 import src.model.diagram_manager as diagram_manager_m
 
 
-class TranslatedDAO_ASM_Jinja(crt.TranslatedSubpartTemplated):
+class TranslatedDAO_ASM_Jinja(crt.TranslatedSubpartTemplated, trm.TranslatedDAO):
     def __init__(self, dao: dao_m.DAO, dao_specific_data: dict,
                  is_convertible: bool = True
                  ):
         crt.TranslatedSubpartTemplated.__init__(
+            self, dao, dao_specific_data, is_convertible=is_convertible)
+        trm.TranslatedDAO.__init__(
             self, dao, dao_specific_data, is_convertible=is_convertible)
         # dict of ( output_filename, compiled_template )
         """
@@ -23,21 +26,21 @@ class TranslatedDAO_ASM_Jinja(crt.TranslatedSubpartTemplated):
         """
 
 
-class TranslatedDiagram_ASM_Jinja(crt.TranslatedSubpartTemplated):
+class TranslatedDiagram_ASM_Jinja(crt.TranslatedSubpartTemplated, trm.TranslatedDiagram):
     def __init__(self, diagram: diagram_manager_m.DiagramManager, diagram_specific_data: dict,
                  is_convertible: bool = True
                  ):
         crt.TranslatedSubpartTemplated.__init__(
             self, diagram, diagram_specific_data, is_convertible=is_convertible)
+        trm.TranslatedDiagram.__init__(
+            self, diagram, diagram_specific_data, is_convertible=is_convertible)
+        """
         self.dao_converted_by_id: dict[str, TranslatedDAO_ASM_Jinja] = {}
         # dict of ( output_filename, compiled_template )
-        """
         self.other_subparts_converted_by_name: dict[str,
             crt.TranslatedSubpartTemplated] = {}
-        """
 
-    def add_dao_converted(self, dao_c: TranslatedDAO_ASM_Jinja):
-        self.dao_converted_by_id[dao_c.get_id()] = dao_c
+        """
 
 #
 
@@ -88,5 +91,5 @@ class TranslatorJinjaASM(mcb.ModelTranslatorBase):
         diagram_converted = self.translate_Diagram_to_ASM(model)
         for dao in model.daoByID.values():
             dao_converted = self.translate_DAO_to_ASM(model, dao)
-            diagram_converted.add_dao_converted(dao_converted)
+            diagram_converted.add_translated_dao(dao_converted)
         return diagram_converted
