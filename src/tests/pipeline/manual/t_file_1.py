@@ -15,6 +15,7 @@ import src.postprocessing.model_translation.model_translator_configurable as mcc
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
 import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
+import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as sol_test_t
 
 import src.postprocessing.consts_template as consts_t
 import src.postprocessing.model_translation.translation_types as ct
@@ -378,8 +379,42 @@ if __name__ == "__main__":
                                                        )
     pm.addItem(compiled_output_txt_asm)
 
+    # Hardhat Tests
+
+    k_translator_sol_test = "k_translator_sol_test"
+    translator_sol_test = sol_test_t.SolidityTestsTranslatorJinjaHardhat_1_0_0(pi.PIData(k_translator_asm, [k_model_generator]),
+                                                                               optional_external_data=None,
+                                                                               key_model=k_model_generator
+                                                                               )
+    pm.addItem(translator_sol_test)
+
+    """
+    k_compiler_sol_test = "k_compiler_sol_test"
+    compiler_sol_test = c_sol_test_t_j.Compilersol_testTemplateJinja(pi.PIData(k_compiler_sol_test, [k_translator_sol_test, k_PI_template_provider]),
+                                                      optional_external_data=None,
+                                                      key_template_instance_data=k_translator_sol_test,
+                                                      key_template_skeleton_provider_by_name=k_PI_template_provider
+                                                      )
+    pm.addItem(compiler_sol_test)
+
+    k_sol_test_compilation_announcer_printer = "k_sol_test_compilation_announcer_printer"
+    sol_test_compilation_announcer_printer = pri.PIPrinter(pi.PIData(k_sol_test_compilation_announcer_printer, [k_compiler_sol_test]),
+                                                      text="\n\n outputting_sol_test",
+                                                      from_input=False
+                                                      )
+    pm.addItem(sol_test_compilation_announcer_printer)
+    
+    k_sol_test_compiled_output_txt = "k_sol_test_compiled_output_txt"
+    compiled_output_txt_sol_test = jtfo.JinjaTextFileOutput(pi.PIData(k_sol_test_compiled_output_txt, [k_compiler_sol_test, k_sol_test_compilation_announcer_printer]),
+                                                       key_translated_diagram=k_compiler_sol_test,
+                                                       base_destination=compiled_base_destination
+                                                       )
+    pm.addItem(compiled_output_txt_sol_test)
+    """
+
     # THE END
-    end_printer = pri.PIPrinter(pi.PIData("k_end_printer", [k_compiled_output_txt, k_asm_compiled_output_txt]),
+    end_printer = pri.PIPrinter(pi.PIData("k_end_printer", [k_compiled_output_txt, k_asm_compiled_output_txt  # , k_sol_test_compiled_output_txt
+                                                            ]),
                                 text="TRANSLATION FINISHED",
                                 from_input=False
                                 )

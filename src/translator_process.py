@@ -47,24 +47,43 @@ class InputModelProvider:
 
 #
 
+# TODO ; finire di preparare
+
 
 class TranslatorProcess:
+    """
+    Class allowing to define the WHOLE translation process: as described in the Enum "TranslationPhases",
+    it allows to define the input source and type (example: an XML string from a file, or a JSON from
+    an API call), its related conversion into a Model, eventual post-processing sub-step(s) and, finally,
+    all types of output;
+    all in a single, unified execution process.
+
+    It builds a "PipelineManager" and manages all sub-steps as "PipelineItem"(s).
+    """
+
     def __init__(self,
                  input: InputModelProvider,
                  model_transformations: set | list = None,
+                 generate_tests=True,  # only when applicable
                  # TODO altro
                  #
-                 should_print_errors=True
+                 is_debug=True
                  ):
-        self.should_print_errors = should_print_errors
+        self.is_debug = is_debug
         self.current_phase: TranslationPhases = None
         self.model_transformations = self.__digest_set_enum(
             ModelTransformation.list() if model_transformations is None else model_transformations, ModelTransformation)
         print(
             f"self.model_transformations: {', '.join(self.model_transformations)}")
+        self.generate_tests = generate_tests
         self.translation_pipeline: pmp.PipelineManager = self._build_translation_pipeline()
 
     def __digest_set_enum(self, s: set, e_t: Type[ex_enum.ExtendedEnum]) -> set[str]:
+        """
+        Transform a set of "something", whose elements might (each individually and independently) be
+        a string or an "e_t" (whatever that class might be; still always extendint "ExtendedEnum"), into
+        a set of strings.
+        """
         a: list[str] = []
         i = 0
         for v in s:
@@ -73,7 +92,7 @@ class TranslatorProcess:
             elif isinstance(v, e_t):
                 a.append(v.value)
             else:
-                if self.should_print_errors:
+                if self.is_debug:
                     print(
                         f"ERRPR on getting enum set (of type: {e_t}): element # {i} is not a str nor an Enum value, but: {type(v)}")
             i += 1
@@ -103,5 +122,5 @@ class TranslatorProcess:
 
 # python -m src.translator_process
 if __name__ == "__main__":
-    t = TranslatorProcess(should_print_errors=True, model_transformations=[
+    t = TranslatorProcess(is_debug=True, model_transformations=[
         ModelTransformation.ASM, None, "jsOn", 3])

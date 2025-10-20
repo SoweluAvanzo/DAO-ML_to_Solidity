@@ -9,10 +9,10 @@ import src.postprocessing.model_translation.shared.translation_result_model as t
 import src.postprocessing.model_translation.model_translator_configurable as mcc
 # import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
 import src.postprocessing.model_translation.solidity.optimized.jinja.solidity_translator_optimized_jinja as sol_transl_opt_jinja
+import src.postprocessing.model_translation.solidity.shared_utils as shared_utils_sol
 
 import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
-import src.model.enums.entity_type_controllable as etc
-import src.model.aggregable_entity as aggregable_e
+import src.model.aggregable_entity as aggregable_entity
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.committee as c
@@ -24,7 +24,6 @@ import src.files.file_utils as file_utils
 import src.utilities.utils as utils
 
 VERSION = "1.0.0"
-SOLIDITY_VERSION_DEFAULT = "^0.8.0"
 
 FILENAME_VOTING_PROTOCOL_CUSTOM = "custom_decision_making_template"
 
@@ -135,7 +134,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         if version is None or version.strip() == "":
             version = VERSION
         version_for_file = version.replace('.', '_')
-        solidity_version = SOLIDITY_VERSION_DEFAULT
+        solidity_version = consts_t.SOLIDITY_VERSION_DEFAULT
         diagram_specific_data_translated = {
             "solidity_version": solidity_version
         }
@@ -167,7 +166,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         return td
 
     def translate_DAO_solidity(self, diagram: dm.DiagramManager, dao: d.DAO,
-                               solidity_version: str = SOLIDITY_VERSION_DEFAULT,
+                               solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                                version_target: str = "",
                                version_for_file: str = ""
                                ) -> TranslatedDAO_Jinja_1_0_0:
@@ -288,7 +287,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                      diagram: dm.DiagramManager, dao: d.DAO, committee: c.Committee,
                                      permission_to_index: dict[str, int],
                                      version_target: str = "",
-                                     solidity_version: str = SOLIDITY_VERSION_DEFAULT,
+                                     solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                                      version_for_file: str = ""
                                      ) -> TranslatedDAO_Jinja_1_0_0:
         committee_specific_data_translated = {}
@@ -369,86 +368,27 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         return perm_var_type
 
     def compute_states_variables__functionalities_ids(self, dao: d.DAO):
-        i = 0
-        functionalities_ids = {}
-        for role in dao.roles.values():
-            functionalities_ids[role.get_id()] = i
-            i += 1
-        for committee in dao.committees.values():
-            functionalities_ids[committee.get_id()] = i
-            i += 1
-        return functionalities_ids
+        """
+        Override-designed
+        """
+        return shared_utils_sol.get_DAO_functionalities_ids(dao)
 
-    def __get_control_bitflags(self,
-                               dao: d.DAO,
-                               role_or_committee: aggregable_e.AggregableEntity,
-                               r_o_c_ID: str,
-                               group_size: user_functionalities_group_size_module.UserFunctionalitiesGroupSize,
-                               functionalities_ids
-                               ):
-        bits_for_id = group_size.value[1]
-        mask = 0
-        is_transitive = dao.hierarchical_inheritance == 1 or dao.hierarchical_inheritance == "1"
-        if not dao.dao_control_graph.has_node(r_o_c_ID):
-            return 0, 0
-        all_controllers = dao.dao_control_graph.get_all_descendants_of(r_o_c_ID) \
-            if is_transitive else \
-            role_or_committee.controllers
-        if is_transitive and dao.dao_control_graph.has_edge(r_o_c_ID, r_o_c_ID):
-            all_controllers.append(r_o_c_ID)
-        for controller in all_controllers:
-            index = functionalities_ids[controller]
-            mask |= (1 << index)
-        return mask << bits_for_id, mask
+    def get_control_bitflags(self,
+                             dao: d.DAO,
+                             role_or_committee: aggregable_entity.AggregableEntity,
+                             group_size: user_functionalities_group_size_module.UserFunctionalitiesGroupSize,
+                             functionalities_ids: dict[str, int]
+                             ):
+        """
+        Override-designed
+        """
+        return shared_utils_sol.get_control_bitflags(dao, role_or_committee, group_size, functionalities_ids)
 
-    def compute_states_variables__roles_committee_computed_data(self, dao: d.DAO, functionalities_ids, group_size):
-        # entities_amount = len(dao.roles) + len(dao.committees)
-        index_entity = 0
-        entity_to_data = {}
-        roles_computed_data = {}
-        committees_computed_data = {}
-        for role in dao.roles.values():
-            mask_shifted_for_id_bits, original_mask = self.__get_control_bitflags(
-                dao, role, role.get_id(), group_size, functionalities_ids)
-            final_id = functionalities_ids[role.get_id(
-            )] | mask_shifted_for_id_bits
-            name_sanitized = role.role_name.replace(" ", "_")
-            # lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity}) {name_sanitized} -> ID : {functionalities_ids[role.get_id()]} , control bitmask: { '{0:b}'.format( original_mask ) }")
-            ed = newEntityData(
-                final_id=final_id,
-                name=name_sanitized,
-                index=index_entity,
-                original_id=role.get_id(),
-                entity_type=etc.EntityTypeControllable.ROLE.value,
-                mask=original_mask
-            )
-            entity_to_data[role.get_id()] = ed
-            roles_computed_data[role.get_id()] = ed
-            index_entity += 1
-
-        for committee in dao.committees.values():
-            mask_shifted_for_id_bits, original_mask = self.__get_control_bitflags(
-                dao, committee, committee.get_id(), group_size, functionalities_ids)
-            final_id = functionalities_ids[committee.get_id(
-            )] | mask_shifted_for_id_bits
-            name_sanitized = committee.committee_description.replace(" ", "_")
-            # lines.append(f"        {final_id}{',' if index_entity != (entities_amount -1) else ''} // #{index_entity})  {name_sanitized} -> ID : {functionalities_ids[committee.get_id()]} , control bitmask: { '{0:b}'.format( original_mask ) }")
-            ed = newEntityData(
-                final_id=final_id,
-                name=name_sanitized,
-                index=index_entity,
-                original_id=committee.get_id(),
-                entity_type=etc.EntityTypeControllable.COMMITTEE.value,
-                mask=original_mask
-            )
-            entity_to_data[committee.get_id()] = ed
-            committees_computed_data[committee.get_id()] = ed
-            index_entity += 1
-        return {
-            "entity_to_data": entity_to_data,
-            "roles_computed_data": roles_computed_data,
-            "committees_computed_data": committees_computed_data
-        }
+    def compute_states_variables__roles_committee_computed_data(self, dao: d.DAO, functionalities_ids: dict[str, int], group_size: int):
+        """
+        Override-designed
+        """
+        return shared_utils_sol.get_roles_committee_computed_data(dao, functionalities_ids, group_size)
 
     def get_dao_constructor_parameters(self, dao: d.DAO, id_var_type: str) -> dict:
         params: list[dict] = []
@@ -468,7 +408,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
     def generate_role_permission_mapping_data(self, dao: d.DAO, space_to_underscore_fn, permission_to_index: dict, is_role_access_optimized: bool):
         # permission_to_index:dict[str, int]
         entities_permissions = []
-        entities_map_list: list[dict[str, aggregable_e.AggregableEntity]] = [
+        entities_map_list: list[dict[str, aggregable_entity.AggregableEntity]] = [
             dao.roles,
             dao.committees
         ]
@@ -525,7 +465,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                            dao_conversion: TranslatedDAO_Jinja_1_0_0,
                                            perm_var_type: str = "address",
                                            version_target: str = VERSION,
-                                           solidity_version: str = SOLIDITY_VERSION_DEFAULT,
+                                           solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                                            version_for_file: str = ""
                                            ):
         interface_filename = "IPermissionManager"
@@ -556,7 +496,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                          dao_conversion: TranslatedDAO_Jinja_1_0_0,
                                          perm_var_type: str = "address",
                                          version_target: str = VERSION,
-                                         solidity_version: str = SOLIDITY_VERSION_DEFAULT,
+                                         solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                                          version_for_file: str = ""
                                          ):
         condition_template_input_standard = f"ConditionImplementation_{version_for_file}.sol.jinja"
@@ -588,7 +528,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                           committee_name: str = "",
                                           decision_making_method: str = "",
                                           target_version: str = "",
-                                          solidity_version: str = SOLIDITY_VERSION_DEFAULT,
+                                          solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                                           voting_permission_index: int = -1,
                                           proposal_permission_index: int = -1,
                                           template_voting_protocol_base_path: str = ".",
@@ -632,17 +572,3 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         committee_specific_data["optimized"] = True
         committee_specific_data["voting_permission_index"] = voting_permission_index
         committee_specific_data["proposal_permission_index"] = proposal_permission_index
-
-
-def newEntityData(final_id=0, name="", index=-1, original_id="", address="", entity_type: etc.EntityTypeControllable = None, mask: int = -1):
-    if entity_type == None:
-        entity_type = etc.EntityTypeControllable.ROLE.value  # default
-    return {
-        "final_id": final_id,
-        "name": name,
-        "index": index,
-        "original_id": original_id,
-        "address": address,
-        "entity_type": entity_type,
-        "mask": mask
-    }

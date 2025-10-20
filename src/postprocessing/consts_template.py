@@ -11,6 +11,8 @@ JINJA_FILE_EXTENSION = "jinja"
 
 FOLDER_NAME_SOLIDITY = "solidity"
 
+SOLIDITY_VERSION_DEFAULT = "^0.8.0"
+
 NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL = "voting_protocols"
 DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL = file_utils.concat_folder_filename(
     DEFAULT_BASE_FOLDER_TEMPLATES, NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL)
@@ -23,6 +25,12 @@ DEFAULT_FOLDER_TEMPLATES_INTERFACES = file_utils.concat_folder_filename(
 
 FOLDER_NAME_ASM = "asm"
 ASM_FILE_EXTENSION = "asm"
+
+# HardhatTests
+
+TESTS_FILE_EXTENSION = "js"
+FOLDER_NAME_TESTS = file_utils.concat_folder_filename(
+    FOLDER_NAME_SOLIDITY, "tests")
 
 # Petri Nets
 # TODO

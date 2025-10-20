@@ -5,8 +5,9 @@ import src.pipeline.pipeline_item as pi
 # import src.postprocessing.output_preparation.templates.jinja.c_t_j_base as tjb
 import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
 import src.postprocessing.output_preparation.compilers.shared.templates.compiler_template_base_multipart as tb_m
-import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_solidity_t_j as tjs
+import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_multipart as ctj_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
+import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_solidity_t_j as tjs
 import src.postprocessing.output_preparation.compilers.solidity.compiled_solidity_data as csd
 import src.postprocessing.model_translation.shared.translation_result_model as trm
 import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
@@ -19,49 +20,40 @@ import src.utilities.constants as consts
 import src.utilities.utils as utils
 
 
-class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_m.CompilerTemplateBaseMultipart):
-    """
-    @param key_template_skeleton_factory_by_name: key of a function that, provided a template name, returns its skeleton.
-    Must be an instance of "TemplateProviderByName"
-    """
-
-    def __init__(self, pipeline_item_data: pi.PIData,
-                 optional_external_data=None,
+class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj_m.CompilerTemplateJinjaMultipart):
+    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
                  key_diagram_instance_data: str = None,
                  key_diagram_model: str = None,
                  key_template_skeleton_provider_by_name: str = None,
                  key_is_result_as_list: str = None
                  ):
-        tjs.CompilerSolidityTemplateJinja.__init__(self, \
-                                                   # super().__init__( \
-                                                   # tjs.CompilerSolidityTemplateJinja.__init__(
-                                                   pipeline_item_data,
-                                                   optional_external_data=optional_external_data,
-                                                   key_template_instance_data=key_diagram_instance_data,
-                                                   key_template_skeleton=None,
-                                                   key_diagram_model=key_diagram_model
-                                                   )
-        # tb_m.CompilerTemplateBaseMultipart.__init__(pipeline_item_data, optional_external_data=optional_external_data)
-        self.key_template_skeleton_provider_by_name = key_template_skeleton_provider_by_name
-        self.key_is_result_as_list = key_is_result_as_list
-        # self.base_folder_templates = base_folder_templates if base_folder_templates is not None else consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
+        """
+        @param key_template_skeleton_provider_by_name: key of a function that, provided a template name, returns its skeleton.
+        Must be an instance of "TemplateProviderByName"
+        """
+        super().__init__(pipeline_item_data,
+                         optional_external_data=optional_external_data,
+                         key_diagram_instance_data=key_diagram_instance_data,
+                         key_diagram_model=key_diagram_model,
+                         key_template_skeleton_provider_by_name=key_template_skeleton_provider_by_name,
+                         key_is_result_as_list=key_is_result_as_list
+                         )
 
     #
 
-    def get_all_parts_to_compile_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
-        if additional_data is None:
-            raise Exception(
-                f"Compile template ({self.__class__.__name__}) needs non-None additional_data (from inputs) to get stuff")
+    def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
+        return isinstance(compiled_part, csd.CompiledSolidityDiagram)
+
+    def check_instance_data(self, instance_data: dict, additional_data=None):
         if not isinstance(instance_data, conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0):
             raise Exception(
-                f"Compile template ({self.__class__.__name__}) needs diagram_instance_data of class TranslatedDiagram_Jinja_1_0_0 (TODO: 'or subclass'), but '{type(instance_data)}' was provided")
-        diagram_instance_data = instance_data  # alias
+                f"instance_data is of type {type(instance_data)} rether than TranslatedDiagram_ASM_Jinja")
+        return True
 
-        tpbn = self.get_ith_input(
-            additional_data, 2) if self.key_template_skeleton_provider_by_name is None else additional_data[self.key_template_skeleton_provider_by_name]
-        if not isinstance(tpbn, template_provider.TemplateProviderByName):
-            raise Exception("template provider by name needed")
+    #
 
+    def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
+        diagram_instance_data: conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0 = instance_data  # alias
         name = diagram_instance_data.get_name()
         # we don't compile the Diagram: only the DAOs (and Committes ... and GovernanceAreas?)
         diagram_compiled = ""
@@ -88,11 +80,9 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                     template_filename_dao_in = dao_translated.template_filename_input
                     template_filename_dao_out = dao_translated.template_filename_output
                     template_folder_path_base = dao_translated.template_full_folders_path_from_base
-                    print(
-                        f"\t dao_translated.template_full_folders_path_from_base -> {dao_translated.template_full_folders_path_from_base}")
+                    # print(f"\t dao_translated.template_full_folders_path_from_base -> {dao_translated.template_full_folders_path_from_base}")
                 else:
-                    print(
-                        f"\n ERROR: dao_translated has type: {type(dao_translated)}")
+                    # print(f"\n ERROR: dao_translated has type: {type(dao_translated)}")
                     template_filename_dao_in = dao_translated.get_name()
                     template_filename_dao_out = template_filename_dao_in
                     template_folder_path_base = ""
@@ -101,11 +91,10 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                     template_skeleton_dao = dao_templates_loaded_by_filename[template_filename_dao_in]
                 else:
                     template_filename_dao_extension = f"{template_filename_dao_in}.{self.jinja_extension}"
-                    print(f"\n  on {type(self)} : BEFORE getting the template skeletons for DAO .... template_folder_path_base: {template_folder_path_base} ; template_filename_dao_extension: {template_filename_dao_extension}")
+                    # print(f"\n  on {type(self)} : BEFORE getting the template skeletons for DAO .... template_folder_path_base: {template_folder_path_base} ; template_filename_dao_extension: {template_filename_dao_extension}")
                     template_skeleton_dao = tpbn.provide_template_skeleton_by_name(
                         template_name=[template_folder_path_base, template_filename_dao_extension])
-                    print(
-                        f"\n  on {type(self)} : AFTER getting the template skeletons for DAO")
+                    # print(f"\n  on {type(self)} : AFTER getting the template skeletons for DAO")
                     # join the template into a single string
                     if template_skeleton_dao is None:
                         raise Exception(
@@ -117,8 +106,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                 # now compile
                 template_filename_dao_out = utils.sanitize_name(
                     template_filename_dao_out)
-                print(
-                    f"compiling DAO with ID: ({dao_id}) and output Name: ({template_filename_dao_out}) ..... AND template_folder_path_base: {template_folder_path_base}")
+                # print(f"compiling DAO with ID: ({dao_id}) and output Name: ({template_filename_dao_out}) ..... AND template_folder_path_base: {template_folder_path_base}")
                 compiled_dao = super().compile_single_template(
                     template_skeleton_dao, dao_translated.entity_specific_data)
                 # each DAO do create a sub-folder holding everything in there, even the DAO itself
@@ -130,8 +118,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                     template_filename_dao_out_no_ext = template_filename_dao_out[:index_extension]
                 dao_folder_output_path = file_utils.concat_folder_filename(
                     template_folder_path_base, consts_t.FOLDER_NAME_SOLIDITY, template_filename_dao_out_no_ext)
-                print(
-                    f"C_SOL ... dao_folder_output_path: {dao_folder_output_path}")
+                # print(f"C_SOL ... dao_folder_output_path: {dao_folder_output_path}")
                 compiled_dao_filename = file_utils.concat_folder_filename(
                     dao_folder_output_path, f"{template_filename_dao_out_no_ext}.{consts.SOLIDITY_EXTENSION_OUTPUT}")
                 compiled_dao_struct = csd.CompiledSolidityDAO(
@@ -157,22 +144,18 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                                 compiled_filename = file_utils.concat_folder_filename(
                                     dao_folder_output_path,
                                     converted_thing.template_full_folders_path_from_base, f"{converted_thing.template_filename_output}.{consts.SOLIDITY_EXTENSION_OUTPUT}")
-                                print(
-                                    f"compiled_filename of interfaces/conditions: {compiled_filename}")
+                                # print(f"compiled_filename of interfaces/conditions: {compiled_filename}")
                                 compiled_thing_wrapper = cgd.CompiledUnitWithID(
                                     None, compiled_filename, compiled_thing)
                                 compiled_dao_struct.interfaces_and_dao_related_compiled_contracts[
                                     filename] = compiled_thing_wrapper
                                 yield compiled_thing_wrapper
-                            else:
-                                print(
-                                    f"Can't convert THING: {filename} - {converted_thing.get_name()}")
+                            # else:
+                                # print(f"Can't convert THING: {filename} - {converted_thing.get_name()}")
                 compilated.add_dao(compiled_dao_struct)
                 yield compiled_dao_struct
-            else:
-                print(
-                    f"Can't convert DAO: {dao_id} - {dao_translated.get_name()}")
-            # TODO: (2025-08-13) compile each Committee ... (2025-09-04) is there something missing?
+            # else:
+                # print(f"Can't convert DAO: {dao_id} - {dao_translated.get_name()}")
             for committee_id, committee_translated in dao_translated.committees_by_id.items():
                 if committee_translated.can_be_converted():
                     # lists are allowed to load sub-templates in sub-folders
@@ -195,8 +178,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                         template_skeleton_committee = committee_templates_loaded_by_filename[
                             template_filename_input]
                     else:
-                        print(
-                            f"in SOL, going to provide template_skeleton_committee_path: {template_skeleton_committee_path}")
+                        # print(f"in SOL, going to provide template_skeleton_committee_path: {template_skeleton_committee_path}")
                         template_skeleton_committee = tpbn.provide_template_skeleton_by_name(
                             template_name=template_skeleton_committee_path)
                         if isinstance(template_skeleton_committee, list):
@@ -205,8 +187,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                         committee_templates_loaded_by_filename[template_filename_input] = template_skeleton_committee
                     # committee_folder_output_path = file_utils.check_and_make_folder([ ...])
                     committee_folder_output_path = dao_folder_output_path
-                    print(
-                        f"on compiling committee, template_folder_path_base= {template_folder_path_base} ; committee_folder_output_path: {committee_folder_output_path}")
+                    # print(f"on compiling committee, template_folder_path_base= {template_folder_path_base} ; committee_folder_output_path: {committee_folder_output_path}")
                     compiled_committee_filename = file_utils.concat_folder_filename(
                         committee_folder_output_path, f"{committee_translated.template_filename_output}.{consts.SOLIDITY_EXTENSION_OUTPUT}")
                     compiled_committee = super().compile_single_template(
@@ -220,23 +201,19 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, tb_
                     print(
                         f"Can't convert COMMITTEE: {committee_id} - {committee_translated.get_name()}")
                 """
-                TODO
+                TODO (20/10/2025)
                 if isinstance(committee_translated, conv_sol_jinja_1_0_0.TranslatedCommittee_Jinja_1_0_0):
                     committee_translated.additional_modules_instances_by_name
                 """
         yield compilated
 
-    def compile_template(self,
-                         diagram_instance_data: trm.TranslatedDiagram,
-                         additional_data=None
-                         ) -> csd.CompiledSolidityDiagram:
-        if self.key_is_result_as_list is None or additional_data is None or (self.key_is_result_as_list in additional_data and additional_data[self.key_is_result_as_list]):
-            # return super(tb_m.CompilerTemplateBaseMultipart, self)
-            return tb_m.CompilerTemplateBaseMultipart.compile_template(self, instance_data=diagram_instance_data, additional_data=additional_data)
-        compiled: csd.CompiledSolidityDiagram = None
-        for cp in self.get_all_parts_to_compile_as_generator(instance_data=diagram_instance_data, additional_data=additional_data):
-            if isinstance(cp, csd.CompiledSolidityDiagram):
-                compiled = cp  # assumption: this check is True only ONE time
-        if compiled is None:
-            print(f"{type(self)} returns NOTHING on compile_template")
-        return compiled
+    #
+
+    def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
+        return isinstance(compiled_part, csd.CompiledSolidityDiagram)
+
+    def check_instance_data(self, instance_data: dict, additional_data=None):
+        if not isinstance(instance_data, conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0):
+            raise Exception(
+                f"Compile template ({self.__class__.__name__}) needs diagram_instance_data of class TranslatedDiagram_Jinja_1_0_0 (TODO: 'or subclass'), but '{type(instance_data)}' was provided")
+        return True

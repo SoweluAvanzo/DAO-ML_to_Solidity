@@ -2,7 +2,7 @@ from typing import Generator
 
 import src.pipeline.pipeline_item as pi
 
-import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_base as ctjb
+import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_multipart as ctj_m
 import src.postprocessing.output_preparation.compilers.shared.templates.compiler_template_base_multipart as tb_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
 import src.postprocessing.output_preparation.compilers.asm.templates.compiled_asm_data as cad
@@ -13,32 +13,42 @@ import src.postprocessing.consts_template as consts_t
 
 import src.postprocessing.model_translation.asm.t_j_asm as t_j_asm
 
-# import src.model.dao as dao_m
-# import src.model.aggregable_entity as aggregable_e
 
 import src.files.file_utils as fu
 import src.utilities.utils as utils
-# import src.utilities.constants as consts
 
 """
 No differences at the moment from the super (Jinja Base) class.
 """
 
 
-class CompilerASMTemplateJinja(ctjb.CompilerTemplateJinjaBase, tb_m.CompilerTemplateBaseMultipart):
+class CompilerASMTemplateJinja(ctj_m.CompilerTemplateJinjaMultipart):
     def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
-                 key_template_instance_data: str = None,
+                 key_diagram_instance_data: str = None,
+                 key_diagram_model: str = None,
                  key_template_skeleton_provider_by_name: str = None,
                  key_is_result_as_list: str = None
                  ):
         super().__init__(pipeline_item_data,
                          optional_external_data=optional_external_data,
-                         key_template_instance_data=key_template_instance_data,
-                         key_template_skeleton=None
+                         key_diagram_instance_data=key_diagram_instance_data,
+                         key_diagram_model=key_diagram_model,
+                         key_template_skeleton_provider_by_name=key_template_skeleton_provider_by_name,
+                         key_is_result_as_list=key_is_result_as_list
                          )
-        self.key_template_skeleton_provider_by_name = key_template_skeleton_provider_by_name
-        self.key_is_result_as_list = key_is_result_as_list
-        self.is_compilation_result_a_list = True  # default
+
+    #
+
+    def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
+        return isinstance(compiled_part, cad.CompiledASM_Diagram)
+
+    def check_instance_data(self, instance_data: dict, additional_data=None):
+        if not isinstance(instance_data, t_j_asm.TranslatedDiagram_ASM_Jinja):
+            raise Exception(
+                f"instance_data is of type {type(instance_data)} rether than TranslatedDiagram_ASM_Jinja")
+        return True
+
+    #
 
     def compile_diagram(self,
                         diagram_instance_data: t_j_asm.TranslatedDiagram_ASM_Jinja,
@@ -113,17 +123,7 @@ class CompilerASMTemplateJinja(ctjb.CompilerTemplateJinjaBase, tb_m.CompilerTemp
         )
         return compiled_dao_struct
 
-    def get_all_parts_to_compile_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
-        """
-        Override-designed
-        """
-        tpbn = self.get_ith_input(
-            additional_data, 1) if self.key_template_skeleton_provider_by_name is None else additional_data[self.key_template_skeleton_provider_by_name]
-        if not isinstance(tpbn, template_provider.TemplateProviderByName):
-            raise Exception("template provider by name needed")
-        if not isinstance(instance_data, t_j_asm.TranslatedDiagram_ASM_Jinja):
-            raise Exception(
-                f"Compile template ({self.__class__.__name__}) needs diagram_instance_data of class TranslatedDiagram_ASM_Jinja (TODO: 'or subclass'), but '{type(instance_data)}' was provided")
+    def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
         diagram_instance_data: t_j_asm.TranslatedDiagram_ASM_Jinja = instance_data  # alias
         compilated: cad.CompiledASM_Diagram = self.compile_diagram(
             diagram_instance_data, tpbn)
@@ -150,9 +150,3 @@ class CompilerASMTemplateJinja(ctjb.CompilerTemplateJinjaBase, tb_m.CompilerTemp
                     f"Can't convert DAO: {dao_id} - {dao_translated.get_name()} to ASM")
         if compilated.can_diagram_be_compiled:
             yield compilated
-
-    def compile_template(self, instance_data: dict, additional_data=None):
-        print(f"compiling ASM : {type(self)}")
-        self.is_compilation_result_a_list = (self.key_is_result_as_list is None) or (additional_data is None) or (
-            self.key_is_result_as_list in additional_data and additional_data[self.key_is_result_as_list])
-        return tb_m.CompilerTemplateBaseMultipart.compile_template(self, instance_data, additional_data=additional_data)
