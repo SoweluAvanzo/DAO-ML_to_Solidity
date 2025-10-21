@@ -120,6 +120,13 @@ class ModelTranslatorConfigurable(mcb.ModelTranslatorBase):
                         additional_data)
                 impl = stc_instance.select_implementation(
                     diagram, converter_type, converter_version, converter_target, additional_data)
+            case ct.TranslationTypes.ASM.value:
+                import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
+                import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
+                if converter_version is None or converter_version == t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value:
+                    impl = t_j_asm_1_0_0.TranslatorJinjaASM_1_0_0(self.pipeline_item_data,
+                                                                  key_model=self.key_model,
+                                                                  optional_external_data=additional_data)
         # TODO
         if impl is None:
             raise Exception("TODO : still to be implemented 2025-08-06")

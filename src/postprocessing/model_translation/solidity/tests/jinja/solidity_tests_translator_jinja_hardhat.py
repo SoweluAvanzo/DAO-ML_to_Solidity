@@ -10,74 +10,13 @@ import src.postprocessing.model_translation.solidity.shared_utils as shared_util
 import src.model.aggregable_entity as aggregable_entity
 import src.model.diagram_manager as dm
 import src.model.dao as d
-import src.model.committee as c
 import src.model.permission as p
 import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 import src.model.enums.entity_type_controllable as entity_type_controllable
 
 import src.postprocessing.consts_template as consts_t
-import src.files.file_utils as file_utils
+
 import src.utilities.utils as utils
-
-"""
-
-class TranslatedCommittee(crsp.TranslatedSubpart):
-    def __init__(self, committee: c.Committee, committee_specific_data: dict,
-                 is_convertible: bool = True
-                 ):
-        super().__init__(committee, committee_specific_data,
-                         is_convertible=is_convertible
-                         )
-
-    def get_specific_data_name(self):
-        return "committee_specific_data"
-
-
-class TranslatedDAO(crsp.TranslatedSubpart):
-    def __init__(self, dao: d.DAO, dao_specific_data: dict,
-                 is_convertible: bool = True
-                 ):
-        super().__init__(dao, dao_specific_data,
-                         is_convertible=is_convertible
-                         )
-        self.committees_by_id: dict[str, TranslatedCommittee] = {}
-
-    def get_specific_data_name(self):
-        return "dao_specific_data"
-
-    def add_translated_committee(self, committee_translated: TranslatedCommittee):
-        self.committees_by_id[committee_translated.entity.get_id(
-        )] = committee_translated
-
-    def toJSON(self):
-        o = super().toJSON()
-        o["committees_by_id"] = {
-            i: self.committees_by_id[i].toJSON() for i in self.committees_by_id.keys()}
-        return o
-
-
-class TranslatedDiagram(crsp.TranslatedSubpart):
-    def __init__(self, diagram: dm.DiagramManager, diagram_specific_data: dict,
-                 is_convertible: bool = True
-                 ):
-        super().__init__(diagram, diagram_specific_data,
-                         is_convertible=is_convertible
-                         )
-        self.daos_by_id: dict[str, TranslatedDAO] = {}
-
-    def get_specific_data_name(self):
-        return "diagram_specific_data"
-
-    def add_translated_dao(self, dao_translated: TranslatedDAO):
-        self.daos_by_id[dao_translated.entity.get_id()] = dao_translated
-
-    def toJSON(self):
-        o = super().toJSON()
-        o["daos_by_id"] = {i: self.daos_by_id[i].toJSON()
-                           for i in self.daos_by_id.keys()}
-        return o
-
-"""
 
 
 class SolidityTestsTranslatorJinjaHardhat_1_0_0(stt.SolidityTestsTranslator):

@@ -15,6 +15,7 @@ class TranslatedCommitteeTemplated(crt.TranslatedSubpartTemplated, trm.Translate
             self, committee, committee_specific_data, is_convertible=is_convertible)
         trm.TranslatedCommittee.__init__(
             self, committee, committee_specific_data, is_convertible=is_convertible)
+        self.voting_protocol_specific_data = voting_protocol_specific_data
 
 
 class TranslatedDAOTemplated(crt.TranslatedSubpartTemplated, trm.TranslatedDAO):

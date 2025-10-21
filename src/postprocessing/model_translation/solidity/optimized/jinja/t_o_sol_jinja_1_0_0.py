@@ -38,10 +38,11 @@ class TranslatedCommittee_Jinja_1_0_0(trmt.TranslatedCommitteeTemplated):
                  is_convertible: bool = True
                  ):
         trmt.TranslatedCommitteeTemplated.__init__(
-            self, committee, committee_specific_data, is_convertible=is_convertible)
+            self, committee, committee_specific_data,
+            voting_protocol_specific_data=voting_protocol_specific_data,
+            is_convertible=is_convertible)
         # as of "translator.py # CommitteeTranslator", there are A LOT of additional templates to be created for each Committee
         self.additional_modules_instances_by_name: dict[str, list[dict]] = []
-        self.voting_protocol_specific_data = voting_protocol_specific_data
         self.voting_protocol_template_file_fullpath: str = ""
 
 
@@ -95,9 +96,6 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         self.key_all_voting_protocols = key_all_voting_protocols
         self.all_voting_protocols: set = all_voting_protocols
 
-    def select_delegator(self, diagram: dm.DiagramManager, translator_type: str, version: str,  additional_data: dict = None) -> mcb.ModelTranslatorBase:
-        return self
-
     def translate(self, diagram, additional_data: dict = None) -> crb.ModelConversionResultBase:
         # raise Exception("SolidityTranslatorOptimizedJinja_1_0_0 translation NOT IMPLEMENTED YET")
         print("YAYYYYYYy SolidityTranslatorOptimizedJinja_1_0_0 translatioooooooooooooon")
@@ -107,7 +105,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                 k = additional_data["key_all_voting_protocols"]
             self.all_voting_protocols = additional_data[k]
         # THE REAL TRANSLATION!
-        return self.translate_diagram_solidity(diagram, additional_data)
+        return self.translate_Diagram(diagram, additional_data)
         """
         # See " optimized_translator.py # OptimizedSolidityTranslator"
         
@@ -128,7 +126,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                 - - -> template_path =
         """
 
-    def translate_diagram_solidity(self, diagram: dm.DiagramManager, additional_data: dict = None) -> TranslatedDiagram_Jinja_1_0_0:
+    def translate_Diagram(self, diagram: dm.DiagramManager, additional_data: dict = None) -> TranslatedDiagram_Jinja_1_0_0:
         version = additional_data[self.key_converter_target] if self.key_converter_target in additional_data \
             else additional_data[mcc.ModelTranslatorConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION]
         if version is None or version.strip() == "":

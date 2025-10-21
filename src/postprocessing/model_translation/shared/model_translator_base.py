@@ -16,7 +16,7 @@ class ModelTranslatorBase(pi.PipelineItem):
 
     def translate(self, model: dm.DiagramManager, additional_data=None) -> crb.ModelConversionResultBase:
         raise Exception(
-            f"convert function not implemented yet in {type(self)}")
+            f"translate function not implemented yet in {type(self)}")
 
     def run(self, inputs):
         return self.translate(

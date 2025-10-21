@@ -2,8 +2,9 @@ import src.pipeline.pipeline_item as pi
 
 
 import src.postprocessing.model_translation.shared.model_translator_base as mcb
+import src.postprocessing.model_translation.shared.model_translator_subparts as mts
 import src.postprocessing.model_translation.shared.translation_result_base as crb
-import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
+import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.shared.translation_result_model as trm
 import src.postprocessing.consts_template as c_t
 
@@ -11,28 +12,22 @@ import src.model.dao as dao_m
 import src.model.diagram_manager as diagram_manager_m
 
 
-class TranslatedDAO_ASM_Jinja(crt.TranslatedSubpartTemplated, trm.TranslatedDAO):
+class TranslatedDAO_ASM_Jinja(trmt.TranslatedDAOTemplated):
     def __init__(self, dao: dao_m.DAO, dao_specific_data: dict,
                  is_convertible: bool = True
                  ):
-        crt.TranslatedSubpartTemplated.__init__(
-            self, dao, dao_specific_data, is_convertible=is_convertible)
-        trm.TranslatedDAO.__init__(
-            self, dao, dao_specific_data, is_convertible=is_convertible)
-        # dict of ( output_filename, compiled_template )
+        super().__init__(dao, dao_specific_data, is_convertible=is_convertible)
         """
         self.other_subparts_converted_by_name: dict[str,
             crt.TranslatedSubpartTemplated] = {}
         """
 
 
-class TranslatedDiagram_ASM_Jinja(crt.TranslatedSubpartTemplated, trm.TranslatedDiagram):
+class TranslatedDiagram_ASM_Jinja(trmt.TranslatedDiagramTemplated):
     def __init__(self, diagram: diagram_manager_m.DiagramManager, diagram_specific_data: dict,
                  is_convertible: bool = True
                  ):
-        crt.TranslatedSubpartTemplated.__init__(
-            self, diagram, diagram_specific_data, is_convertible=is_convertible)
-        trm.TranslatedDiagram.__init__(
+        super().__init__(
             self, diagram, diagram_specific_data, is_convertible=is_convertible)
         """
         self.dao_converted_by_id: dict[str, TranslatedDAO_ASM_Jinja] = {}
@@ -45,7 +40,7 @@ class TranslatedDiagram_ASM_Jinja(crt.TranslatedSubpartTemplated, trm.Translated
 #
 
 
-class TranslatorJinjaASM(mcb.ModelTranslatorBase):
+class TranslatorJinjaASM(mts.ModelTranslatorSubparts):
     def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
                  key_model: str = None
                  ):
@@ -68,14 +63,14 @@ class TranslatorJinjaASM(mcb.ModelTranslatorBase):
 
     #
 
-    def translate_DAO_to_ASM(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO) -> TranslatedDAO_ASM_Jinja:
+    def translate_DAO(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO, additional_data=None) -> TranslatedDAO_ASM_Jinja:
         """
         Override-designed
         """
         raise NotImplementedError(
-            f"Current class ({type(self)}) still do not implement the translation")
+            f"Current class ({type(self)}) still do not implement the DAO translation")
 
-    def translate_Diagram_to_ASM(self, diagram: diagram_manager_m.DiagramManager) -> TranslatedDiagram_ASM_Jinja:
+    def translate_Diagram(self, diagram: diagram_manager_m.DiagramManager, additional_data=None) -> TranslatedDiagram_ASM_Jinja:
         """
         Override-designed
         """
@@ -85,11 +80,4 @@ class TranslatorJinjaASM(mcb.ModelTranslatorBase):
         diagram_converted.template_filename_input = None  # TODO
         diagram_converted.template_filename_output = None  # TODO
         diagram_converted.template_full_folders_path_from_base = c_t.FOLDER_NAME_ASM
-        return diagram_converted
-
-    def translate(self, model: diagram_manager_m.DiagramManager, additional_data=None) -> crb.ModelConversionResultBase:
-        diagram_converted = self.translate_Diagram_to_ASM(model)
-        for dao in model.daoByID.values():
-            dao_converted = self.translate_DAO_to_ASM(model, dao)
-            diagram_converted.add_translated_dao(dao_converted)
         return diagram_converted

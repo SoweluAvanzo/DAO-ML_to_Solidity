@@ -42,7 +42,7 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
     def new_translated_dao(self, diagram: diagram_manager_m.DiagramManager, dao: dao_m.DAO, other_data=None) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
         return TranslatedDAO_ASM_Jinja_1_0_0(dao, other_data)
 
-    def translate_DAO_to_ASM(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
+    def translate_DAO(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO, additional_data=None) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
         asm_data = {}
         converted_dao = self.new_translated_dao(
             diagram, dao, other_data=asm_data)

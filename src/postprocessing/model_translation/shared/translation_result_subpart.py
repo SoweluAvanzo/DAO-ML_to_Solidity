@@ -5,12 +5,19 @@ import src.model.base_entity as base_entity_module
 
 
 class TranslatedSubpart(crb.ModelConversionResultBase):
+    """
+    Represents the translation of a specific part of a Diagram: a Diagram itself, a DAO, a Committee, a GovernanceArea, etc
+    """
+
     def __init__(self, entity: base_entity_module.BaseEntity, entity_specific_data: dict,
                  is_convertible: bool = True
                  ):
         self.entity: base_entity_module.BaseEntity = entity
         self.entity_specific_data = entity_specific_data
         self.is_convertible = is_convertible
+
+    def get_conversion_result(self):
+        return self.entity_specific_data
 
     def can_be_converted(self) -> bool:
         """
