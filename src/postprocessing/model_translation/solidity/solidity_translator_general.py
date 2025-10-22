@@ -10,10 +10,6 @@ import src.model.committee as c
 
 import src.utilities.errors as e_c
 
-#
-# THE ACTUAL TRANSLATOR
-#
-
 
 class SolidityTranslatorGeneral(tms.ModelTranslatorSubparts):
     """

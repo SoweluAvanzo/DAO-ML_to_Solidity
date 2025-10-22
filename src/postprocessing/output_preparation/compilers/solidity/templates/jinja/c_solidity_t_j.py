@@ -7,6 +7,7 @@ No differences at the moment from the super (Jinja Base) class.
 """
 
 
+# CompilerStandardModelMultipart_TemplateJinja
 class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase):
     """
     It fundamentally relies on an instance of ModelToTemplateMapperBase

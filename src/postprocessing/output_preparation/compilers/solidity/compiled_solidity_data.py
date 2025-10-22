@@ -1,11 +1,12 @@
 import typing
 import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as gmd
 
 KEY_DAO_COMMITTEES = "committees"
 KEY_DAOS_BY_ID = "daos_by_id"
 
 
-class CompiledSolidityCommittee(cgd.CompiledUnitWithID):
+class CompiledSolidityCommittee(gmd.CompiledCommitteeData):
     def __init__(self, id: str, template_name: str, compiled: dict):
         super().__init__(id, template_name, compiled)
         self.compiled_conditions_by_name: dict[str,
@@ -20,10 +21,9 @@ class CompiledSolidityCommittee(cgd.CompiledUnitWithID):
         return committee_data[cgd.KEY_ID] if isinstance(committee_data, dict) and cgd.KEY_ID in committee_data else self.id
 
 
-class CompiledSolidityDAO(cgd.CompiledUnitWithID):
+class CompiledSolidityDAO(gmd.CompiledDAOData):
     def __init__(self, id: str, template_name: str, compiled: dict):
         super().__init__(id, template_name, compiled)
-        self.committees: dict[str, CompiledSolidityCommittee] = {}
         self.interfaces_and_dao_related_compiled_contracts: dict[str, cgd.CompiledUnitWithID] = {
         }
 
@@ -39,7 +39,7 @@ class CompiledSolidityDAO(cgd.CompiledUnitWithID):
         """
         Overridable
         """
-        return self.committees  # dao_data[KEY_DAO_COMMITTEES]
+        return self.committees_by_id  # dao_data[KEY_DAO_COMMITTEES]
 
     def get_committee_id_from_data(self, committee_data: dict):
         return typing.cast(CompiledSolidityCommittee, committee_data).get_committee_id_from_data(committee_data) \
@@ -59,21 +59,20 @@ class CompiledSolidityDAO(cgd.CompiledUnitWithID):
         return j
 
 
-class CompiledSolidityDiagram(cgd.CompiledUnitWithID):
+class CompiledSolidityDiagram(gmd.CompiledDiagramData):
     def __init__(self, id: str, template_name: str, compiled: dict = None, can_diagram_be_compiled=True):
         super().__init__(id, template_name, compiled)
-        self.daos_compiled_by_id: dict[str, CompiledSolidityDAO] = {}
         self.can_diagram_be_compiled = can_diagram_be_compiled
 
     def get_daos_compiled_by_id(self):
-        return self.daos_compiled_by_id
+        return self.daos_by_id
 
     def add_dao(self, dao_data: CompiledSolidityDAO):
-        self.daos_compiled_by_id[dao_data.get_dao_id_from_data(
+        self.daos_by_id[dao_data.get_dao_id_from_data(
             dao_data)] = dao_data
 
     def get_dao_by_id(self, dao_id: str) -> dict:
-        return self.daos_compiled_by_id[dao_id]
+        return self.daos_by_id[dao_id]
 
     def add_committee_data_to_dao(self, dao_id: str, committee_data: CompiledSolidityCommittee):
         dao = self.get_dao_by_id(dao_id)

@@ -81,6 +81,9 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
                          diagram_instance_data: trm.TranslatedDiagram,
                          additional_data=None
                          ):
+        """
+        Depending on the constructor's parameter "key_is_result_as_list", returns either an array of compiledthings or the "root of compilation" (see #is_root_of_compilation(...))
+        """
         if (self.key_is_result_as_list is None) or (additional_data is None) or (
                 self.key_is_result_as_list in additional_data and additional_data[self.key_is_result_as_list]):
             # return super(tb_m.CompilerTemplateBaseMultipart, self)

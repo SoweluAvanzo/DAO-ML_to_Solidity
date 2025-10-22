@@ -47,7 +47,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
     def check_instance_data(self, instance_data: dict, additional_data=None):
         if not isinstance(instance_data, conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0):
             raise Exception(
-                f"instance_data is of type {type(instance_data)} rether than TranslatedDiagram_ASM_Jinja")
+                f"Compile template ({type(self)}) needs instance_data of class TranslatedDiagram_Jinja_1_0_0 (TODO: 'or subclass'), but '{type(instance_data)}' was provided")
         return True
 
     #
@@ -67,7 +67,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
         )
         # ... and ? let's start the DAO part
         dao_templates_loaded_by_filename = {}
-        committee_templates_loaded_by_filename = {}
+        templates_loaded_by_filename_cache = {}
         # now, the CORE
         for dao_id, dao_translated in diagram_instance_data.daos_by_id.items():
             compiled_dao_struct: csd.CompiledSolidityDAO = None
@@ -174,8 +174,8 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                             template_folder_path_base, consts_t.NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL, template_filename_input)
                     # recycle if possible
                     template_skeleton_committee = None
-                    if template_filename_input in committee_templates_loaded_by_filename:
-                        template_skeleton_committee = committee_templates_loaded_by_filename[
+                    if template_filename_input in templates_loaded_by_filename_cache:
+                        template_skeleton_committee = templates_loaded_by_filename_cache[
                             template_filename_input]
                     else:
                         # print(f"in SOL, going to provide template_skeleton_committee_path: {template_skeleton_committee_path}")
@@ -184,7 +184,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                         if isinstance(template_skeleton_committee, list):
                             template_skeleton_committee = "\n".join(
                                 template_skeleton_committee)
-                        committee_templates_loaded_by_filename[template_filename_input] = template_skeleton_committee
+                        templates_loaded_by_filename_cache[template_filename_input] = template_skeleton_committee
                     # committee_folder_output_path = file_utils.check_and_make_folder([ ...])
                     committee_folder_output_path = dao_folder_output_path
                     # print(f"on compiling committee, template_folder_path_base= {template_folder_path_base} ; committee_folder_output_path: {committee_folder_output_path}")
@@ -206,14 +206,3 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                     committee_translated.additional_modules_instances_by_name
                 """
         yield compilated
-
-    #
-
-    def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
-        return isinstance(compiled_part, csd.CompiledSolidityDiagram)
-
-    def check_instance_data(self, instance_data: dict, additional_data=None):
-        if not isinstance(instance_data, conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0):
-            raise Exception(
-                f"Compile template ({self.__class__.__name__}) needs diagram_instance_data of class TranslatedDiagram_Jinja_1_0_0 (TODO: 'or subclass'), but '{type(instance_data)}' was provided")
-        return True

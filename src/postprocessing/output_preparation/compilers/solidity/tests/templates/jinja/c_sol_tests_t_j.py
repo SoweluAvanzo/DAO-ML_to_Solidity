@@ -1,13 +1,16 @@
-from typing import Generator
 
 import src.pipeline.pipeline_item as pi
 
+import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as cmd
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_multipart as ctj_m
+import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_standard_model_multipart as c_t_j_sm_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
 import src.postprocessing.output_preparation.compilers.solidity.tests.compiled_sol_test_data as c_st_data
 # import src.postprocessing.model_translation.shared.templates.conversion_result_template as crt
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
 
+
+import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.solidity.tests.solidity_tests_translator as st_t
 import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as st_t_j
 
@@ -20,12 +23,14 @@ import src.files.file_utils as fu
 import src.utilities.utils as utils
 # import src.utilities.constants as consts
 
+import src.utilities.errors as e_c
+
 """
 _1_0_0
 """
 
 
-class CompilerSolidityTestsTemplateJinja(ctj_m.CompilerTemplateJinjaMultipart):
+class CompilerSolidityTestsTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipart_TemplateJinja):
     def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
                  key_diagram_instance_data: str = None,
                  key_diagram_model: str = None,
@@ -40,10 +45,37 @@ class CompilerSolidityTestsTemplateJinja(ctj_m.CompilerTemplateJinjaMultipart):
                          key_is_result_as_list=key_is_result_as_list
                          )
 
-    # TODO: PRENDERE ISPIRAZIONE DA C_J_ASM, che implementa c_t_j_multipart_
+    def get_compiled_file_extension(self) -> str:
+        return consts_t.TESTS_FILE_EXTENSION
 
     def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
         return isinstance(compiled_part, c_st_data.CompiledSolidityTest_Diagram)
+
+    #
+
+    def compile_committee(self, diagram_instance_data: trmt.TranslatedDiagramTemplated,
+                          tpbn: template_provider.TemplateProviderByName,
+                          dao_translated: trmt.TranslatedDAOTemplated,
+                          templates_loaded_by_filename_cache: dict,
+                          committee_translated: trmt.TranslatedCommitteeTemplated,
+                          ) -> cmd.CompiledCommitteeData:
+        return None  # nothing to compile here
+
+    #
+
+    def check_translated_dao(self, dao_translated) -> bool:
+        return isinstance(dao_translated, st_t.TranslatedDAO_SolidityTest)
+
+    def new_compiled_DAO(self, diagram_instance_data: trmt.TranslatedDiagramTemplated, dao_translated: trmt.TranslatedDAOTemplated, name_dao: str, compiled_dao) -> cmd.CompiledDAOData:
+        dao_id = dao_translated.get_id()
+        compiled_dao_struct = c_st_data.CompiledSolidityTest_DAO(
+            dao_id,
+            name_dao,
+            compiled_dao
+        )
+        return compiled_dao_struct
+
+    #
 
     def check_instance_data(self, instance_data: dict, additional_data=None):
         if not isinstance(instance_data, st_t.TranslatedDiagram_SolidityTest):
@@ -51,7 +83,14 @@ class CompilerSolidityTestsTemplateJinja(ctj_m.CompilerTemplateJinjaMultipart):
                 f"instance_data is of type {type(instance_data)} rether than TranslatedDiagram_ASM_Jinja")
         return True
 
-    #
+    def new_compiled_diagram(self, diagram_instance_data: trmt.TranslatedDiagramTemplated,  name_diagram: str, compiled_diagram) -> cmd.CompiledDiagramData:
+        compilated = c_st_data.CompiledSolidityTest_Diagram(
+            diagram_instance_data.get_id(),
+            name_diagram,
+            compiled=compiled_diagram,
+            can_diagram_be_compiled=False
+        )
+        return compilated
 
     def compile_diagram(self,
                         diagram_instance_data: st_t.TranslatedDiagram_SolidityTest,
@@ -62,49 +101,6 @@ class CompilerSolidityTestsTemplateJinja(ctj_m.CompilerTemplateJinjaMultipart):
         """
         name = diagram_instance_data.get_name()
         diagram_compiled = ""  # we don't compile the Diagram: only the DAOs
-        compilated = c_st_data.CompiledSolidityTest_Diagram(
-            diagram_instance_data.get_id(),
-            name,
-            compiled=diagram_compiled,
-            can_diagram_be_compiled=False
-        )
+        compilated = self.new_compiled_diagram(
+            diagram_instance_data, name, diagram_compiled)
         return compilated
-
-    def compile_DAO(self, diagram_instance_data: st_t.TranslatedDiagram_SolidityTest,
-                    tpbn: template_provider.TemplateProviderByName,
-                    dao_translated: st_t.TranslatedDAO_SolidityTest,
-                    dao_templates_loaded_by_filename_cache: dict
-                    ) -> st_t.TranslatedDAO_SolidityTest:
-
-        # TODO
-        return None
-
-    def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
-        diagram_instance_data: st_t.TranslatedDiagram_SolidityTest = instance_data  # alias
-        compilated: c_st_data.CompiledSolidityTest_Diagram = self.compile_diagram(
-            diagram_instance_data, tpbn)
-
-        # TODO: this WHOLE BODY is taken from "c_j_asm.py" AND CAN BE ABSTRACTED AWAY
-        # now, the CORE
-        dao_templates_loaded_by_filename_cache = {}  # cache
-        for dao_id, dao_translated in diagram_instance_data.daos_by_id.items():
-            if dao_translated.can_be_converted():
-                # get the template
-                if not isinstance(dao_translated, st_t.TranslatedDAO_SolidityTest):
-                    print(
-                        f"Can't convert DAO: {dao_id} - to ASM because the dao_translated is NOT a TranslatedDAO_ASM_Jinja instance: {type(dao_translated)}")
-                    break
-                compiled_dao_struct: st_t.TranslatedDAO_SolidityTest = self.compile_DAO(
-                    diagram_instance_data,
-                    tpbn,
-                    dao_translated,
-                    dao_templates_loaded_by_filename_cache
-                )
-                if compiled_dao_struct is not None:
-                    # TO-DO: no ASM compilation of Committees or GovernanceArea ?
-                    yield compiled_dao_struct
-            else:
-                print(
-                    f"Can't convert DAO: {dao_id} - {dao_translated.get_name()} to ASM")
-        if compilated.can_diagram_be_compiled:
-            yield compilated
