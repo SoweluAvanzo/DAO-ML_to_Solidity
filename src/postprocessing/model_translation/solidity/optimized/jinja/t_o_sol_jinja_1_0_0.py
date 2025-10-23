@@ -1,11 +1,9 @@
 
 import src.pipeline.pipeline_item as pi
 
-import src.postprocessing.model_translation.shared.model_translator_base as mcb
 import src.postprocessing.model_translation.shared.translation_result_base as crb
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
-import src.postprocessing.model_translation.shared.translation_result_model as trm
 import src.postprocessing.model_translation.model_translator_configurable as mcc
 # import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
 import src.postprocessing.model_translation.solidity.optimized.jinja.solidity_translator_optimized_jinja as sol_transl_opt_jinja
@@ -20,8 +18,9 @@ import src.model.committee as c
 import src.model.enums.relation_type as rt
 
 import src.postprocessing.consts_template as consts_t
-import src.files.file_utils as file_utils
 import src.utilities.utils as utils
+import src.utilities.constants as consts
+import src.files.file_utils as fu
 
 VERSION = "1.0.0"
 
@@ -43,7 +42,6 @@ class TranslatedCommittee_Jinja_1_0_0(trmt.TranslatedCommitteeTemplated):
             is_convertible=is_convertible)
         # as of "translator.py # CommitteeTranslator", there are A LOT of additional templates to be created for each Committee
         self.additional_modules_instances_by_name: dict[str, list[dict]] = []
-        self.voting_protocol_template_file_fullpath: str = ""
 
 
 class TranslatedDAO_Jinja_1_0_0(trmt.TranslatedDAOTemplated):
@@ -54,9 +52,9 @@ class TranslatedDAO_Jinja_1_0_0(trmt.TranslatedDAOTemplated):
             self, dao, dao_specific_data, is_convertible=is_convertible)
         # dict of ( output_filename, compiled_template )
         self.conditions_converted_by_name: dict[str,
-                                                trmt.TranslatedDAOTemplated] = {}
+                                                crt.TranslatedSubpartTemplated] = {}
         # a dict of ( output_filename, compiled_template ) ; depends on dao's committees
-        self.interfaces_and_fullpath_by_filenames: dict[str, trmt.TranslatedDAOTemplated] = {
+        self.interfaces_and_fullpath_by_filenames: dict[str, crt.TranslatedSubpartTemplated] = {
         }
 
 
@@ -97,8 +95,6 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         self.all_voting_protocols: set = all_voting_protocols
 
     def translate(self, diagram, additional_data: dict = None) -> crb.ModelConversionResultBase:
-        # raise Exception("SolidityTranslatorOptimizedJinja_1_0_0 translation NOT IMPLEMENTED YET")
-        print("YAYYYYYYy SolidityTranslatorOptimizedJinja_1_0_0 translatioooooooooooooon")
         if self.all_voting_protocols is None:
             k = self.key_all_voting_protocols
             if self.key_all_voting_protocols is None:
@@ -106,25 +102,8 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
             self.all_voting_protocols = additional_data[k]
         # THE REAL TRANSLATION!
         return self.translate_Diagram(diagram, additional_data)
-        """
-        # See " optimized_translator.py # OptimizedSolidityTranslator"
-        
-        OptimizedSolidityTranslator
-        -> def translate(self)
-    
-            # at first, translate all Committees
-            ct = CommitteeTranslator(self.context)
-            - for c in self.context.dao.committees.values():
-            - - translated_committee = ct.translateCommittee(c, proposal_permission_index , voting_permission_index, optimized=True) 
-        
-            - for condition in self.context.dao.conditions:
 
-                ConditionTranslator
-                # translateCommittee
-                -> file_name_and_path = template_path + "ConditionImplementation" + extension + ".jinja"
-                - - -> extension = ".sol" ?
-                - - -> template_path =
-        """
+    #
 
     def translate_Diagram(self, diagram: dm.DiagramManager, additional_data: dict = None) -> TranslatedDiagram_Jinja_1_0_0:
         version = additional_data[self.key_converter_target] if self.key_converter_target in additional_data \
@@ -155,27 +134,28 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         # dao
         for dao_id in diagram.daoByID.keys():
             dao = diagram.daoByID[dao_id]
-            translated_dao = self.translate_DAO_solidity(diagram, dao,
-                                                         solidity_version=solidity_version,
-                                                         version_target=version,
-                                                         version_for_file=version_for_file
-                                                         )
+            translated_dao = self.translate_DAO(diagram, dao,
+                                                solidity_version=solidity_version,
+                                                version_target=version,
+                                                version_for_file=version_for_file
+                                                )
             td.add_translated_dao(translated_dao)
         return td
 
-    def translate_DAO_solidity(self, diagram: dm.DiagramManager, dao: d.DAO,
-                               solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
-                               version_target: str = "",
-                               version_for_file: str = ""
-                               ) -> TranslatedDAO_Jinja_1_0_0:
+    def translate_DAO(self, diagram: dm.DiagramManager, dao: d.DAO,
+                      solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
+                      version_target: str = "",
+                      version_for_file: str = ""
+                      ) -> TranslatedDAO_Jinja_1_0_0:
         dao_specific_data_translated = {}
         dao_translated: TranslatedDAO_Jinja_1_0_0 = self.new_translated_dao(
             diagram, dao, dao_specific_data_translated)
         # crt.TranslatedSubpartTemplated
         dao_template_filename = "DAOOptimizedGeneric"
-        dao_translated.template_filename_output = f"{dao.get_name()}.{consts_t.JINJA_FILE_EXTENSION}"
+        dao_translated.translated_name_output = fu.sanitize_filename(
+            dao.get_name())
         dao_translated.template_filename_input = f"{dao_template_filename}_{version_for_file}"
-        dao_translated.template_full_folders_path_from_base = ""
+        dao_translated.suggested_input_template_folders_path_from_base = ""
         # vars
         entities_amount = len(dao.roles) + len(dao.committees)
         group_size: user_functionalities_group_size_module.UserFunctionalitiesGroupSize = dao.metadata.user_functionalities_group_size
@@ -193,10 +173,10 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         permission_to_index: dict[str, int] = {
             permission: idx for idx, permission in enumerate(dao.permissions)}
 
-        def space_to_underscore_fn(t): return t.replace(" ", "_")
+        space_to_underscore_fn = fu.sanitize_filename
         # generate_header
         dao_specific_data_translated["solidity_version"] = solidity_version
-        dao_specific_data_translated["dao_name"] = utils.sanitize_name(
+        dao_specific_data_translated["dao_name"] = fu.sanitize_filename(
             dao.dao_name)
         # generate_contract_declaration
         dao_specific_data_translated["mission_statement"] = dao.mission_statement
@@ -299,8 +279,8 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
             f"translating committee: name={committee_translated.get_name()} ; id={committee_translated.get_id()}")
         committee_translated.voting_protocol_specific_data = voting_protocol_specific_data
         template_voting_protocol_base_path = consts_t.NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL
-        committee_translated.template_full_folders_path_from_base = template_voting_protocol_base_path
-        committee_translated.template_filename_output = None
+        committee_translated.suggested_input_template_folders_path_from_base = template_voting_protocol_base_path
+        committee_translated.translated_name_output = None
 
         # START translateCommittee ... IT WORKS BY COMPILING A VOTING TEMPLATE: THERE'S NO COMMITTEE-DEDICATED TEMPLATE
 
@@ -470,9 +450,9 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         interface_related_data = {}
         interface_converted = crt.TranslatedSubpartTemplated(
             None, interface_related_data)
-        interface_converted.template_filename_output = interface_filename
+        interface_converted.translated_name_output = interface_filename
         interface_converted.template_filename_input = f"{interface_filename}_{version_for_file}"
-        interface_converted.template_full_folders_path_from_base = consts_t.NAME_FOLDER_TEMPLATES_INTERFACES
+        interface_converted.suggested_input_template_folders_path_from_base = consts_t.NAME_FOLDER_TEMPLATES_INTERFACES
         interface_related_data["solidity_version"] = solidity_version
         interface_related_data["perm_var_type"] = perm_var_type
         interface_related_data["committees"] = dao.committees
@@ -482,9 +462,9 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         interface_related_data = {}
         interface_converted = crt.TranslatedSubpartTemplated(
             None, interface_related_data)
-        interface_converted.template_filename_output = interface_filename
+        interface_converted.translated_name_output = interface_filename
         interface_converted.template_filename_input = f"{interface_filename}_{version_for_file}"
-        interface_converted.template_full_folders_path_from_base = consts_t.NAME_FOLDER_TEMPLATES_INTERFACES
+        interface_converted.suggested_input_template_folders_path_from_base = consts_t.NAME_FOLDER_TEMPLATES_INTERFACES
         interface_related_data["solidity_version"] = solidity_version
         # interface_related_data["perm_var_type"] = perm_var_type
         dao_conversion.interfaces_and_fullpath_by_filenames[interface_filename] = interface_converted
@@ -497,14 +477,14 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                          solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                                          version_for_file: str = ""
                                          ):
-        condition_template_input_standard = f"ConditionImplementation_{version_for_file}.sol.jinja"
+        condition_template_input_standard = f"ConditionImplementation_{version_for_file}.{consts.SOLIDITY_EXTENSION_OUTPUT}.{consts_t.JINJA_FILE_EXTENSION}"
         for condition in dao.conditions:
             condition_name = utils.to_camel_case(condition)
             condition_related_data = {}
             condition_converted = crt.TranslatedSubpartTemplated(
                 None, condition_related_data)
-            condition_converted.template_full_folders_path_from_base = ""
-            condition_converted.template_filename_output = condition_name
+            condition_converted.suggested_input_template_folders_path_from_base = ""
+            condition_converted.translated_name_output = condition_name
             condition_converted.template_filename_input = condition_template_input_standard
             condition_related_data["solidity_version"] = solidity_version
             condition_related_data["condition_name"] = condition_name
@@ -542,20 +522,11 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         committee_specific_data = committee_conversion.entity_specific_data
         contract_name = utils.to_camel_case(committee_name)
         committee_specific_data["contract_name"] = contract_name
-        # WAT IF IT'S NONE ? IT'S CUSTOM !!!! TODO MANAGE IT
         template_name = contract_name  # decision_making_method
-        template_name_ext = f"{template_name}.sol.jinja"
-        if not (
-                (template_name in self.all_voting_protocols) or (template_name_ext in self.all_voting_protocols)):
+        if not (template_name in self.all_voting_protocols):
             template_name = FILENAME_VOTING_PROTOCOL_CUSTOM
-            template_name_ext = f"{template_name}.sol.jinja"
-        template_full_path = file_utils.concat_folder_filename(
-            template_voting_protocol_base_path, template_name_ext)
-        committee_conversion.template_filename_input = template_name_ext
-        committee_conversion.template_filename_output = utils.sanitize_name(
-            contract_name)
-        committee_conversion.voting_protocol_template_file_fullpath = template_full_path
-        print(f"voting protocol ...\n\tcontract_name: {contract_name} \n\t template_name: {template_name}\n\t committee_conversion.template_filename_input: {committee_conversion.template_filename_input}\n\t committee_conversion.template_filename_output: {committee_conversion.template_filename_output} \n\t committee_conversion.voting_protocol_template_file_fullpath: {committee_conversion.voting_protocol_template_file_fullpath}")
+        committee_conversion.template_filename_input = template_name
+        committee_conversion.translated_name_output = contract_name
 
         committee_specific_data["is_custom"] = is_custom
         committee_specific_data["solidity_version"] = solidity_version

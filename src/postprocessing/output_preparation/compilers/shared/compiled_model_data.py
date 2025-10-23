@@ -4,8 +4,8 @@ import src.postprocessing.output_preparation.compilers.shared.compiled_generic_d
 
 
 class CompiledCommitteeData(cgd.CompiledUnitWithID):
-    def __init__(self, id: str, template_name: str, compiled: dict):
-        super().__init__(id, template_name, compiled)
+    def __init__(self, id: str, output_full_path: str, compiled: dict):
+        super().__init__(id, output_full_path, compiled)
 
     def get_all_compiled_subparts_as_generator(self) -> Generator[cgd.CompiledUnitWithID, None, None]:
         """
@@ -15,9 +15,9 @@ class CompiledCommitteeData(cgd.CompiledUnitWithID):
 
 
 class CompiledDAOData(cgd.CompiledUnitWithID):
-    def __init__(self, id: str, template_name: str, compiled: dict):
-        super().__init__(id, template_name, compiled)
-        self.committees_by_id: dict[str, CompiledDAOData] = {}
+    def __init__(self, id: str, output_full_path: str, compiled: dict):
+        super().__init__(id, output_full_path, compiled)
+        self.committees_by_id: dict[str, CompiledCommitteeData] = {}
 
     def add_committee(self, committee_data: CompiledCommitteeData):
         self.committees_by_id[committee_data.id] = committee_data
@@ -37,8 +37,8 @@ class CompiledDAOData(cgd.CompiledUnitWithID):
 
 
 class CompiledDiagramData(cgd.CompiledUnitWithID):
-    def __init__(self, id: str, template_name: str, compiled: dict, can_diagram_be_compiled=True):
-        super().__init__(id, template_name, compiled)
+    def __init__(self, id: str, output_full_path: str, compiled: dict, can_diagram_be_compiled=True):
+        super().__init__(id, output_full_path, compiled)
         self.daos_by_id: dict[str, CompiledDAOData] = {}
         self.can_diagram_be_compiled = can_diagram_be_compiled
 

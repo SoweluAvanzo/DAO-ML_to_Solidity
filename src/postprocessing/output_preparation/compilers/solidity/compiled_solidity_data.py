@@ -1,4 +1,6 @@
 import typing
+from typing import Generator
+
 import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
 import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as gmd
 
@@ -7,8 +9,8 @@ KEY_DAOS_BY_ID = "daos_by_id"
 
 
 class CompiledSolidityCommittee(gmd.CompiledCommitteeData):
-    def __init__(self, id: str, template_name: str, compiled: dict):
-        super().__init__(id, template_name, compiled)
+    def __init__(self, id: str, output_full_path: str, compiled: dict):
+        super().__init__(id, output_full_path, compiled)
         self.compiled_conditions_by_name: dict[str,
                                                cgd.CompiledUnitWithID] = {}
 
@@ -20,10 +22,16 @@ class CompiledSolidityCommittee(gmd.CompiledCommitteeData):
             return committee_data.id
         return committee_data[cgd.KEY_ID] if isinstance(committee_data, dict) and cgd.KEY_ID in committee_data else self.id
 
+    def get_all_compiled_subparts_as_generator(self) -> Generator[cgd.CompiledUnitWithID, None, None]:
+        if (self.compiled_conditions_by_name is None) or (len(self.compiled_conditions_by_name) <= 0):
+            yield None
+        for cc in self.compiled_conditions_by_name.values():
+            yield cc
+
 
 class CompiledSolidityDAO(gmd.CompiledDAOData):
-    def __init__(self, id: str, template_name: str, compiled: dict):
-        super().__init__(id, template_name, compiled)
+    def __init__(self, id: str, output_full_path: str, compiled: dict):
+        super().__init__(id, output_full_path, compiled)
         self.interfaces_and_dao_related_compiled_contracts: dict[str, cgd.CompiledUnitWithID] = {
         }
 
@@ -46,6 +54,15 @@ class CompiledSolidityDAO(gmd.CompiledDAOData):
             if isinstance(committee_data, CompiledSolidityCommittee) \
             else committee_data[cgd.KEY_ID]
 
+    def get_all_compiled_subparts_as_generator(self) -> Generator[cgd.CompiledUnitWithID, None, None]:
+        for sp in super().get_all_compiled_subparts_as_generator():
+            if sp is not None:
+                yield sp
+        if (self.interfaces_and_dao_related_compiled_contracts is None) or (len(self.interfaces_and_dao_related_compiled_contracts) <= 0):
+            yield None
+        for i_dr_cc in self.interfaces_and_dao_related_compiled_contracts.values():
+            yield i_dr_cc
+
     def add_committee_data_to_dao(self, committee_data: dict):
         committees = self.get_dao_committees_from_data(self.compiled)
         c_id = self.get_committee_id_from_data(committee_data)
@@ -60,8 +77,8 @@ class CompiledSolidityDAO(gmd.CompiledDAOData):
 
 
 class CompiledSolidityDiagram(gmd.CompiledDiagramData):
-    def __init__(self, id: str, template_name: str, compiled: dict = None, can_diagram_be_compiled=True):
-        super().__init__(id, template_name, compiled)
+    def __init__(self, id: str, output_full_path: str, compiled: dict = None, can_diagram_be_compiled=True):
+        super().__init__(id, output_full_path, compiled)
         self.can_diagram_be_compiled = can_diagram_be_compiled
 
     def get_daos_compiled_by_id(self):

@@ -1,4 +1,5 @@
 import regex as re
+import src.files.file_utils as fu
 
 
 def is_string_or_list(t):
@@ -10,7 +11,7 @@ def is_string_or_list(t):
         return None
 
 
-def to_camel_case(s: str):
+def to_camel_case(s: str) -> str:
     parts = re.split(r'-|_', s)
     if len(parts) <= 1:
         return s
@@ -20,9 +21,5 @@ def to_camel_case(s: str):
     )
 
 
-def sanitize_name(name: str):
-    return name.replace(" ", "_")
-
-
-def to_keyword(name: str):
-    return sanitize_name(name).lower()
+def to_keyword(name: str) -> str:
+    return fu.sanitize_filename(name).lower()

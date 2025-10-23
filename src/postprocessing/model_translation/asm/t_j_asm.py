@@ -77,7 +77,8 @@ class TranslatorJinjaASM(mts.ModelTranslatorSubparts):
         diagram_specific_data = None
         diagram_converted = self.new_translated_diagram(
             diagram, other_data=diagram_specific_data)
+        diagram_converted.is_convertible = False
         diagram_converted.template_filename_input = None  # TODO
-        diagram_converted.template_filename_output = None  # TODO
-        diagram_converted.template_full_folders_path_from_base = c_t.FOLDER_NAME_ASM
+        diagram_converted.translated_name_output = None  # TODO
+        diagram_converted.suggested_input_template_folders_path_from_base = c_t.FOLDERS_PATH_INPUT_ASM
         return diagram_converted

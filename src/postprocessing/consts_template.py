@@ -9,7 +9,8 @@ JINJA_FILE_EXTENSION = "jinja"
 
 # Solidity
 
-FOLDER_NAME_SOLIDITY = "solidity"
+FOLDERS_PATH_INPUT_SOLIDITY = "solidity"
+FOLDERS_PATH_OUTPUT_SOLIDITY = FOLDERS_PATH_INPUT_SOLIDITY
 
 SOLIDITY_VERSION_DEFAULT = "^0.8.0"
 
@@ -23,14 +24,16 @@ DEFAULT_FOLDER_TEMPLATES_INTERFACES = file_utils.concat_folder_filename(
 
 # ASM
 
-FOLDER_NAME_ASM = "asm"
+FOLDERS_PATH_INPUT_ASM = "asm"
+FOLDERS_PATH_OUTPUT_ASM = FOLDERS_PATH_INPUT_ASM
 ASM_FILE_EXTENSION = "asm"
 
-# HardhatTests
+# Solidity Hardhat Tests
 
 TESTS_FILE_EXTENSION = "js"
-FOLDER_NAME_TESTS = file_utils.concat_folder_filename(
-    FOLDER_NAME_SOLIDITY, "tests")
+FOLDERS_PATH_INPUT_SOLIDITY_TEST = "test_scripts"
+FOLDERS_PATH_OUTPUT_SOLIDITY_TEST = file_utils.concat_folder_filename(
+    FOLDERS_PATH_INPUT_SOLIDITY, "tests")
 
 # Petri Nets
 # TODO

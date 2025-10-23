@@ -13,7 +13,7 @@ import src.model.enums.entity_type_controllable as entity_type_controllable
 
 import src.postprocessing.consts_template as consts_t
 
-import src.utilities.utils as utils
+import src.files.file_utils as fu
 
 
 class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
@@ -96,7 +96,7 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
                 postprocessed_permissions.append(permission)
 
         permission_tests_expected_results = [(entity_to_data[entity.get_id()]['final_id'],
-                                              utils.sanitize_name(permission.allowed_action).replace(
+                                              fu.sanitize_filename(permission.allowed_action).replace(
                                                   "/", "_").replace("\\", ""),
                                               permission in entity.permissions and permission.voting_right == False and permission.proposal_right == False)
                                              for entity in entities
@@ -120,10 +120,10 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
             is_opt = not not self.key_is_optimized
         script_name = self.get_test_name_optimized(diagram, dao, additional_data=additional_data) if is_opt \
             else self.get_test_name_simple(diagram, dao, additional_data=additional_data)
-        dao_name = utils.sanitize_name(dao.get_name())
+        dao_name = fu.sanitize_filename(dao.get_name())
         dao_translated.template_filename_input = f"{script_name}.{consts_t.TESTS_FILE_EXTENSION}"
-        dao_translated.template_filename_output = f"{dao_name}.{consts_t.TESTS_FILE_EXTENSION}"
-        dao_translated.template_full_folders_path_from_base = consts_t.FOLDER_NAME_TESTS
+        dao_translated.translated_name_output = dao_name
+        dao_translated.suggested_input_template_folders_path_from_base = consts_t.FOLDERS_PATH_INPUT_SOLIDITY_TEST
 
         # data calculation
         group_size: user_functionalities_group_size_module.UserFunctionalitiesGroupSize = dao.metadata.user_functionalities_group_size

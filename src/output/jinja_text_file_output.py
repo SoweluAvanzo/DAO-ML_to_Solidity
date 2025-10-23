@@ -34,7 +34,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
 
     #
 
-    def append_template_filename_output(self, array: list, compiled_thing: str, template_filename: str):
+    def append_translated_name_output(self, array: list, compiled_thing: str, template_filename: str):
         if isinstance(template_filename, str):
             array.append((compiled_thing, template_filename))
         elif isinstance(template_filename, list):
@@ -45,38 +45,38 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         return array
 
     def __td_t_list_o_solidity(self, translated_diagram: compiled_sol.CompiledSolidityDiagram):
-        content_and_filepath_to_output = self.append_template_filename_output(
+        content_and_filepath_to_output = self.append_translated_name_output(
             [],
             translated_diagram.get_compiled(),
-            translated_diagram.get_template_name()
+            translated_diagram.get_output_full_path()
         ) if translated_diagram.can_diagram_be_compiled else []
         # ... then DAOs ...
         for dao_id, dao_compiled_struct in translated_diagram.get_daos_compiled_by_id().items():
-            dao = dao_compiled_struct
-            self.append_template_filename_output(
+            dao: compiled_sol.CompiledSolidityDAO = dao_compiled_struct
+            self.append_translated_name_output(
                 content_and_filepath_to_output,
                 dao.get_compiled(),
-                dao.get_template_name()
+                dao.get_output_full_path()
             )
-            for filename, thing_compiled_struct in dao_compiled_struct.interfaces_and_dao_related_compiled_contracts.items():
-                self.append_template_filename_output(
+            for filename, thing_compiled_struct in dao.interfaces_and_dao_related_compiled_contracts.items():
+                self.append_translated_name_output(
                     content_and_filepath_to_output,
                     thing_compiled_struct.get_compiled(),
-                    thing_compiled_struct.get_template_name()
+                    thing_compiled_struct.get_output_full_path()
                 )
             # ... then committees ...
-            for committee_id, committee_compiled_struct in dao.committees.items():
-                committee = committee_compiled_struct
-                self.append_template_filename_output(
+            for committee_id, committee_compiled_struct in dao.committees_by_id.items():
+                committee: compiled_sol.CompiledSolidityCommittee = committee_compiled_struct
+                self.append_translated_name_output(
                     content_and_filepath_to_output,
                     committee.get_compiled(),
-                    committee.get_template_name()
+                    committee.get_output_full_path()
                 )
                 for filename, compiled_conditions in committee.compiled_conditions_by_name.items():
-                    self.append_template_filename_output(
+                    self.append_translated_name_output(
                         content_and_filepath_to_output,
                         compiled_conditions.get_compiled(),
-                        compiled_conditions.get_template_name()
+                        compiled_conditions.get_output_full_path()
                     )
         return content_and_filepath_to_output
 
@@ -90,10 +90,10 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
             content_and_filepath_to_output = []
             for t in td:
                 if isinstance(t, cgd.CompiledUnitWithID):
-                    content_and_filepath_to_output = self.append_template_filename_output(
+                    content_and_filepath_to_output = self.append_translated_name_output(
                         content_and_filepath_to_output,
                         t.get_compiled(),
-                        t.get_template_name()
+                        t.get_output_full_path()
                     )
             return content_and_filepath_to_output
         return {

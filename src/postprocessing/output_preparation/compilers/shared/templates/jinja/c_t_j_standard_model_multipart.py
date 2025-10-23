@@ -10,7 +10,6 @@ import src.postprocessing.output_preparation.compilers.shared.compiled_model_dat
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 
 import src.files.file_utils as fu
-import src.utilities.utils as utils
 import src.utilities.errors as e_c
 
 
@@ -120,15 +119,11 @@ class CompilerStandardModelMultipart_TemplateJinja(ctj_m.CompilerTemplateJinjaMu
         """
         dao_id = dao_translated.get_id()
         template_filename_dao_in = dao_translated.template_filename_input
-        template_filename_dao_out = utils.sanitize_name(
-            dao_translated.template_filename_output)
-        template_folder_path_base = dao_translated.template_full_folders_path_from_base
+        template_filename_dao_out = fu.sanitize_filename(
+            dao_translated.translated_name_output)
+        template_folder_path_base = dao_translated.suggested_input_template_folders_path_from_base
         # the filename OUT might have already built in the extention -> extract the name from
-        template_filename_dao_out_no_ext = template_filename_dao_out
-        index_extension = template_filename_dao_out.rfind(
-            self.get_compiled_file_extension())
-        if index_extension >= 0:
-            template_filename_dao_out_no_ext = template_filename_dao_out[:index_extension]
+        template_filename_dao_out_ext = f"{template_filename_dao_out}.{self.get_compiled_file_extension()}"
         template_skeleton_dao = ""
         if template_filename_dao_in in templates_loaded_by_filename_cache:
             template_skeleton_dao = templates_loaded_by_filename_cache[
@@ -153,7 +148,7 @@ class CompilerStandardModelMultipart_TemplateJinja(ctj_m.CompilerTemplateJinjaMu
         compiled_dao = super().compile_single_template(
             template_skeleton_dao, dao_translated.entity_specific_data)
         compiled_dao_filename = self.compose_compiled_thing_output_path("dao",
-                                                                        template_folder_path_base, template_filename_dao_out_no_ext, template_filename_dao_out)
+                                                                        template_folder_path_base, template_filename_dao_out, template_filename_dao_out_ext)
 
         compiled_dao_struct: cmd.CompiledDAOData = self.new_compiled_DAO(
             diagram_instance_data, dao_translated, compiled_dao_filename, compiled_dao)
@@ -172,7 +167,6 @@ class CompilerStandardModelMultipart_TemplateJinja(ctj_m.CompilerTemplateJinjaMu
 
 
 #
-
 
     def new_compiled_diagram(self, diagram_instance_data: trmt.TranslatedDiagramTemplated, name_diagram: str, compiled_diagram) -> cmd.CompiledDiagramData:
         """

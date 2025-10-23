@@ -2,7 +2,7 @@ from jinja2 import Template
 
 import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.compilers.shared.templates.template_base as tb
-import src.postprocessing.consts_template as c_t
+import src.postprocessing.consts_template as const_t
 
 
 class CompilerTemplateJinjaBase(tb.TemplateBase):
@@ -21,7 +21,7 @@ class CompilerTemplateJinjaBase(tb.TemplateBase):
                                  key_template_instance_data=key_template_instance_data
                                  )
         self.key_template_skeleton = key_template_skeleton
-        self.jinja_extension: str = c_t.JINJA_FILE_EXTENSION
+        self.jinja_extension: str = const_t.JINJA_FILE_EXTENSION
 
     def compile_single_template(self, template_skeleton, instance_data: dict):
         if not isinstance(template_skeleton, str):

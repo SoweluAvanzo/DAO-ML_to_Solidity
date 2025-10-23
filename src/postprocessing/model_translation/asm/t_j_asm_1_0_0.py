@@ -7,7 +7,7 @@ import src.model.dao as dao_m
 import src.model.diagram_manager as diagram_manager_m
 import src.model.aggregable_entity as aggregable_e
 
-# import src.files.file_utils as fu
+import src.files.file_utils as fu
 import src.utilities.utils as u
 
 
@@ -47,10 +47,10 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
         converted_dao = self.new_translated_dao(
             diagram, dao, other_data=asm_data)
         asm_dao_template_filename = "DAOML"
-        dao_name = u.sanitize_name(dao.get_name())
+        dao_name = fu.sanitize_filename(dao.get_name())
         converted_dao.template_filename_input = f"{asm_dao_template_filename}.{c_t.ASM_FILE_EXTENSION}"
-        converted_dao.template_filename_output = f"{dao_name}.{c_t.ASM_FILE_EXTENSION}"
-        converted_dao.template_full_folders_path_from_base = c_t.FOLDER_NAME_ASM
+        converted_dao.translated_name_output = dao_name
+        converted_dao.suggested_input_template_folders_path_from_base = c_t.FOLDERS_PATH_INPUT_ASM
         # reverse direction of "is_controlled_by"
         controls_relation: dict[str, set[str]] = {}
         entities_controllable: list[list[aggregable_e.AggregableEntity]] = [
