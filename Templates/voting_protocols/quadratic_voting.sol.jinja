@@ -2,19 +2,24 @@
 pragma solidity {{solidity_version}};
 // @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
 
-{% for import in imports %}
-{{ import }}
-{% endfor %}
+{% if is_custom %}
+import "@openzeppelin/contracts/governance/Governor.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "./interfaces/IPermissionManager.sol";
+{% endif %}
 
 contract {{contract_name}} is Governor, GovernorVotes, GovernorSettings{{inherited_contracts}} {
-     {{state_var_declarations}}
+    { % if is_custom % }IPermissionManager public permissionManager;{% endif %}
 
     constructor(IVotes _token)
         Governor("{{contract_name}}")
         GovernorVotes(_token)
         GovernorSettings(1 /* voting delay */, 45818 /* voting period */, 0) 
     {
-         {{constructor_actions}}
+        { % if is_custom % }permissionManager = IPermissionManager(_permissionManager);{% endif %}
     }
 
     function getVotes(address account, uint256 blockNumber) public view override returns ( uint256) {
@@ -40,8 +45,7 @@ contract {{contract_name}} is Governor, GovernorVotes, GovernorSettings{{inherit
         override
         returns (uint256)
     {
-        {{proposal_requirement}}
-
+        { % if is_custom % }{% if optimized %}require(permissionManager.canPropose(msg.sender, {{proposal_permission_index}}), "User cannot propose");{% else %}require(permissionManager.isCommitteeMember(msg.sender, {{proposal_permission_index}})==2, "User cannot propose");{% endif %}{% endif %}
         return super.propose(targets, values, calldatas, description);
     }
     
@@ -50,7 +54,7 @@ function castVote(uint256 proposalId, uint8 support)
         override
         returns (uint256)
     {
-        {{vote_requirement}}
+        { % if is_custom % }{% if optimized %}require(permissionManager.canVote(msg.sender, {{voting_permission_index}}), "User cannot vote");{% else %}require(permissionManager.isCommitteeMember(msg.sender, {{voting_permission_index}})==1, "User cannot vote");{% endif %}{% endif %}
         return super.castVote(proposalId, support);
     }
  // Override proposal threshold to integrate quadratic cost (if needed)

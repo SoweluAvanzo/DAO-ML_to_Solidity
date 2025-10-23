@@ -1,4 +1,4 @@
-# Generated from ./src/parsers/xml/XMLParser.g4 by ANTLR 4.13.1
+# Generated from ./XMLParser.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .XMLParser import XMLParser
@@ -176,6 +176,15 @@ class XMLParserListener(ParseTreeListener):
 
     # Exit a parse tree produced by XMLParser#set_of_attributes.
     def exitSet_of_attributes(self, ctx:XMLParser.Set_of_attributesContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLParser#diagram_uniqueID.
+    def enterDiagram_uniqueID(self, ctx:XMLParser.Diagram_uniqueIDContext):
+        pass
+
+    # Exit a parse tree produced by XMLParser#diagram_uniqueID.
+    def exitDiagram_uniqueID(self, ctx:XMLParser.Diagram_uniqueIDContext):
         pass
 
 
@@ -368,21 +377,39 @@ class XMLParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by XMLParser#gov_area_ID.
+    def enterGov_area_ID(self, ctx:XMLParser.Gov_area_IDContext):
+        pass
+
+    # Exit a parse tree produced by XMLParser#gov_area_ID.
+    def exitGov_area_ID(self, ctx:XMLParser.Gov_area_IDContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLParser#gov_area_description.
+    def enterGov_area_description(self, ctx:XMLParser.Gov_area_descriptionContext):
+        pass
+
+    # Exit a parse tree produced by XMLParser#gov_area_description.
+    def exitGov_area_description(self, ctx:XMLParser.Gov_area_descriptionContext):
+        pass
+
+
+    # Enter a parse tree produced by XMLParser#gov_area_implementation.
+    def enterGov_area_implementation(self, ctx:XMLParser.Gov_area_implementationContext):
+        pass
+
+    # Exit a parse tree produced by XMLParser#gov_area_implementation.
+    def exitGov_area_implementation(self, ctx:XMLParser.Gov_area_implementationContext):
+        pass
+
+
     # Enter a parse tree produced by XMLParser#attribute.
     def enterAttribute(self, ctx:XMLParser.AttributeContext):
         pass
 
     # Exit a parse tree produced by XMLParser#attribute.
     def exitAttribute(self, ctx:XMLParser.AttributeContext):
-        pass
-
-
-    # Enter a parse tree produced by XMLParser#unique_id.
-    def enterUnique_id(self, ctx:XMLParser.Unique_idContext):
-        pass
-
-    # Exit a parse tree produced by XMLParser#unique_id.
-    def exitUnique_id(self, ctx:XMLParser.Unique_idContext):
         pass
 
 

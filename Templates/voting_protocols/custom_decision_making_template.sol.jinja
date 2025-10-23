@@ -3,17 +3,23 @@ pragma solidity {{solidity_version}};
 
 // @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
 
-{% for import in imports %}
-{{ import }}
-{% endfor %}
-contract {{contract_name}}{{inherited_contracts}} {
+{% if is_custom %}
+import "@openzeppelin/contracts/governance/Governor.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "./interfaces/IPermissionManager.sol";
+{% endif %}
+
+contract {{contract_name}} {{inherited_contracts}} {{"{"}}
     
     // TODO: implement custom {{decision_making_method_name}} logic here
 
-    {{state_var_declarations}}
+    {% if is_custom %}IPermissionManager public permissionManager;{% endif %}
     // Constructor
-    constructor({{constructor_parameters}})
-    {
-        {{constructor_actions}}
-    }  
-}
+    constructor({% if is_custom %}{% for param in constructor_parameters%}{% if loop.index0 != 0 %}, {% endif %}{{param.param_type}} {{param.param_name}}{% endfor %} {% endif %})
+    {{"{"}}
+        {% if is_custom %}permissionManager = IPermissionManager(_permissionManager);{% endif %}
+    {{"}"}} 
+{{"}"}}
