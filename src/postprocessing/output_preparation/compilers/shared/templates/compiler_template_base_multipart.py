@@ -6,10 +6,10 @@ import src.postprocessing.output_preparation.compilers.shared.compiled_generic_d
 
 
 class CompilerTemplateBaseMultipart(tb.TemplateBase):
-    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None):
+    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None, key_template_instance_data: str = None):
         super().__init__(pipeline_item_data,
                          optional_external_data=optional_external_data,
-                         key_template_instance_data=None
+                         key_template_instance_data=key_template_instance_data
                          )
 
     def get_all_parts_to_compile_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:

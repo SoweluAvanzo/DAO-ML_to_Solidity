@@ -3,27 +3,15 @@ import src.pipeline.pipeline_item as pi
 
 import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
 import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as cmd
-import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_multipart as ctj_m
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_standard_model_multipart as c_t_j_sm_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
 import src.postprocessing.output_preparation.compilers.solidity.tests.compiled_sol_test_data as c_st_data
-# import src.postprocessing.model_translation.shared.templates.conversion_result_template as crt
-
 
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.solidity.tests.solidity_tests_translator as st_t
-import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as st_t_j
-
-# import src.model.dao as dao_m
-# import src.model.aggregable_entity as aggregable_e
-
 
 import src.postprocessing.consts_template as consts_t
-import src.files.file_utils as fu
-import src.utilities.utils as utils
-# import src.utilities.constants as consts
 
-import src.utilities.errors as e_c
 
 """
 _1_0_0
@@ -80,7 +68,7 @@ class CompilerSolidityTestsTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipa
     def check_instance_data(self, instance_data: dict, additional_data=None):
         if not isinstance(instance_data, st_t.TranslatedDiagram_SolidityTest):
             raise Exception(
-                f"instance_data is of type {type(instance_data)} rether than TranslatedDiagram_ASM_Jinja")
+                f"instance_data is of type {type(instance_data)} rether than TranslatedDiagram_SolidityTest")
         return True
 
     def new_compiled_diagram(self, diagram_instance_data: trmt.TranslatedDiagramTemplated,  name_diagram: str, compiled_diagram) -> cmd.CompiledDiagramData:

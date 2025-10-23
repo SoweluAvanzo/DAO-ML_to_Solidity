@@ -33,5 +33,6 @@ class TranslatedDiagram_SolidityTest(trmt.TranslatedDiagramTemplated):
 
 
 class SolidityTestsTranslator(mts.ModelTranslatorSubparts):
-    def __init__(self, pipeline_item_data: pi.PIData, key_model: str = None):
+    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None, key_model: str = None):
         super().__init__(pipeline_item_data, key_model=key_model)
+        self.optional_external_data = optional_external_data

@@ -31,13 +31,19 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
         @param key_template_skeleton_provider_by_name: key of a function that, provided a template name, returns its skeleton.
         Must be an instance of "TemplateProviderByName"
         """
-        super().__init__(pipeline_item_data,
-                         optional_external_data=optional_external_data,
-                         key_diagram_instance_data=key_diagram_instance_data,
-                         key_diagram_model=key_diagram_model,
-                         key_template_skeleton_provider_by_name=key_template_skeleton_provider_by_name,
-                         key_is_result_as_list=key_is_result_as_list
-                         )
+        tjs.CompilerSolidityTemplateJinja.__init__(self, pipeline_item_data,
+                                                   optional_external_data=optional_external_data,
+                                                   key_template_instance_data=key_diagram_instance_data,
+                                                   key_template_skeleton=None,
+                                                   key_diagram_model=key_diagram_model
+                                                   )
+        ctj_m.CompilerTemplateJinjaMultipart.__init__(self, pipeline_item_data,
+                                                      optional_external_data=optional_external_data,
+                                                      key_diagram_instance_data=key_diagram_instance_data,
+                                                      key_diagram_model=key_diagram_model,
+                                                      key_template_skeleton_provider_by_name=key_template_skeleton_provider_by_name,
+                                                      key_is_result_as_list=key_is_result_as_list
+                                                      )
 
     #
 

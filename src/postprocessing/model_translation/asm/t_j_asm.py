@@ -28,7 +28,7 @@ class TranslatedDiagram_ASM_Jinja(trmt.TranslatedDiagramTemplated):
                  is_convertible: bool = True
                  ):
         super().__init__(
-            self, diagram, diagram_specific_data, is_convertible=is_convertible)
+            diagram, diagram_specific_data, is_convertible=is_convertible)
         """
         self.dao_converted_by_id: dict[str, TranslatedDAO_ASM_Jinja] = {}
         # dict of ( output_filename, compiled_template )

@@ -23,13 +23,14 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
                  key_template_skeleton_provider_by_name: str = None,
                  key_is_result_as_list: str = None
                  ):
-        super().__init__(pipeline_item_data,
-                         optional_external_data=optional_external_data,
-                         key_template_instance_data=key_diagram_instance_data,
-                         key_template_skeleton=None
-                         )
-        tb_m.CompilerTemplateBaseMultipart.__init__(
-            self, pipeline_item_data, optional_external_data=optional_external_data)
+        ctjb.CompilerTemplateJinjaBase.__init__(self, pipeline_item_data,
+                                                optional_external_data=optional_external_data,
+                                                key_template_instance_data=key_diagram_instance_data,
+                                                key_template_skeleton=None
+                                                )
+        tb_m.CompilerTemplateBaseMultipart.__init__(self, pipeline_item_data,
+                                                    optional_external_data=optional_external_data,
+                                                    key_template_instance_data=key_diagram_instance_data)
         self.key_diagram_model = key_diagram_model
         self.key_template_skeleton_provider_by_name = key_template_skeleton_provider_by_name
         self.key_is_result_as_list = key_is_result_as_list

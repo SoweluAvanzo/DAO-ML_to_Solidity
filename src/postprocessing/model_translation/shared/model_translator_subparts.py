@@ -19,9 +19,13 @@ class ModelTranslatorSubparts(mtb.ModelTranslatorBase):
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def translate_Diagram(self, diagram: dm.DiagramManager, additional_data=None) -> trm.TranslatedDiagram:
+        print(
+            f"on class ModelTranslatorSubparts, calling translate_Diagram with self is of type : {type(self)}")
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def translate(self, model: dm.DiagramManager, additional_data=None) -> trm.TranslatedDiagram:
+        print(
+            f"on class ModelTranslatorSubparts, self is of type : {type(self)}")
         diagram_converted = self.translate_Diagram(
             model, additional_data=additional_data)
         for dao in model.daoByID.values():

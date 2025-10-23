@@ -62,7 +62,7 @@ class CompilerStandardModelMultipart_TemplateJinja(ctj_m.CompilerTemplateJinjaMu
         """
         Override-designed
         """
-        return fu.concat_folder_filename(parts)
+        return fu.concat_folder_filename(*parts)
 
     #
 
@@ -148,7 +148,7 @@ class CompilerStandardModelMultipart_TemplateJinja(ctj_m.CompilerTemplateJinjaMu
 
         # now compile
         print(
-            f"compiling DAO in ASM with ID: ({dao_id}) and output Name: ({template_filename_dao_out})")
+            f"compiling DAO in in translator <{type(self)}> with ID: ({dao_id}) and output Name: ({template_filename_dao_out})")
         # each DAO do create a sub-folder holding everything in there, even the DAO itself
         compiled_dao = super().compile_single_template(
             template_skeleton_dao, dao_translated.entity_specific_data)

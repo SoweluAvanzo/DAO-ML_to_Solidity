@@ -1,10 +1,7 @@
 
 import src.pipeline.pipeline_item as pi
-import src.postprocessing.model_translation.shared.model_translator_base as mcb
-import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
-import src.postprocessing.model_translation.shared.translation_result_base as crb
-import src.postprocessing.model_translation.shared.translation_result_model as trm
-import src.postprocessing.model_translation.solidity.tests.solidity_tests_translator as stt
+
+import src.postprocessing.model_translation.solidity.tests.solidity_tests_translator as st_t
 import src.postprocessing.model_translation.solidity.shared_utils as shared_utils_sol
 
 import src.model.aggregable_entity as aggregable_entity
@@ -19,9 +16,12 @@ import src.postprocessing.consts_template as consts_t
 import src.utilities.utils as utils
 
 
-class SolidityTestsTranslatorJinjaHardhat_1_0_0(stt.SolidityTestsTranslator):
-    def __init__(self, pipeline_item_data: pi.PIData, key_model: str = None, is_optimized=True, key_is_optimized: str = None):
-        super().__init__(pipeline_item_data, key_model=key_model)
+class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
+    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
+                 key_model: str = None, is_optimized=True, key_is_optimized: str = None):
+        super().__init__(pipeline_item_data,
+                         optional_external_data=optional_external_data,
+                         key_model=key_model)
         self.is_optimized = is_optimized
         self.key_is_optimized = key_is_optimized
 
@@ -64,7 +64,7 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(stt.SolidityTestsTranslator):
         """
         return {value['final_id']: value['name'] for value in entity_to_data.values()}
 
-    def generate_addresses_by_entity_value(dao: d.DAO, entity_to_data: dict[str, dict]) -> dict[int, dict[str, any]]:
+    def generate_addresses_by_entity_value(self, dao: d.DAO, entity_to_data: dict[str, dict]) -> dict[int, dict[str, any]]:
         return shared_utils_sol.addresses_by_entities_data(dao, entity_to_data)
 
     def generate_control_tests_expected_results(self, entities: list[aggregable_entity.AggregableEntity], entity_to_data: dict[str, dict]) -> list[tuple[int, int, bool]]:
@@ -111,15 +111,15 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(stt.SolidityTestsTranslator):
     def get_test_name_simple(self, diagram: dm.DiagramManager, dao: d.DAO, additional_data=None):
         return "standard_test_script_template"
 
-    def translate_DAO_test(self, diagram: dm.DiagramManager, dao: d.DAO, additional_data=None) -> trmt.TranslatedDAOTemplated:
+    def translate_DAO(self, diagram: dm.DiagramManager, dao: d.DAO, additional_data=None) -> st_t.TranslatedDAO_SolidityTest:
         dao_translated_data = {}
-        dao_translated = trmt.TranslatedDAOTemplated(
+        dao_translated = st_t.TranslatedDAO_SolidityTest(
             dao, dao_translated_data, is_convertible=True)
-        is_opt = self.get_test_name_optimized(diagram, dao, additional_data=additional_data) if self.is_optimized \
-            else self.get_test_name_simple(diagram, dao, additional_data=additional_data)
+        is_opt = self.is_optimized
         if self.key_is_optimized is not None:
             is_opt = not not self.key_is_optimized
-        script_name = is_opt
+        script_name = self.get_test_name_optimized(diagram, dao, additional_data=additional_data) if is_opt \
+            else self.get_test_name_simple(diagram, dao, additional_data=additional_data)
         dao_name = utils.sanitize_name(dao.get_name())
         dao_translated.template_filename_input = f"{script_name}.{consts_t.TESTS_FILE_EXTENSION}"
         dao_translated.template_filename_output = f"{dao_name}.{consts_t.TESTS_FILE_EXTENSION}"
@@ -156,47 +156,8 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(stt.SolidityTestsTranslator):
         dao_translated_data["permissions"] = self.generate_permission_tests_expected_results(dao,
                                                                                              entities, entity_to_data)
         dao_translated_data["committee_addresses"] = committee_addresses
-        """
-        From TestGenerator
+        #
+        return dao_translated
 
-            def generate_test_from_template(self, template_path: str, name: str, output_folder="test", extension=".js") -> TranslatedSmartContract:
-                # Define the full path to the template file
-                file_name_and_path = f"{template_path}/{name}{extension}.jinja"
-                # Initialize an empty list to store each rendered line
-                rendered_lines = []
-                addresses_list = self.generate_address_list()
-                addressesByEntityValue = self.generate_addresses_by_entity_value()
-                owner_id_bitmask = self.entity_to_data[ self.dao.owner_role.role_id]['final_id']
-                owner_role_value = owner_id_bitmask # redundant, but kept for clarity
-                permission_tests_expected_results = self.generate_permission_tests_expected_results()
-                
-                with open(file_name_and_path, 'r', encoding='utf-8') as f:
-                    template_content = f.read()
-                    template = Template(template_content)
-                    rendered_lines = template.render(
-                        entity_to_data = self.name_to_final_id(),
-                        solidity_version=self.context.solidity_version,
-                        addresses_list=addresses_list,
-                        addressesByEntityValue=addressesByEntityValue,
-                        owner=owner_id_bitmask,
-                        DAO_name=self.dao.dao_name.replace(" ", "_"),
-                        owner_role_value=owner_role_value,
-                        control_relation_results=self.generate_control_tests_expected_results(),
-                        permissions=permission_tests_expected_results,
-                        committee_addresses=[ \
-                            #entity_data['final_id'] : entity_data['address'] \
-                            entity_data['address'] \
-                            for entity_data in self.entity_to_data.values() \
-                                if entity_data['entity_type'] == entity_type_controllable.EntityTypeControllable.COMMITTEE.value \
-                        ]
-                    ).splitlines()
-
-                # Return a TranslatedSmartContract object with the list of rendered lines
-                return TranslatedSmartContract(rendered_lines, self.context.dao.dao_name + "_test", folder=output_folder, extension=extension)
-            
-        """
-        # TODO
-        return dao_translated_data
-
-    def translate_Diagram_test(self, diagram: dm.DiagramManager, additional_data=None) -> trmt.TranslatedDiagramTemplated:
-        return trmt.TranslatedDiagramTemplated(diagram, additional_data, is_convertible=False)
+    def translate_Diagram(self, diagram: dm.DiagramManager, additional_data=None) -> st_t.TranslatedDiagram_SolidityTest:
+        return st_t.TranslatedDiagram_SolidityTest(diagram, additional_data, is_convertible=False)

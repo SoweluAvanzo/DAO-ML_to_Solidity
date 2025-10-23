@@ -22,12 +22,12 @@ class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase):
         if not isinstance(pipeline_item_data, pi.PIData):
             raise Exception(
                 f"pipeline_item_data is not a PIData: {type(pipeline_item_data)}")
-        super().__init__(
-            pipeline_item_data,
-            optional_external_data=optional_external_data,
-            key_template_instance_data=key_template_instance_data,
-            key_template_skeleton=key_template_skeleton
-        )
+        tjb.CompilerTemplateJinjaBase.__init__(self,
+                                               pipeline_item_data,
+                                               optional_external_data=optional_external_data,
+                                               key_template_instance_data=key_template_instance_data,
+                                               key_template_skeleton=key_template_skeleton
+                                               )
         self.key_diagram_model = key_diagram_model
 
     #
