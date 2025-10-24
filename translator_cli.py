@@ -1,6 +1,7 @@
 from FileHandler import *
 import argparse
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="CLI Parser for DAO-ML to Solidity Translator"
@@ -27,7 +28,7 @@ def main():
         choices=["optimized", "simple"],
         default="simple"
     )
-    
+
     parser.add_argument(
         "-f", "--file",
         type=str,
@@ -55,19 +56,20 @@ def main():
         required=False,
         default=True
     )
-    
+
     args = parser.parse_args()
 
     if args.function == "simulate":
-        optimized= True if args.translation_type== "optimized" else False
-        write_SCs(generate_simulations(n_daos=args.n_daos, optimized=optimized), args.sf)
-        return        
-    
+        optimized = True if args.translation_type == "optimized" else False
+        write_SCs(generate_simulations(
+            n_daos=args.n_daos, optimized=optimized), args.sf)
+        return
+
     if not args.file:
         print("Error", "Please enter the XML file name.")
         return None
-    
-    if args.function=="translate":
+
+    if args.function == "translate":
         should_generate_tests = args.gen_test == True
         translate_SCs(args.file, args.translation_type, should_generate_tests)
         # TODO: refactoring
@@ -91,13 +93,15 @@ def main():
         # 2) "TextFileOutput" sara' solo una classe tra le varie sottoclassi di "OutputEndpoint": "to-JSON" sara' un'altra sottoclasse, "to-SQL-DB" una terza, etc
         # 2.1) in futuro dovremo capire come generalizzare la "lista di righe" e "oggetto intero" (Smart Contract / dati di test / etc) in un modo coerente
 
-    elif args.function=="to_json":
+    elif args.function == "to_json":
         print_json(args.file)
     elif args.test:
         pass
     else:
         print("Error", "Invalid function name. Please, enter translate followed by the xml file path, or to_json followed by the XML file path. to execute the desired action")
-      
+
+
 if __name__ == '__main__':
     main()
-    
+
+    # python translator_cli.py -fn translate -f ./data/Travelhive_final_model.xml -tt optimized

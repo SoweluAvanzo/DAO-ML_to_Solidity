@@ -11,18 +11,18 @@ import src.utilities.extended_enum as extended_enum
 
 
 class AcceptedClasses_Jinja_TFO(extended_enum.ExtendedEnum):
-    LIST = list
+    LIST = type([])
     CompiledSolidityDiagram = compiled_sol.CompiledSolidityDiagram
 
 
 class JinjaTextFileOutput(tfo.TextFileOutput):
     def __init__(self, pipeline_item_data: pi.PIData,
-                 key_translated_diagram: str, \
+                 key_compiled_diagram: str, \
                  # key_model_to_template_mapper_jinja:str,
                  base_destination=None
                  ):
         super().__init__(pipeline_item_data, base_destination)
-        self.key_translated_diagram = key_translated_diagram
+        self.key_compiled_diagram = key_compiled_diagram
         # self.key_model_to_template_mapper_jinja = key_model_to_template_mapper_jinja
         self.current_inputs = None
 
@@ -104,46 +104,44 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
 
     def to_output(self, what, destination: str = None, additional_data=None) -> bool:
         ok = True
-        translated_diagram = what
+        compiled_diagram = what
         # set the "output mode" if absent
         if additional_data is None:
             additional_data = {"mode": "w"}
         elif "mode" not in additional_data:
             additional_data["mode"] = "w"
         # now, sanity checks
-        print(f"outputting a {type(translated_diagram)} in jinja :D")
 
         # get the list of things to output, based on its class
         # this way, it's possible to modularize and extend the
         # ways to get "things to output"
-        class_translated_diagram = type(translated_diagram)
+        class_compiled_diagram = type(compiled_diagram)
         class_based_TD_converter = self.translated_diagram_to_list_output_converters(
             additional_data=additional_data)
-        if class_translated_diagram not in class_based_TD_converter:
-            if self.key_translated_diagram is None:
-                print(
-                    f"WARNING: is missing key_translated_diagram : {self.key_translated_diagram}")
-                translated_diagram = self.get_ith_input(0, additional_data)
-                class_translated_diagram = type(translated_diagram)
+        if class_compiled_diagram not in class_based_TD_converter:
+            print(
+                f"\nERROR: unrecognized class_compiled_diagram: {class_compiled_diagram} - {type(compiled_diagram)}")
+            if self.key_compiled_diagram is None:
+                compiled_diagram = self.get_ith_input(0, additional_data)
+                class_compiled_diagram = type(compiled_diagram)
             else:
-                if self.key_translated_diagram in additional_data:
-                    translated_diagram = self.current_inputs[self.key_translated_diagram]
-                    class_translated_diagram = type(translated_diagram)
+                if self.key_compiled_diagram in additional_data:
+                    compiled_diagram = self.current_inputs[self.key_compiled_diagram]
+                    class_compiled_diagram = type(compiled_diagram)
                 else:
                     print(
-                        f"ERROR: translated_diagram is not a compiled_sol.CompiledSolidityDiagram and is missing key_translated_diagram : {self.key_translated_diagram}")
-                    import json
-                    print(f"additional_data: {json.dumps(additional_data)}")
-                    translated_diagram = None
+                        f"ERROR: compiled_diagram is not a compiled_sol.CompiledSolidityDiagram and is missing key_compiled_diagram : {self.key_compiled_diagram}")
+                    print(additional_data)
+                    compiled_diagram = None
         else:
             print(
-                f"class_translated_diagram not recognized: {class_translated_diagram}")
-        if translated_diagram is None:
+                f"class_compiled_diagram not recognized: {class_compiled_diagram}")
+        if compiled_diagram is None:
             raise Exception(
-                f"The provided translated diagram should be an instance of one of [{",".join(c.__name__ for c in class_based_TD_converter.keys())}], but it's a: {class_translated_diagram}")
+                f"The provided translated diagram should be an instance of one of [{",".join(c.__name__ for c in class_based_TD_converter.keys())}], but it's a: {class_compiled_diagram}")
 
-        content_and_filepath_to_output = class_based_TD_converter[class_translated_diagram](
-            translated_diagram)
+        content_and_filepath_to_output = class_based_TD_converter[class_compiled_diagram](
+            compiled_diagram)
         # produce the output
         print(
             f"\n\n\n PRODUCING {len(content_and_filepath_to_output)} outputs in total")

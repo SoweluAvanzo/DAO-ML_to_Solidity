@@ -197,8 +197,6 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         dao_specific_data_translated["committees"] = dao.committees
         dao_specific_data_translated["committees_names_list"] = [
             c.get_name() for c in dao.committees.values()]
-        print(
-            f"dao_specific_data_translated['committees_names_list'] -> {dao_specific_data_translated['committees_names_list']}")
         dao_specific_data_translated["entities_amount"] = entities_amount
         dao_specific_data_translated["states_variables__functionalities_ids"] = functionalities_ids
         # dao_specific_data_translated.update( rccd )
@@ -275,8 +273,6 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
             other_data=committee_specific_data_translated,
             is_convertible=True
         )
-        print(
-            f"translating committee: name={committee_translated.get_name()} ; id={committee_translated.get_id()}")
         committee_translated.voting_protocol_specific_data = voting_protocol_specific_data
         template_voting_protocol_base_path = consts_t.NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL
         committee_translated.suggested_input_template_folders_path_from_base = template_voting_protocol_base_path
@@ -409,9 +405,6 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                     "index_entity": index_entity
                 })
                 index_entity += 1
-        import json
-        print(
-            f"on dao '{dao.get_name()}', entities_permissions:\n\t {json.dumps(entities_permissions, indent=2)}")
         return entities_permissions
 
     def get_dao_constructor_body(self, dao: d.DAO, id_var_type: str) -> dict:

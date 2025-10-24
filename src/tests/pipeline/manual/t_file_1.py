@@ -7,7 +7,8 @@ import src.input.xml_file_input as xfi
 import src.output.text_file_output as tfo
 import src.output.jinja_text_file_output as jtfo
 import src.cli.cli_executor as clie
-import src.validators.xml_dao_validator as xvi
+import src.validators.xml.xml_dao_validator as xvi
+import src.validators.validation_result_to_errors as vete
 import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
 import src.postprocessing.output_preparation.model_to_json as m_json
@@ -28,6 +29,7 @@ import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
 import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
+import src.pipeline.utilities.pi_exception_raiser as perrr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
 import src.utilities.extended_enum as ex_enum
@@ -153,6 +155,18 @@ if __name__ == "__main__":
     p_pts_printer = pri.PIPrinter(
         pi.PIData(k_printer_p_pts, [k_tf1_p_pts]), None, True)
     pm.addItem(p_pts_printer)
+
+    k_p_validator_errors_extractor = "k_p_validator_errors_extractor"
+    p_validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
+        pi.PIData(k_p_validator_errors_extractor, [k_xml_validator]),
+        key_validation_result=k_xml_validator)
+    pm.addItem(p_validator_errors_extractor)
+
+    k_v_exc_raiser = "k_v_exc_raiser"
+    v_exc_raiser = perrr.PIExceptionRaiser(
+        pi.PIData(k_v_exc_raiser, [k_p_validator_errors_extractor]),
+        key_error_input=k_p_validator_errors_extractor)
+    pm.addItem(v_exc_raiser)
 
     # 3)
 
@@ -345,7 +359,7 @@ if __name__ == "__main__":
     k_compiled_output_txt = "k_compiled_output_txt"
     compiled_base_destination = "out"
     compiled_output_txt = jtfo.JinjaTextFileOutput(pi.PIData(k_compiled_output_txt, [k_template_compiler]),
-                                                   key_translated_diagram=k_template_compiler,
+                                                   key_compiled_diagram=k_template_compiler,
                                                    base_destination=compiled_base_destination
                                                    )
     pm.addItem(compiled_output_txt)
@@ -385,7 +399,7 @@ if __name__ == "__main__":
 
     k_asm_compiled_output_txt = "k_asm_compiled_output_txt"
     compiled_output_txt_asm = jtfo.JinjaTextFileOutput(pi.PIData(k_asm_compiled_output_txt, [k_compiler_asm, k_asm_compilation_announcer_printer]),
-                                                       key_translated_diagram=k_compiler_asm,
+                                                       key_compiled_diagram=k_compiler_asm,
                                                        base_destination=compiled_base_destination
                                                        )
     pm.addItem(compiled_output_txt_asm)
@@ -419,7 +433,7 @@ if __name__ == "__main__":
 
     k_sol_test_compiled_output_txt = "k_sol_test_compiled_output_txt"
     compiled_output_txt_sol_test = jtfo.JinjaTextFileOutput(pi.PIData(k_sol_test_compiled_output_txt, [k_compiler_sol_test, k_sol_test_compilation_announcer_printer]),
-                                                            key_translated_diagram=k_compiler_sol_test,
+                                                            key_compiled_diagram=k_compiler_sol_test,
                                                             base_destination=compiled_base_destination
                                                             )
     pm.addItem(compiled_output_txt_sol_test)
@@ -438,5 +452,7 @@ if __name__ == "__main__":
     import json
     print(
         f"outputs:\n\t {json.dumps({k: str(v) for k, v in outputs.items()}, indent=2)}")
+
+        python -m src.tests.pipeline.manual.t_file_1 > AAAAA.txt
     """
     print("\n\n\nEND")

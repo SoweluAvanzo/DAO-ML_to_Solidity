@@ -93,14 +93,6 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
             }
             for p in dao.permissions.values()
         ]
-        """
-        print(f"\n debug {len(dao.permissions)} permissions")
-        for p in dao.permissions.values():
-            print(f"p {p.get_name()} -> {p.ref_gov_area}")
-        print(f"debug {len(dao.governance_areas)} governanceArea")
-        for p in dao.governance_areas.values():
-            print(f"g.a. -> {str(p)}")
-        """
         asm_data["governanceAreas"] = [u.to_keyword(
             g.get_name()) for g in dao.governance_areas.values()]
         # no user pre-defined (apart from the Owner) at this stage of development

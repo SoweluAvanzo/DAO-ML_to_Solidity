@@ -89,9 +89,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                     template_filename_dao_in = dao_translated.template_filename_input
                     template_filename_dao_out = dao_translated.translated_name_output
                     template_folder_path_base = dao_translated.suggested_input_template_folders_path_from_base
-                    # print(f"\t dao_translated.suggested_input_template_folders_path_from_base -> {dao_translated.suggested_input_template_folders_path_from_base}")
                 else:
-                    # print(f"\n ERROR: dao_translated has type: {type(dao_translated)}")
                     template_filename_dao_in = fu.sanitize_filename(
                         dao_translated.get_name())
                     template_filename_dao_out = template_filename_dao_in
@@ -101,10 +99,8 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                     template_skeleton_dao = dao_templates_loaded_by_filename[template_filename_dao_in]
                 else:
                     template_filename_dao_extension = f"{template_filename_dao_in}.{self.jinja_extension}"
-                    # print(f"\n  on {type(self)} : BEFORE getting the template skeletons for DAO .... template_folder_path_base: {template_folder_path_base} ; template_filename_dao_extension: {template_filename_dao_extension}")
                     template_skeleton_dao = tpbn.provide_template_skeleton_by_name(
                         template_name=[template_folder_path_base, template_filename_dao_extension])
-                    # print(f"\n  on {type(self)} : AFTER getting the template skeletons for DAO")
                     # join the template into a single string
                     if template_skeleton_dao is None:
                         raise Exception(
@@ -116,7 +112,6 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                 # now compile
                 template_filename_dao_out = fu.sanitize_filename(
                     template_filename_dao_out)
-                # print(f"compiling DAO with ID: ({dao_id}) and output Name: ({template_filename_dao_out}) ..... AND template_folder_path_base: {template_folder_path_base}")
                 compiled_dao = super().compile_single_template(
                     template_skeleton_dao, dao_translated.entity_specific_data)
                 # each DAO do create a sub-folder holding everything in there, even the DAO itself
@@ -124,7 +119,6 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                 template_filename_dao_out_ext = f"{template_filename_dao_out}.{consts.SOLIDITY_EXTENSION_OUTPUT}"
                 dao_folder_output_path = file_utils.concat_folder_filename(
                     template_folder_path_base, consts_t.FOLDERS_PATH_OUTPUT_SOLIDITY, template_filename_dao_out)
-                # print(f"C_SOL ... dao_folder_output_path: {dao_folder_output_path}")
                 compiled_dao_filename = file_utils.concat_folder_filename(
                     dao_folder_output_path, template_filename_dao_out_ext)
                 compiled_dao_struct = csd.CompiledSolidityDAO(
@@ -152,18 +146,15 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                                 compiled_filename = file_utils.concat_folder_filename(
                                     dao_folder_output_path,
                                     translated_thing.suggested_input_template_folders_path_from_base, f"{translated_thing.translated_name_output}.{consts.SOLIDITY_EXTENSION_OUTPUT}")
-                                # print(f"compiled_filename of interfaces/conditions: {compiled_filename}")
                                 compiled_thing_wrapper = cgd.CompiledUnitWithID(
                                     None, compiled_filename, compiled_thing)
                                 compiled_dao_struct.interfaces_and_dao_related_compiled_contracts[
                                     filename] = compiled_thing_wrapper
                                 yield compiled_thing_wrapper
                             # else:
-                                # print(f"Can't convert THING: {filename} - {translated_thing.get_name()}")
                 compilated.add_dao(compiled_dao_struct)
                 yield compiled_dao_struct
             # else:
-                # print(f"Can't convert DAO: {dao_id} - {dao_translated.get_name()}")
             for committee_id, committee_translated in dao_translated.committees_by_id.items():
                 if committee_translated.can_be_converted():
                     # lists are allowed to load sub-templates in sub-folders
@@ -187,7 +178,6 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                         template_skeleton_committee = templates_loaded_by_filename_cache[
                             template_filename_input]
                     else:
-                        # print(f"in SOL, going to provide template_skeleton_committee_path: {template_skeleton_committee_path}")
                         template_skeleton_committee = tpbn.provide_template_skeleton_by_name(
                             template_name=template_skeleton_committee_path)
                         if isinstance(template_skeleton_committee, list):
@@ -196,7 +186,6 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                         templates_loaded_by_filename_cache[template_filename_input] = template_skeleton_committee
                     # committee_folder_output_path = file_utils.check_and_make_folder([ ...])
                     committee_folder_output_path = dao_folder_output_path
-                    # print(f"on compiling committee, template_folder_path_base= {template_folder_path_base} ; committee_folder_output_path: {committee_folder_output_path}")
                     compiled_committee_fullpath = file_utils.concat_folder_filename(
                         committee_folder_output_path, f"{committee_translated.translated_name_output}.{consts.SOLIDITY_EXTENSION_OUTPUT}")
                     compiled_committee = super().compile_single_template(

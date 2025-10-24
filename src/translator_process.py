@@ -73,8 +73,6 @@ class TranslatorProcess:
         self.current_phase: TranslationPhases = None
         self.model_transformations = self.__digest_set_enum(
             ModelTransformation.list() if model_transformations is None else model_transformations, ModelTransformation)
-        print(
-            f"self.model_transformations: {', '.join(self.model_transformations)}")
         self.generate_tests = generate_tests
         self.translation_pipeline: pmp.PipelineManager = self._build_translation_pipeline()
 
