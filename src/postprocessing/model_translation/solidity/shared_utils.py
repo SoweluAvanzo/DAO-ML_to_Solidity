@@ -119,12 +119,10 @@ def get_roles_committee_computed_data(dao: d.DAO, functionalities_ids: dict[str,
 def addresses_by_entities_data(dao: d.DAO, entity_to_data: dict[str, dict]) -> dict[int, dict[str, any]]:
     addr_E_By_E_ID = {}  # "address entity by entity ID"
     owner_role = dao.owner_role
-    # print(f"in generate_address_list (test generator) - owner_role is {owner_role}")
     address_role = "owner"
 
     entity_data_by_original_id = {
         e['original_id']: e for e in entity_to_data.values()}
-    # print(f"in generate_address_list - entity_data_by_original_id is {entity_data_by_original_id}")
 
     # reminder: the "final_id" is the justapposition of "bitmasn" + "id"
     i = 0

@@ -20,8 +20,6 @@ class TemplateBase(pi.PipelineItem):
             f"{e_c.ERROR_TEXT__NOT_IMPLEMENTED} on instance: {type(instance_data)}")
 
     def run(self, inputs):
-        print(
-            f"running TemplateBase ({type(self)}) with key: {self.get_key()}")
         return self.compile_template(\
             # inputs[self.key_template_name] if self.key_template_name else self.get_ith_input(0), \
             # inputs[self.key_template_skeleton] if self.key_template_skeleton else self.get_ith_input(1),

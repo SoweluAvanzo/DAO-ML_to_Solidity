@@ -1,4 +1,4 @@
-
+import json
 from collections.abc import Iterable
 import src.output.base_output as bo
 import src.files.file_utils as fu
@@ -15,9 +15,6 @@ class TextFileOutput(bo.BaseOutput):
         self.write_mode_key = WRITE_MODE_KEY if write_mode_key is None else write_mode_key
 
     def to_output(self, what, destination: str = None, additional_data=None) -> bool:
-        print(f"to_output with what of type: {type(what)}")
-        print(f"... at: {destination}")
-        print(f"... with additional data: {additional_data}")
         if destination is None:
             destination = fu.get_base_folder(self.base_destination)
         if destination is None:  # again?
@@ -53,8 +50,13 @@ class TextFileOutput(bo.BaseOutput):
                             f.write("\n")
                         f.flush()
                 except TypeError:  # then, fail gracefully
-                    f.write(what)
-                    f.flush()
+                    try:
+                        f.write(json.dumps(what))
+                        f.flush()
+                        return True
+                    except Exception as e:
+                        import traceback
+                        traceback.print_e
             return True
         return False
 

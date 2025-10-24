@@ -1,11 +1,14 @@
 
 from antlr4 import CommonTokenStream, InputStream
 from antlr4.tree.Tree import TerminalNodeImpl
+
+import src.pipeline.pipeline_item as pi
+
 import src.parsers.xml.XMLLexer as xmlL
 import src.parsers.xml.XMLParser as xmlP
 import src.parsers.xml.XMLParserVisitor as xmlPV
+import src.validators.validation_result as validation_res
 
-import src.pipeline.pipeline_item as pi
 import src.model_generators.base_generator as bg
 # import src.utilities.utils as u
 import src.model.diagram_manager as dm
@@ -23,9 +26,13 @@ class XmlStringModelGenerator(bg.BaseGenerator):
 
     def generate(self, validation_result):
         try:
+            if not isinstance(validation_result, validation_res.ValidationResult):
+                raise Exception(
+                    f"Unrecognized validation result type: expected ValidationResult, got: {type(validation_result)}.")
+
             # errors=validation_result["errors"]
             # tree_parsed=validation_result["tree_parsed"]
-            input = validation_result["input"]
+            input = validation_result.input
             # input_string_list=validation_result["input_string_list"]
 
             # setup of the parser
@@ -40,7 +47,6 @@ class XmlStringModelGenerator(bg.BaseGenerator):
             visitor = XMLDAOVisitor()
             diagram_manager = dm.DiagramManager()
             visitor.parseDiagramTree(tree, diagram_manager)
-            print("diagram manager generated")
             return diagram_manager
         except Exception as e:
             print("\nERROR while generating Model")
@@ -55,10 +61,8 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         self.translation_results = []
         self.diagramManager: dm.DiagramManager = None
 
-    def parseDiagramTree(self, tree, diagramManager: dm.DiagramManager, reset=False):
+    def parseDiagramTree(self, tree, diagramManager: dm.DiagramManager):
         self.diagramManager = diagramManager
-        if reset:
-            diagramManager.reset()
         # at first, gather all the data (raw instances) through the "visitABC" methods into the "diagramManager" ...
         self.visit(tree)
         # ... then, process and "link" all the raw data
