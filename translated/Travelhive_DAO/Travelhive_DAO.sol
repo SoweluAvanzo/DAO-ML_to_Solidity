@@ -8,7 +8,7 @@ import "./interfaces/IPermissionManager.sol";
 contract Travelhive_DAO is IPermissionManager {
     bool internal committee_initialization_blocked;
     mapping(address => uint32) internal roles;
-    uint32[14] internal role_permissions;
+    uint32[14 + 1] internal role_permissions; // "+1" to allow the 0-index "null Role"
     uint32[14] internal all_roles = [
         24576, // #0) Advisor -> ID : 0 , control bitmask: 1100000000
         24577, // #1) Founder -> ID : 1 , control bitmask: 1100000000
@@ -73,6 +73,7 @@ contract Travelhive_DAO is IPermissionManager {
             
     constructor(
 ) {
+        role_permissions[0] = 0; // "null"/absent Role, to indicate a User having no roles at all
         role_permissions[0] = 51298496; // #0) Advisor 
 
         role_permissions[1] = 51298496; // #1) Founder 
