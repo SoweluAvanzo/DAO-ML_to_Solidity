@@ -8,7 +8,7 @@ import "./interfaces/IPermissionManager.sol";
 contract Decentralized_Destination_Management_Organization is IPermissionManager {
     bool internal committee_initialization_blocked;
     mapping(address => uint32) internal roles;
-    uint32[12] internal role_permissions;
+    uint32[12 + 1] internal role_permissions; // "+1" to allow the 0-index "null Role"
     uint32[12] internal all_roles = [
         32768, // #0) DDMO_Member -> ID : 0 , control bitmask: 10000000000
         98305, // #1) Magister -> ID : 1 , control bitmask: 110000000000
@@ -71,6 +71,7 @@ contract Decentralized_Destination_Management_Organization is IPermissionManager
             
     constructor(
 ) {
+        role_permissions[0] = 0; // "null"/absent Role, to indicate a User having no roles at all
         role_permissions[0] = 262175; // #0) DDMO_Member 
 
         role_permissions[1] = 1835775; // #1) Magister 
