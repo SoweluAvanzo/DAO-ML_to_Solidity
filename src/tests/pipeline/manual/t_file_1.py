@@ -452,5 +452,7 @@ if __name__ == "__main__":
     import json
     print(
         f"outputs:\n\t {json.dumps({k: str(v) for k, v in outputs.items()}, indent=2)}")
+
+        python -m src.tests.pipeline.manual.t_file_1 > AAAAA.txt
     """
     print("\n\n\nEND")

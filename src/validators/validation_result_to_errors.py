@@ -18,6 +18,10 @@ class ValidationResultToErrorsExtractor(pi.PipelineItem):
             print(err_text)
             return err_text
         errs = err_validation.errors
+        print(
+            f"validation results validation_result: {err_validation.validation_result}")
+        print(f"validation results errors: {err_validation.errors}")
+        print(f"validation results input: {err_validation.input}")
         return errs
 
     def repr_inner(self):
