@@ -1,6 +1,7 @@
 from typing import Type
 
 import src.pipeline.pipeline_manager as pmp
+import src.pipeline.pipeline_item as pi
 
 import src.utilities.extended_enum as ex_enum
 import src.utilities.errors as e_c
@@ -12,6 +13,43 @@ class TranslationPhases(ex_enum.ExtendedEnum):
     TRANSLATION_CONVERSION_POSTPROCESSING = "translation"
     OUTPUT = "output"
 
+
+#
+
+class PipelineItemFactory:
+    def __init__(self):
+        pass
+
+    def new_pipeline_item(self) -> pi.PipelineItem:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+#
+
+
+class PhaseSubsteps:
+    """
+    TODO: Actually, this thing should derive from the other enums(ModelTransformation, InputSource, InputType)
+    by a switch case or smething
+    """
+
+    def __init__(self, name: str, pi_factory: PipelineItemFactory, constructor_args: dict):
+        self.name = name
+        self.pi_factory = pi_factory
+        self.constructor_args = constructor_args
+
+#
+
+
+class SubPhasesData:
+    def __init__(self,
+                 translation_phase: TranslationPhases,
+                 substeps: list[PhaseSubsteps]
+                 ):
+        self.translation_phase = translation_phase
+        self.substeps = substeps
+
+#
+#
 #
 
 
@@ -63,7 +101,8 @@ class TranslatorProcess:
 
     def __init__(self,
                  input: InputModelProvider,
-                 model_transformations: set | list = None,
+                 # model_transformations: set | list = None,
+                 phases_data: list[SubPhasesData],
                  generate_tests=True,  # only when applicable
                  # TODO altro
                  #
