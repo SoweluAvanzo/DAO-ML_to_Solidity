@@ -2,54 +2,31 @@ from typing import Type
 
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
+import src.phases_builders.shared as pb_shared
+import src.phases_builders.phase_step_variants as psv
+import src.phases_builders.phases as phases
+import src.phases_builders.input_fetch as i_f
+
 
 import src.utilities.extended_enum as ex_enum
 import src.utilities.errors as e_c
 
 
-class TranslationPhases(ex_enum.ExtendedEnum):
-    INPUT_FETCHING = "input"
-    MODEL_GENERATION = "model"
-    TRANSLATION_CONVERSION_POSTPROCESSING = "translation"
-    OUTPUT = "output"
-
-
-#
-
-class PipelineItemFactory:
-    def __init__(self):
-        pass
-
-    def new_pipeline_item(self) -> pi.PipelineItem:
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-
 #
 
 
-class PhaseSubsteps:
+class PhaseSubstep:
     """
+    @deprecated
     TODO: Actually, this thing should derive from the other enums(ModelTransformation, InputSource, InputType)
     by a switch case or smething
     """
 
-    def __init__(self, name: str, pi_factory: PipelineItemFactory, constructor_args: dict):
+    def __init__(self, name: str, phase_substep_variant: psv.PhaseSubstepVariants, constructor_args: dict):
         self.name = name
-        self.pi_factory = pi_factory
+        self.phase_substep_variant = phase_substep_variant
         self.constructor_args = constructor_args
 
-#
-
-
-class SubPhasesData:
-    def __init__(self,
-                 translation_phase: TranslationPhases,
-                 substeps: list[PhaseSubsteps]
-                 ):
-        self.translation_phase = translation_phase
-        self.substeps = substeps
-
-#
-#
 #
 
 
@@ -60,27 +37,29 @@ class ModelTransformation(ex_enum.ExtendedEnum):
     # PETRI_NETS = "petri"
 
 
-class InputSource(ex_enum.ExtendedEnum):
-    FILE = "file"
-    PROGRAMMATIC_PROVIDER = "prog"  # basically, a
-    # DATABASE="db"
-    # API="api"
+#
+#
 
 
-class InputType(ex_enum.ExtendedEnum):
-    XML = "xml"
-    JSON = "json"
-    # YAML="yaml"
-    # BSON = "bson"
-    # BINARY = "bytes"
+class SubPhasesData:
+    def __init__(self,
+                 translation_phase: phases.TranslationPhases,
+                 substeps: list[PhaseSubstep]
+                 ):
+        self.translation_phase = translation_phase
+        self.substeps = substeps
 
+#
+#
 #
 
 
 class InputModelProvider:
-    def __init__(self, input_source: InputSource, input_type: InputType, additional_data=None):
+    def __init__(self, input_source: i_f.InputSource, input_type: i_f.InputType, additional_data=None):
         self.input_source = input_source
         self.input_type = input_type
+        self.input_source_type = i_f.input_source_type(
+            input_source, input_type)
         self.additional_data = additional_data
 
 #
@@ -142,6 +121,8 @@ class TranslatorProcess:
 
     def _build_translation_pipeline(self) -> pmp.PipelineManager:
         pm = pmp.PipelineManager()
+
+        # TODO: make use of the "shared.builder_from_phase(...)"
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def _build_phase_input(self, pm: pmp.PipelineManager):
