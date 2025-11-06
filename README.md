@@ -144,9 +144,9 @@ run:
 With the Command Line (Terminal) pointing to the root of this project (i.e. "DAO-ML_to_Solidity" ),
 run the following command to manually execute a test:
 
-**`python -m src.tests.pipeline.manual.test_pi > AAAAA.txt`**
-**`python -m src.tests.pipeline.manual.t_file_1 > AAAAA.txt`**
-**`python -m src.tests.pipeline.manual.t_jinja > COMPILE_TEST.txt`**
+- **`python -m src.tests.pipeline.manual.test_pi > AAAAA.txt`**
+- **`python -m src.tests.pipeline.manual.t_file_1 > AAAAA.txt`**
+- **`python -m src.tests.pipeline.manual.t_jinja > COMPILE_TEST.txt`**
 
 Breakdown of the command parts:
 

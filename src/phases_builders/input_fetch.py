@@ -34,6 +34,11 @@ class InputSourceType(psv.PhaseSubstepVariants):
     # API_YAML
     # API_BSON
     # API_BINARY
+    # DB_XML
+    # DB_JSON
+    # DB_YAML
+    # DB_BSON
+    # DB_BINARY
 
 #
 
