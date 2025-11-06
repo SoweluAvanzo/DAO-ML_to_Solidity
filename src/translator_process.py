@@ -6,6 +6,7 @@ import src.phases_builders.shared as pb_shared
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phases as phases
 import src.phases_builders.input_fetch as i_f
+import src.phases_builders.model_generation as m_g
 
 
 import src.utilities.extended_enum as ex_enum
@@ -80,6 +81,7 @@ class TranslatorProcess:
 
     def __init__(self,
                  input: InputModelProvider,
+                 model_generator: m_g.ModelGeneratorFormat,
                  # model_transformations: set | list = None,
                  phases_data: list[SubPhasesData],
                  generate_tests=True,  # only when applicable
