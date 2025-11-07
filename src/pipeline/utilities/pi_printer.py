@@ -5,17 +5,18 @@ import src.utilities.utils as u
 
 
 class PIPrinter(pi.PipelineItem):
-    def __init__(self, pipeline_item_data: pi.PIData, text="", from_input=False):
+    def __init__(self, pipeline_item_data: pi.PIData, text="", from_input=False, should_warning_nonStr_nonList=True):
         super().__init__(pipeline_item_data)
         self.text = text
         self.from_input = from_input
+        self.should_warning_nonStr_nonList = should_warning_nonStr_nonList
 
     def run(self, inputs):
         t = self.get_ith_input(inputs, 0) if self.from_input else self.text
         is_string = u.is_string_or_list(t)
         if is_string:
             print(t)
-        elif is_string != None:
+        elif (is_string == False) and (is_string != None):
             i = 0
             for x in t:
                 try:
@@ -35,7 +36,8 @@ class PIPrinter(pi.PipelineItem):
                     traceback.print_exception(e)
                 i += 1
         else:
-            print(f"printing non-str, non-list ({type(t)}):")
+            if self.should_warning_nonStr_nonList:
+                print(f"printing non-str, non-list ({type(t)}):")
             print(repr(t))
         return inputs
 

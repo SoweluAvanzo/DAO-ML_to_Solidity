@@ -2,14 +2,13 @@
 import src.files.file_utils as files
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
-import src.input.txt_file_input as tfi
 import src.input.xml_file_input as xfi
 import src.output.text_file_output as tfo
 import src.output.jinja_text_file_output as jtfo
-import src.cli.cli_executor as clie
+# import src.cli.cli_executor as clie
 import src.validators.xml.xml_dao_validator as xvi
 import src.validators.validation_result_to_errors as vete
-import src.model_generators.json_string_model_generator as jg
+# import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
 import src.postprocessing.output_preparation.model_to_json as m_json
 import src.postprocessing.model_translation.model_translator_configurable as mcc

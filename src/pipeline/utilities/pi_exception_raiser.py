@@ -13,9 +13,9 @@ class PIExceptionRaiser(pi.PipelineItem):
             return None
         if isinstance(err_text, Exception):
             raise err_text
-        if isinstance(err_text, str):
+        if isinstance(err_text, str) and (err_text != ""):
             raise Exception(err_text)
-        if isinstance(err_text, list):
+        if isinstance(err_text, list) and (len(err_text) > 0):
             raise Exception("\n".join(err_text))
         return None
 
