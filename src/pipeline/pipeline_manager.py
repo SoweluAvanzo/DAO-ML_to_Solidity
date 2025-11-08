@@ -2,6 +2,7 @@ from enum import Enum
 from collections import deque
 
 import src.pipeline.pipeline_item as pi
+import src.utilities.utils as u
 
 
 class NodeRunStatus(Enum):
@@ -17,8 +18,10 @@ def newEmptyDependencyOutputData(done=False, data=None):  # -> list[bool, any]:
 
 
 class PipelineNode(pi.PipelineItem):
-    def __init__(self, pipelineManager, item: pi.PipelineItem):
-        super().__init__(pi.PIData(item.get_key(), None))
+    def __init__(self, pipelineManager, item: pi.PipelineItem,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(pi.PIData(item.get_key(), None), printer_debug=printer_debug)
         self.pipelineManager = pipelineManager
         self.item = item
         self.status_run = NodeRunStatus.NEVER_RUN

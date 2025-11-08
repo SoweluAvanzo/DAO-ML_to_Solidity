@@ -1,9 +1,9 @@
 
 import src.pipeline.pipeline_item as pi
 
-import src.phases_builders.shared as p_shared
 import src.phases_builders.phase_step_variants as psv
 
+import src.utilities.utils as u
 import src.utilities.errors as e_c
 
 
@@ -13,8 +13,8 @@ class PipelineItemFactory:
     PhaseSubstepVariants
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, printer_debug: u.PrinterDebug = None):
+        self.printer_debug = printer_debug
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)

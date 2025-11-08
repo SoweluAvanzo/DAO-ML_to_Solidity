@@ -9,15 +9,16 @@ import src.pipeline.pipeline_item as pi
 
 import src.validators.base_validator as bv
 import src.validators.validation_result as validation_res
+import src.utilities.utils as u
 
 
 DEFAULT_XML_SCHEMA = "data/XSD_DAO_ML.xsd"
 
 
-# TODO: PUT THE ALREADY-READ-XML-(string) INTO THE CONSTRUCTOR !!!!!!!!!!!
 class XMLDaoValidator(bv.BaseValidator):
-    def __init__(self, pipeline_item_data: pi.PIData, xml_schema_filepath: str, constraint_validator=None):
-        super().__init__(pipeline_item_data)
+    def __init__(self, pipeline_item_data: pi.PIData, xml_schema_filepath: str,
+                 constraint_validator=None, printer_debug: u.PrinterDebug = None):
+        super().__init__(pipeline_item_data, printer_debug=printer_debug)
         self.xml_schema_filepath = xml_schema_filepath
         self.constraint_validator = constraint_validator
 
@@ -30,7 +31,7 @@ class XMLDaoValidator(bv.BaseValidator):
         # check if the input is a file or a string-of-already-read-file
         if not isinstance(input, str):
             error_text = f"input is not a string: {input.__class__.__name__}"
-            print(error_text)
+            self.print_error(error_text)
             raise Exception(error_text)
         tree_root = None
         # try to obtain a parsed object of the XML file from the input:
@@ -72,9 +73,10 @@ class XMLDaoValidator(bv.BaseValidator):
 
 
 class ConstraintValidator():
-    def __init__(self, schemaFile, file_content):
+    def __init__(self, schemaFile, file_content, printer_debug: u.PrinterDebug = None):
         self.schemafile = schemaFile
         self.file_content = file_content
+        self.printer_debug = printer_debug
 
     # diagram validation functions for the two DAOMod diagram types
     def validate_against_schema(self, diagram):
@@ -93,7 +95,7 @@ class ConstraintValidator():
                     error_output.append(f"- {error} \n")
                 return error_output
         except xmlschema.XMLSchemaException as e:
-            print(f"Error with the schema file: {e}")
+            self.printer_debug.print_error(f"Error with the schema file: {e}")
             return e
 
     def split_and_add_to_list(self, strings):
@@ -155,7 +157,8 @@ class ConstraintValidator():
                     if level <= relator_level:
                         return True
                     else:
-                        print(f"{rel_name} relation violation\n")
+                        self.printer_debug.print_error(
+                            f"{rel_name} relation violation\n")
                         raise Exception(
                             f"relation violation: {elem.tag} with id {elem_id} has a {rel_name} relation with a {relator_elem.tag} "
                             f"with id {relator_id} that has a higher or equal {rel_attribute} \n"
@@ -219,7 +222,7 @@ class ConstraintValidator():
                         if other_dao_id != dao_id:  # obviously, exclude current dao
                             other_dao = possible_targets_by_dao_id[other_dao_id]
                             if target_id in other_dao:
-                                print(
+                                self.printer_debug.print_error(
                                     f"ERROR: found target {target_id} (originally from DAO __{dao_id}__) pointing insinde DAO --{other_dao_id}--")
                                 if early_return:
                                     return False  # ERROR
@@ -227,7 +230,8 @@ class ConstraintValidator():
                                                       "incriminated_targetID": target_id, "daoID_of_element": dao_id, "other_daoID": other_dao_id})
             if len(all_violations) > 0:
                 violations_output = "\n".join(all_violations)
-                print(f"all_violations:\n{violations_output}")
+                self.printer_debug.print_error(
+                    f"all_violations:\n{violations_output}")
                 return "\n".join(violations_output)
         return len(all_violations) == 0  # if no violations, then return True
 

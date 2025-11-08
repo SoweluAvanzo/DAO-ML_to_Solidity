@@ -10,7 +10,6 @@ import src.parsers.xml.XMLParserVisitor as xmlPV
 import src.validators.validation_result as validation_res
 
 import src.model_generators.base_generator as bg
-# import src.utilities.utils as u
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.governance_area as ga
@@ -19,10 +18,12 @@ import src.model.committee as c
 import src.model.permission as p
 import src.model.enums.relation_type as r_t
 
+import src.utilities.utils as u
+
 
 class XmlStringModelGenerator(bg.BaseGenerator):
-    def __init__(self, pipeline_item_data: pi.PIData):
-        super().__init__(pipeline_item_data)
+    def __init__(self, pipeline_item_data: pi.PIData, printer_debug: u.PrinterDebug = None):
+        super().__init__(pipeline_item_data, printer_debug=printer_debug)
 
     def generate(self, validation_result):
         try:
@@ -44,22 +45,23 @@ class XmlStringModelGenerator(bg.BaseGenerator):
             tree = parser.document()
 
             # actual transformation
-            visitor = XMLDAOVisitor()
+            visitor = XMLDAOVisitor(self.printer_debug)
             diagram_manager = dm.DiagramManager()
             visitor.parseDiagramTree(tree, diagram_manager)
             return diagram_manager
         except Exception as e:
-            print("\nERROR while generating Model")
-            print(e)
-            print("\n")
+            self.print_error("\nERROR while generating Model")
+            self.print_error(e)
+            self.print_error("\n")
             return None
 
 
 class XMLDAOVisitor(xmlPV.XMLParserVisitor):
-    def __init__(self):
+    def __init__(self, printer_debug: u.PrinterDebug = None):
         self.current_dao = None
         self.translation_results = []
         self.diagramManager: dm.DiagramManager = None
+        self.printer_debug = printer_debug
 
     def parseDiagramTree(self, tree, diagramManager: dm.DiagramManager):
         self.diagramManager = diagramManager
@@ -70,11 +72,11 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         self.diagramManager = None  # just to clean the memory
 
     def visitDiagram(self, ctx: xmlP.XMLParser.DiagramContext):
-        print("..........visitDiagram ^^ ")
+        self.printer_debug.print_msg("..........visitDiagram ^^ ")
         uniqueID = ctx.diagram_uniqueID()[0].STRING().getText().strip('"')
         self.diagramManager.id = uniqueID
         self.diagramManager.uniqueID = uniqueID
-        print(f"Diagram uniqueID: {uniqueID}")
+        self.printer_debug.print_msg(f"Diagram uniqueID: {uniqueID}")
         return super().visitDiagram(ctx)
 
     def visitRole(self, ctx: xmlP.XMLParser.RoleContext):
@@ -169,11 +171,11 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
                     hierarchical_inheritance)
         # self.daos[dao_id] = dao
         self.diagramManager.addDao(dao)
-        print(f'DAO created with ID: {dao_id}')
+        self.printer_debug.print_msg(f'DAO created with ID: {dao_id}')
         # recursively visits the children of the dao
         self.current_dao = dao
         self.visitChildren(ctx)
-        print("visitDao completed")
+        self.printer_debug.print_msg("visitDao completed")
         self.current_dao = None
         return dao
 
@@ -183,7 +185,7 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             0].STRING().getText().strip('"')
         gov_area_implementation = ctx.gov_area_implementation()[
             0].STRING().getText().strip('"')
-        print(
+        self.printer_debug.print_msg(
             f"visitGov: gov_area_ID: {gov_area_ID} --- gov_area_description: {gov_area_description}")
         governance_area = ga.GovernanceArea(
             gov_area_ID, gov_area_description, gov_area_implementation)
@@ -205,8 +207,10 @@ def traverse(tree, rule_names, indent=0):
     if tree.getText() == "<EOF>":
         return
     elif isinstance(tree, TerminalNodeImpl):
-        print("{0}TOKEN='{1}'".format("\t" * indent, tree.getText()))
+        self.printer_debug.print_msg(
+            "{0}TOKEN='{1}'".format("\t" * indent, tree.getText()))
     else:
-        print("{0}{1}".format("\t" * indent, rule_names[tree.getRuleIndex()]))
+        self.printer_debug.print_msg("{0}{1}".format(
+            "\t" * indent, rule_names[tree.getRuleIndex()]))
         for child in tree.children:
             traverse(child, rule_names, indent + 1)

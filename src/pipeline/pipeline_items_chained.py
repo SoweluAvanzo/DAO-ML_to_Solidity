@@ -1,5 +1,7 @@
 import src.pipeline.pipeline_item as pi
 
+import src.utilities.utils as u
+
 
 class ChainData:
     def __init__(self, key: str, pit: pi.PipelineItem, chain_dependencies: list[str] = None):
@@ -12,8 +14,10 @@ class ChainData:
 
 
 class PIChained(pi.PipelineItem):
-    def __init__(self, pipeline_item_data: pi.PIData, chains_of_pi: list[pi.PipelineItem]):
-        super().__init__(pipeline_item_data)
+    def __init__(self, pipeline_item_data: pi.PIData, chains_of_pi: list[pi.PipelineItem],
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(pipeline_item_data, printer_debug=printer_debug)
         # self.chains_of_pi = chains_of_pi
         # chain building:
         self.chain: list[ChainData] = [None]*len(chains_of_pi)
@@ -41,6 +45,8 @@ class PIChained(pi.PipelineItem):
         inputs_for_next = inputs
         output_run = None
         for pi_c in self.chain:
+            if self.is_debug:
+                print()
             try:
                 pipeline_item: pi.PipelineItem = pi_c.pit
                 # leverage the "dependencies mechanism" BUT preserve the original ones

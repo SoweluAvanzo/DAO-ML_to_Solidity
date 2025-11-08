@@ -1,10 +1,13 @@
 import src.pipeline.pipeline_item as pi
 
 import src.validators.validation_result as validation_res
+import src.utilities.utils as u
 
 
 class ValidationResultToErrorsExtractor(pi.PipelineItem):
-    def __init__(self, pipeline_item_data: pi.PIData, key_validation_result: str = None):
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 key_validation_result: str = None,
+                 printer_debug: u.PrinterDebug = None):
         super().__init__(pipeline_item_data)
         self.key_validation_result = key_validation_result
 
@@ -15,13 +18,13 @@ class ValidationResultToErrorsExtractor(pi.PipelineItem):
             return None
         if not isinstance(err_validation, validation_res.ValidationResult):
             err_text = f"Given error validation is not of ValidationResult type: {type(err_validation)}"
-            print(err_text)
+            self.print_error(err_text)
             return err_text
         errs = err_validation.errors
-        print(
+        self.print_msg(
             f"validation results validation_result: {err_validation.validation_result}")
-        print(f"validation results errors: {err_validation.errors}")
-        print(f"validation results input: {err_validation.input}")
+        self.print_msg(f"validation results errors: {err_validation.errors}")
+        self.print_msg(f"validation results input: {err_validation.input}")
         return errs
 
     def repr_inner(self):

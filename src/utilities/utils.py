@@ -23,3 +23,35 @@ def to_camel_case(s: str) -> str:
 
 def to_keyword(name: str) -> str:
     return fu.sanitize_filename(name).lower()
+
+
+#
+
+ERRORS_KEYS = [
+    "errors",
+    "is_error",
+    "is_exception",
+    "exception"
+]
+
+
+class PrinterDebug:
+
+    def print_msg(self, msg: str):
+        """
+        Overridable
+        """
+        print(msg)
+
+    def print_error(self, msg):
+        """
+        Overridable
+        """
+        print(msg)
+
+    def __call__(self, *args, **kwds):
+        for err_keyword in ERRORS_KEYS:
+            if err_keyword in kwds:
+                self.print_error(args[0])
+                return
+        self.print_msg(args[0])

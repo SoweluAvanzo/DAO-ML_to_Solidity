@@ -7,6 +7,8 @@ import src.phases_builders.phase_builder as pb
 import src.input.xml_file_input as xml_f_i
 import src.input.txt_file_input as txt_f_i
 
+import src.utilities.utils as u
+
 
 class InputSource(psv.PhaseSubstepVariants):
     FILE = "file"
@@ -53,6 +55,9 @@ def input_source_type(i_s: InputSource, i_t: InputType) -> InputSourceType:
 
 
 class InputFactory(pb.PipelineItemFactory):
+
+    def __init__(self, printer_debug: u.PrinterDebug = None):
+        super().__init__(printer_debug)
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return InputSourceType

@@ -1,5 +1,7 @@
 from typing import List, Dict
 
+import src.utilities.utils as u
+
 
 class PIData:
     def __init__(self, key: str, dependencies: List[str] = None):
@@ -22,15 +24,27 @@ class PIData:
 
 
 class PipelineItem:
-    def __init__(self, pipeline_item_data: PIData):
+    def __init__(self, pipeline_item_data: PIData,
+                 printer_debug: u.PrinterDebug = None
+                 ):
         if not isinstance(pipeline_item_data, PIData):
             raise Exception(
                 f"wrong type for pipeline_item_data: {type(pipeline_item_data)}")
         self.pipeline_item_data = pipeline_item_data
+        self.printer_debug = printer_debug
+
+    def print_error(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_error(msg)
+
+    def print_msg(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_msg(msg)
 
     def run(self, inputs: Dict[str, any]):  # input:dict[str, any]) -> any:
-        print(f"ERROR: PipelineItem has not implemented the run method. Key:")
-        print(self.pipeline_item_data.key)
+        self.printer_debug.print_error(
+            f"ERROR: PipelineItem has not implemented the run method. Key: {self.get_key()}")
+        self.printer_debug.print_error(self.pipeline_item_data.key)
         pass
 
     def get_pipeline_item_data(self):

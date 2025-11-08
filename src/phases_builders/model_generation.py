@@ -12,6 +12,9 @@ import src.validators.xml.xml_dao_validator as xvi
 import src.model_generators.xml_string_model_generator as xsmg
 import src.model_generators.json_string_model_generator as jsmg
 
+import src.utilities.utils as u
+
+
 KEY_ADDITIONAL_DATA__FILE_PATH_XML_SCHEMA = "k_a_d_FILE_PATH_XML_SCHEMA"
 
 
@@ -21,6 +24,9 @@ class ModelGeneratorFormat(psv.PhaseSubstepVariants):
 
 
 class ModelGeneratorFactory(pb.PipelineItemFactory):
+
+    def __init__(self, printer_debug: u.PrinterDebug = None):
+        super().__init__(printer_debug)
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return ModelGeneratorFormat
@@ -42,16 +48,20 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
             empty_pi_d = pi.PIData("k", dependencies=None)
             validation_store = pi_chain_store.PIChainStoreReleaserBranching(
                 empty_pi_d)
-            xml_validator = xvi.XMLDaoValidator(empty_pi_d, fpXMLs)
-            model_generator = xsmg.XmlStringModelGenerator(pi_data,)
+            xml_validator = xvi.XMLDaoValidator(
+                empty_pi_d, fpXMLs, printer_debug=self.printer_debug)
+            model_generator = xsmg.XmlStringModelGenerator(
+                pi_data, printer_debug=self.printer_debug)
             validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
                 empty_pi_d,
                 # "None" so that the errors extractor MUST rely on the chain
                 # (i.e., retrieve the value from the inputs by the 0-th dependency)
-                key_validation_result=None
+                key_validation_result=None,
+                printer_debug=self.printer_debug
             )
             v_exc_raiser = perrr.PIExceptionRaiser(empty_pi_d,
-                                                   key_error_input=None
+                                                   key_error_input=None,
+                                                   printer_debug=self.printer_debug
                                                    )
             chain_pi: list[pi.PipelineItem] = [
                 xml_validator,
@@ -61,7 +71,7 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 validation_store,  # ... retrieve from the branching -> generate
                 model_generator
             ]
-            return pc.PIChained(pi_data, chain_pi)
+            return pc.PIChained(pi_data, chain_pi, printer_debug=self.printer_debug)
         elif phase_step_variant == ModelGeneratorFormat.JSON:
             return jsmg.JsonStringModelGenerator(pi_data)
         raise Exception(f"Unknown phase_step_variant: {phase_step_variant}")

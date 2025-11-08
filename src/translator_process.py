@@ -8,10 +8,12 @@ import src.phases_builders.phases as phases
 import src.phases_builders.input_fetch as i_f
 import src.phases_builders.model_generation as m_g
 
+import src.phases_builders.phase_step_variants as psv
 
 import src.utilities.extended_enum as ex_enum
 import src.utilities.errors as e_c
 
+import src.utilities.utils as u
 
 #
 
@@ -36,7 +38,6 @@ class ModelTransformation(ex_enum.ExtendedEnum):
     ASM = "asm"
     # JSON = "json"
     # PETRI_NETS = "petri"
-
 
 #
 #
@@ -63,7 +64,13 @@ class InputModelProvider:
             input_source, input_type)
         self.additional_data = additional_data
 
-#
+
+class PhaseBuildOutput:
+    def __init__(self, phase: phases.TranslationPhases):
+        # keys are "value" of psv.PhaseSubstepVariants elements (its subclasses)
+        self.piKey_by_subphase: dict[str, str] = {}
+        self.pi_created_by_key: dict[str, pi.PipelineItem] = {}
+
 
 # TODO ; finire di preparare
 
@@ -87,14 +94,22 @@ class TranslatorProcess:
                  generate_tests=True,  # only when applicable
                  # TODO altro
                  #
-                 is_debug=True
+                 printer_debug: u.PrinterDebug = None
                  ):
-        self.is_debug = is_debug
+        self.printer_debug = printer_debug
         self.current_phase: TranslationPhases = None
         self.model_transformations = self.__digest_set_enum(
             ModelTransformation.list() if model_transformations is None else model_transformations, ModelTransformation)
         self.generate_tests = generate_tests
         self.translation_pipeline: pmp.PipelineManager = self._build_translation_pipeline()
+
+    def print_error(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_error(msg)
+
+    def print_msg(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_msg(msg)
 
     def __digest_set_enum(self, s: set, e_t: Type[ex_enum.ExtendedEnum]) -> set[str]:
         """
@@ -110,9 +125,8 @@ class TranslatorProcess:
             elif isinstance(v, e_t):
                 a.append(v.value)
             else:
-                if self.is_debug:
-                    print(
-                        f"ERRPR on getting enum set (of type: {e_t}): element # {i} is not a str nor an Enum value, but: {type(v)}")
+                self.print_error(
+                    f"ERRPR on getting enum set (of type: {e_t}): element # {i} is not a str nor an Enum value, but: {type(v)}")
             i += 1
         return set(a)
 
@@ -127,20 +141,35 @@ class TranslatorProcess:
         # TODO: make use of the "shared.builder_from_phase(...)"
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def _build_phase_input(self, pm: pmp.PipelineManager):
+    def _build_phase_input(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        """
+        Retuns a dictionary
+        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def _build_phase_model_generation(self, pm: pmp.PipelineManager):
+    def _build_phase_model_generation(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        """
+        Retuns a dictionary
+        """
+
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def _build_phase_postprocessing(self, pm: pmp.PipelineManager):
+    def _build_phase_postprocessing(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        """
+        Retuns a dictionary
+        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def _build_phase_output(self, pm: pmp.PipelineManager):
+    def _build_phase_output(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        """
+        Retuns a dictionary
+        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
 
 # python -m src.translator_process
 if __name__ == "__main__":
-    t = TranslatorProcess(is_debug=True, model_transformations=[
-        ModelTransformation.ASM, None, "jsOn", 3])
+    t = TranslatorProcess(model_transformations=[
+        ModelTransformation.ASM, None, "jsOn", 3],
+        printer_debug=u.PrinterDebug()
+    )
