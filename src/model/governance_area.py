@@ -18,8 +18,11 @@ class GovernanceArea(base_entity.BaseEntity):
         return f'GovernanceArea(gov_area_ID={self.gov_area_ID}, gov_area_description={self.gov_area_description}, implementation={self.implementation})'
 
     def toJSON(self):
-        return {
-            "gov_area_ID": self.gov_area_ID,
-            "gov_area_description": self.gov_area_description,
-            "implementation": self.implementation,
-        }
+        obj = super().toJSON()
+        obj["gov_area_ID"] = self.gov_area_ID
+        obj["gov_area_description"] = self.gov_area_description
+        obj["implementation"] = self.implementation
+        return obj
+
+    def __repr__(self):
+        return self.toJSON()

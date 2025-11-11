@@ -7,7 +7,6 @@ import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phases as phases
 import src.phases_builders.input_fetch as i_f
 import src.phases_builders.model_generation as m_g
-
 import src.phases_builders.phase_step_variants as psv
 
 import src.utilities.extended_enum as ex_enum
@@ -16,29 +15,6 @@ import src.utilities.errors as e_c
 import src.utilities.utils as u
 
 #
-
-
-class PhaseSubstep:
-    """
-    @deprecated
-    TODO: Actually, this thing should derive from the other enums(ModelTransformation, InputSource, InputType)
-    by a switch case or smething
-    """
-
-    def __init__(self, name: str, phase_substep_variant: psv.PhaseSubstepVariants, constructor_args: dict):
-        self.name = name
-        self.phase_substep_variant = phase_substep_variant
-        self.constructor_args = constructor_args
-
-#
-
-
-class ModelTransformation(ex_enum.ExtendedEnum):
-    SOLIDITY = "sol"
-    ASM = "asm"
-    # JSON = "json"
-    # PETRI_NETS = "petri"
-
 #
 #
 
@@ -65,6 +41,10 @@ class InputModelProvider:
         self.additional_data = additional_data
 
 
+def input_model_provider_from_source_type(input_source: i_f.InputSource, input_type: i_f.InputType, ):
+    TODO
+
+
 class PhaseBuildOutput:
     def __init__(self, phase: phases.TranslationPhases):
         # keys are "value" of psv.PhaseSubstepVariants elements (its subclasses)
@@ -88,7 +68,7 @@ class TranslatorProcess:
 
     def __init__(self,
                  input: InputModelProvider,
-                 model_generator: m_g.ModelGeneratorFormat,
+                 model_generator_data: m_g.ModelGeneratorFormat,
                  # model_transformations: set | list = None,
                  phases_data: list[SubPhasesData],
                  generate_tests=True,  # only when applicable

@@ -118,7 +118,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         td = self.new_translated_diagram(
             diagram, diagram_specific_data_translated)
         td.is_convertible
-        diagram_specific_data_translated["uniqueID"] = diagram.uniqueID
+        diagram_specific_data_translated["uniqueID"] = diagram.get_id()
         diagram_specific_data_translated["relations_by_dao"] = {
             dao_id: [ \
                 # note: the rt.RelationType instance can be retrieved back by writing :

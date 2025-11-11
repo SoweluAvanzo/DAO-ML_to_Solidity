@@ -45,6 +45,38 @@ class InputSourceType(psv.PhaseSubstepVariants):
 #
 
 
+class FileAdditionalDataSubPhase(pb.AdditionalDataSubPhase):
+    def __init__(self, phase_step_variant: InputSourceType, filepath: str,
+                 should_strip_line: bool = False
+                 ):
+        if not (isinstance(phase_step_variant, InputSourceType) or (phase_step_variant[0] == InputSource.FILE)):
+            raise Exception(
+                f"Incompatible phase_step_variant: {phase_step_variant}")
+        super().__init__(phase_step_variant)
+        self.filepath = filepath
+        self.should_strip_line = should_strip_line
+
+
+class FileXMLAdditionalDataSubPhase(FileAdditionalDataSubPhase):
+    def __init__(self, filepath: str,
+                 xml_version: str,
+                 should_strip_line: bool = False
+                 ):
+        super().__init__(InputSourceType.FILE_XML,
+                         filepath, should_strip_line=should_strip_line)
+        self.xml_version = xml_version
+
+
+class FileJSONAdditionalDataSubPhase(FileAdditionalDataSubPhase):
+    def __init__(self, filepath: str,
+                 should_strip_line: bool = False
+                 ):
+        super().__init__(InputSourceType.FILE_JSON,
+                         filepath, should_strip_line=should_strip_line)
+
+#
+
+
 def input_source_type(i_s: InputSource, i_t: InputType) -> InputSourceType:
     if i_s == InputSource.FILE:
         if i_t == InputType.XML:
@@ -62,26 +94,25 @@ class InputFactory(pb.PipelineItemFactory):
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return InputSourceType
 
-    def new_pipeline_item(self, phase_step_variant: psv.PhaseSubstepVariants, pi_data: pi.PIData, additional_data: dict = None) -> pi.PipelineItem:
-        if not isinstance(phase_step_variant, InputSourceType):
-            raise self.not_PSV_instance_exception(phase_step_variant)
+    def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
+                                       additional_data: pb.AdditionalDataSubPhase
+                                       ) -> pi.PipelineItem:
         # the real factory
-        if additional_data is None:
-            additional_data = {}
-        if phase_step_variant == InputSourceType.FILE_XML:
+        if additional_data.phase_step_variant == InputSourceType.FILE_XML:
+            if not isinstance(additional_data, FileXMLAdditionalDataSubPhase):
+                raise Exception(
+                    f"Additional Data is expected to be a (sub)class of FileXMLAdditionalDataSubPhase, but is: {type(additional_data)}")
             return xml_f_i.TextFileInputXML(pi_data,
-                                            filepath=additional_data.get(
-                                                "filepath", None),
-                                            xml_version=additional_data.get(
-                                                "xml_version", None),
-                                            should_strip_line=additional_data.get(
-                                                "should_strip_line", False)
+                                            filepath=additional_data.filepath,
+                                            xml_version=additional_data.xml_version,
+                                            should_strip_line=additional_data.should_strip_line
                                             )
-        elif phase_step_variant == InputSourceType.FILE_JSON:
+        elif additional_data.phase_step_variant == InputSourceType.FILE_JSON:
+            if not isinstance(additional_data, FileJSONAdditionalDataSubPhase):
+                raise Exception(
+                    f"Additional Data is expected to be a (sub)class of FileXMLAdditionalDataSubPhase, but is: {type(additional_data)}")
             return txt_f_i.TextFileInput(pi_data,
-                                         filepath=additional_data.get(
-                                             "filepath", None),
-                                         should_strip_line=additional_data.get(
-                                             "should_strip_line", False)
+                                         filepath=additional_data.filepath,
+                                         should_strip_line=additional_data.should_strip_line
                                          )
-        raise Exception(f"Unknown phase_step_variant: {phase_step_variant}")
+        return None

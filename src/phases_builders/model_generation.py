@@ -4,8 +4,10 @@ import src.pipeline.pipeline_items_chained as pc
 import src.pipeline.utilities.pi_chain_store_releaser_branching as pi_chain_store
 import src.pipeline.utilities.pi_exception_raiser as perrr
 
+import src.phases_builders.phases as phases
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phase_builder as pb
+import src.phases_builders.shared as pb_shared
 
 import src.validators.validation_result_to_errors as vete
 import src.validators.xml.xml_dao_validator as xvi
@@ -23,6 +25,13 @@ class ModelGeneratorFormat(psv.PhaseSubstepVariants):
     JSON = "json"
 
 
+class ModelPhaseVariantsAndData(pb_shared.PhaseVariantsAndData):
+    def __init__(self):
+        super().__init__(phases.TranslationPhases.MODEL_GENERATION)
+
+#
+
+
 class ModelGeneratorFactory(pb.PipelineItemFactory):
 
     def __init__(self, printer_debug: u.PrinterDebug = None):
@@ -31,14 +40,9 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return ModelGeneratorFormat
 
-    def new_pipeline_item(self, phase_step_variant: psv.PhaseSubstepVariants, pi_data: pi.PIData,
-                          additional_data: dict = None
-                          ) -> pi.PipelineItem:
-        if not isinstance(phase_step_variant, ModelGeneratorFormat):
-            raise self.not_PSV_instance_exception(phase_step_variant)
-        # the real factory
-        if additional_data is None:
-            additional_data = {}
+    def new_pipeline_item_from_variant(self, phase_step_variant: psv.PhaseSubstepVariants, pi_data: pi.PIData,
+                                       additional_data: dict = None
+                                       ) -> pi.PipelineItem:
         if phase_step_variant == ModelGeneratorFormat.XML:
             if KEY_ADDITIONAL_DATA__FILE_PATH_XML_SCHEMA not in additional_data:
                 raise Exception(
@@ -74,4 +78,4 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
             return pc.PIChained(pi_data, chain_pi, printer_debug=self.printer_debug)
         elif phase_step_variant == ModelGeneratorFormat.JSON:
             return jsmg.JsonStringModelGenerator(pi_data)
-        raise Exception(f"Unknown phase_step_variant: {phase_step_variant}")
+        return None

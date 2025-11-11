@@ -75,7 +75,6 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         self.printer_debug.print_msg("..........visitDiagram ^^ ")
         uniqueID = ctx.diagram_uniqueID()[0].STRING().getText().strip('"')
         self.diagramManager.id = uniqueID
-        self.diagramManager.uniqueID = uniqueID
         self.printer_debug.print_msg(f"Diagram uniqueID: {uniqueID}")
         return super().visitDiagram(ctx)
 
