@@ -11,6 +11,15 @@ import src.phases_builders.phase_step_variants as psv
 import src.utilities.utils as u
 
 
+class PersistanceType(psv.PhaseSubstepVariants):
+    FILE = "file"
+    # PROGRAMMATIC_PROVIDER = "prog" # an external / runtine source, like constants or the value returned by a provider (or in-memory DB / map/dict)
+    DATABASE = "db"
+    # API="api" # of any kind: calling an HTTP API method, a WebSocket, an RSS-Feed, etc
+
+
+#
+
 class PhaseVariantsAndData:
     def __init__(self, phase: phases.TranslationPhases):
         if not isinstance(phase, phases.TranslationPhases):

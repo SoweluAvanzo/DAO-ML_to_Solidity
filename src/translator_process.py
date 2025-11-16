@@ -2,12 +2,13 @@ from typing import Type
 
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
-import src.phases_builders.shared as pb_shared
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phases as phases
-import src.phases_builders.input_fetch as i_f
-import src.phases_builders.model_generation as m_g
-import src.phases_builders.phase_step_variants as psv
+import src.phases_builders.input_fetch as pb_i_f
+import src.phases_builders.model_generation as pb_m_g
+import src.phases_builders.postprocessing as pb_pp
+import src.phases_builders.output as pb_o
+import src.phases_builders.shared as pb_shared
 
 import src.utilities.extended_enum as ex_enum
 import src.utilities.errors as e_c
@@ -33,15 +34,31 @@ class SubPhasesData:
 
 
 class InputModelProvider:
-    def __init__(self, input_source: i_f.InputSource, input_type: i_f.InputType, additional_data=None):
+    def __init__(self, input_source: pb_shared.PersistanceType, input_type: pb_i_f.InputType,
+                 additional_data=None
+                 ):
         self.input_source = input_source
         self.input_type = input_type
-        self.input_source_type = i_f.input_source_type(
+        self.input_source_type = pb_i_f.input_source_type(
             input_source, input_type)
         self.additional_data = additional_data
 
+#
 
-def input_model_provider_from_source_type(input_source: i_f.InputSource, input_type: i_f.InputType, ):
+
+class PostprocessingOutput:
+    def __init__(self, postprocessing_type: pb_pp.PostProcessingTransformation, output_type: pb_shared.PersistanceTyp,
+                 additional_data=None
+                 ):
+        self.postprocessing_type = postprocessing_type
+        self.output_type = output_type
+        self.additional_data = additional_data
+
+
+#
+
+
+def input_model_provider_from_source_type(input_source: pb_shared.PersistanceType, input_type: pb_i_f.InputType, ):
     TODO
 
 
@@ -68,7 +85,7 @@ class TranslatorProcess:
 
     def __init__(self,
                  input: InputModelProvider,
-                 model_generator_data: m_g.ModelGeneratorFormat,
+                 model_generator_data: pb_m_g.ModelGeneratorFormat,
                  # model_transformations: set | list = None,
                  phases_data: list[SubPhasesData],
                  generate_tests=True,  # only when applicable

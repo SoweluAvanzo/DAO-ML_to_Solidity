@@ -3,18 +3,12 @@ import src.pipeline.pipeline_item as pi
 
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phase_builder as pb
+import src.phases_builders.shared as pb_shared
 
 import src.input.xml_file_input as xml_f_i
 import src.input.txt_file_input as txt_f_i
 
 import src.utilities.utils as u
-
-
-class InputSource(psv.PhaseSubstepVariants):
-    FILE = "file"
-    # PROGRAMMATIC_PROVIDER = "prog"  # basically, a
-    DATABASE = "db"
-    # API="api"
 
 
 class InputType(psv.PhaseSubstepVariants):
@@ -26,8 +20,8 @@ class InputType(psv.PhaseSubstepVariants):
 
 
 class InputSourceType(psv.PhaseSubstepVariants):
-    FILE_XML = (InputSource.FILE.value, InputType.XML.value)
-    FILE_JSON = (InputSource.FILE.value, InputType.JSON.value)
+    FILE_XML = (pb_shared.PersistanceType.FILE.value, InputType.XML.value)
+    FILE_JSON = (pb_shared.PersistanceType.FILE.value, InputType.JSON.value)
     # FILE_YAML
     # FILE_BSON
     # FILE_BINARY
@@ -49,7 +43,7 @@ class FileAdditionalDataSubPhase(pb.AdditionalDataSubPhase):
     def __init__(self, phase_step_variant: InputSourceType, filepath: str,
                  should_strip_line: bool = False
                  ):
-        if not (isinstance(phase_step_variant, InputSourceType) or (phase_step_variant[0] == InputSource.FILE)):
+        if not (isinstance(phase_step_variant, InputSourceType) or (phase_step_variant[0] == pb_shared.PersistanceType.FILE)):
             raise Exception(
                 f"Incompatible phase_step_variant: {phase_step_variant}")
         super().__init__(phase_step_variant)
@@ -77,13 +71,14 @@ class FileJSONAdditionalDataSubPhase(FileAdditionalDataSubPhase):
 #
 
 
-def input_source_type(i_s: InputSource, i_t: InputType) -> InputSourceType:
-    if i_s == InputSource.FILE:
+def input_source_type(i_s: pb_shared.PersistanceType, i_t: InputType) -> InputSourceType:
+    if i_s == pb_shared.PersistanceType.FILE:
         if i_t == InputType.XML:
             return InputSourceType.FILE_XML
         elif i_t == InputType.JSON:
             return InputSourceType.FILE_JSON
-    raise Exception(f"Unknown input source-type pair: < {i_s} ; {i_t} >")
+    raise Exception(
+        f"Unknown/unmanaged input source-type pair: < {i_s} ; {i_t} >")
 
 
 class InputFactory(pb.PipelineItemFactory):
