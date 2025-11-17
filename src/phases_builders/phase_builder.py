@@ -27,7 +27,7 @@ class PipelineItemFactory:
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def new_pipeline_item_from_variant(self, pi_data: pi.PIData, additional_data: AdditionalDataSubPhase) -> pi.PipelineItem:
+    def new_pipeline_item_from_variant(self, pi_data: pi.PIData, phase_step_variant_and_data: AdditionalDataSubPhase) -> pi.PipelineItem:
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def new_pipeline_item(self,

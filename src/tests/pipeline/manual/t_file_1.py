@@ -10,7 +10,7 @@ import src.validators.xml.xml_dao_validator as xvi
 import src.validators.validation_result_to_errors as vete
 # import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
-import src.postprocessing.output_preparation.model_to_json as m_json
+import src.postprocessing.output_preparation.json.model_to_json as m_json
 import src.postprocessing.model_translation.model_translator_configurable as mcc
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
 import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
