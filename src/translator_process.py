@@ -162,7 +162,7 @@ class TranslatorProcess:
 
         # 4) output
 
-        raise pm
+        return pm
 
     """
     def _build_phase_input(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:

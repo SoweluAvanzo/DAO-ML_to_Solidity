@@ -439,7 +439,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                            solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                                            version_for_file: str = ""
                                            ):
-        interface_filename = "IPermissionManager"
+        interface_filename = "iPermissionManager"
         interface_related_data = {}
         interface_converted = crt.TranslatedSubpartTemplated(
             None, interface_related_data)
@@ -451,7 +451,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         interface_related_data["committees"] = dao.committees
         dao_conversion.interfaces_and_fullpath_by_filenames[interface_filename] = interface_converted
 
-        interface_filename = "ICondition"
+        interface_filename = "iCondition"
         interface_related_data = {}
         interface_converted = crt.TranslatedSubpartTemplated(
             None, interface_related_data)
