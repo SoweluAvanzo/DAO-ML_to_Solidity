@@ -1,13 +1,13 @@
+import src.pipeline.pipeline_item as pi
 
 import src.output.text_file_output as tfo
-import src.files.file_utils as fu
-import src.pipeline.pipeline_item as pi
-import src.postprocessing.model_translation.solidity.solidity_translator_general as stg
+
 import src.postprocessing.output_preparation.compilers.solidity.compiled_solidity_data as compiled_sol
 import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
-import src.utilities.extended_enum as extended_enum
 
-# TODO (2025-08-10) DA SISTEMARE
+import src.files.file_utils as fu
+import src.utilities.extended_enum as extended_enum
+import src.utilities.utils as u
 
 
 class AcceptedClasses_Jinja_TFO(extended_enum.ExtendedEnum):
@@ -19,9 +19,13 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
     def __init__(self, pipeline_item_data: pi.PIData,
                  key_compiled_diagram: str, \
                  # key_model_to_template_mapper_jinja:str,
-                 base_destination=None
+                 base_destination=None,
+                 printer_debug: u.PrinterDebug = None
                  ):
-        super().__init__(pipeline_item_data, base_destination)
+        super().__init__(pipeline_item_data,
+                         base_destination=base_destination,
+                         printer_debug=printer_debug
+                         )
         self.key_compiled_diagram = key_compiled_diagram
         # self.key_model_to_template_mapper_jinja = key_model_to_template_mapper_jinja
         self.current_inputs = None
@@ -80,7 +84,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                     )
         return content_and_filepath_to_output
 
-    def translated_diagram_to_list_output_converters(self, additional_data=None):
+    def translated_diagram_to_list_output_translators(self, additional_data=None):
         """
         Override-designed
         @return a dict whose keys are "type" (got from the classes itselves; check out
@@ -116,9 +120,9 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         # this way, it's possible to modularize and extend the
         # ways to get "things to output"
         class_compiled_diagram = type(compiled_diagram)
-        class_based_TD_converter = self.translated_diagram_to_list_output_converters(
+        class_based_TD_translator = self.translated_diagram_to_list_output_translators(
             additional_data=additional_data)
-        if class_compiled_diagram not in class_based_TD_converter:
+        if class_compiled_diagram not in class_based_TD_translator:
             print(
                 f"\nERROR: unrecognized class_compiled_diagram: {class_compiled_diagram} - {type(compiled_diagram)}")
             if self.key_compiled_diagram is None:
@@ -138,9 +142,9 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                 f"class_compiled_diagram not recognized: {class_compiled_diagram}")
         if compiled_diagram is None:
             raise Exception(
-                f"The provided translated diagram should be an instance of one of [{",".join(c.__name__ for c in class_based_TD_converter.keys())}], but it's a: {class_compiled_diagram}")
+                f"The provided translated diagram should be an instance of one of [{",".join(c.__name__ for c in class_based_TD_translator.keys())}], but it's a: {class_compiled_diagram}")
 
-        content_and_filepath_to_output = class_based_TD_converter[class_compiled_diagram](
+        content_and_filepath_to_output = class_based_TD_translator[class_compiled_diagram](
             compiled_diagram)
         # produce the output
         print(

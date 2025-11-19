@@ -5,7 +5,7 @@ import src.postprocessing.model_translation.shared.translation_result_base as cr
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
 import src.postprocessing.model_translation.model_translator_configurable as mcc
-# import src.postprocessing.model_conversion.solidity.optimized.solidity_converter_optimized as sol_transl_opt
+# import src.postprocessing.model_conversion.solidity.optimized.solidity_translator_optimized as sol_transl_opt
 import src.postprocessing.model_translation.solidity.optimized.jinja.solidity_translator_optimized_jinja as sol_transl_opt_jinja
 import src.postprocessing.model_translation.solidity.shared_utils as shared_utils_sol
 
@@ -78,18 +78,18 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
 
     def __init__(self, pipeline_item_data: pi.PIData,
                  key_model: str = None,
-                 key_converter_type: str = None,
-                 key_converter_version: str = None,
-                 key_converter_target: str = None,
+                 key_translator_type: str = None,
+                 key_translator_version: str = None,
+                 key_translator_target: str = None,
                  all_voting_protocols: set = None,
                  key_all_voting_protocols: str = None
                  ):
         super().__init__(
             pipeline_item_data,
             key_model,
-            key_converter_type,
-            key_converter_version,
-            key_converter_target
+            key_translator_type,
+            key_translator_version,
+            key_translator_target
         )
         self.key_all_voting_protocols = key_all_voting_protocols
         self.all_voting_protocols: set = all_voting_protocols
@@ -97,16 +97,16 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
     def translate(self, diagram, additional_data: dict = None) -> crb.ModelConversionResultBase:
         if self.all_voting_protocols is None:
             k = self.key_all_voting_protocols
-            if self.key_all_voting_protocols is None:
-                k = additional_data["key_all_voting_protocols"]
+            if k is None:
+                k = consts_t.KEY__ALL_VOTING_PROTOCOLS__ON_ADDITIONAL_DATA
             self.all_voting_protocols = additional_data[k]
         # THE REAL TRANSLATION!
-        return self.translate_Diagram(diagram, additional_data)
+        return self.translate_diagram(diagram, additional_data)
 
     #
 
-    def translate_Diagram(self, diagram: dm.DiagramManager, additional_data: dict = None) -> TranslatedDiagram_Jinja_1_0_0:
-        version = additional_data[self.key_converter_target] if self.key_converter_target in additional_data \
+    def translate_diagram(self, diagram: dm.DiagramManager, additional_data: dict = None) -> TranslatedDiagram_Jinja_1_0_0:
+        version = additional_data[self.key_translator_target] if self.key_translator_target in additional_data \
             else additional_data[mcc.ModelTranslatorConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION]
         if version is None or version.strip() == "":
             version = VERSION
@@ -134,7 +134,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         # dao
         for dao_id in diagram.daoByID.keys():
             dao = diagram.daoByID[dao_id]
-            translated_dao = self.translate_DAO(diagram, dao,
+            translated_dao = self.translate_dao(diagram, dao,
                                                 solidity_version=solidity_version,
                                                 version_target=version,
                                                 version_for_file=version_for_file
@@ -142,7 +142,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
             td.add_translated_dao(translated_dao)
         return td
 
-    def translate_DAO(self, diagram: dm.DiagramManager, dao: d.DAO,
+    def translate_dao(self, diagram: dm.DiagramManager, dao: d.DAO,
                       solidity_version: str = consts_t.SOLIDITY_VERSION_DEFAULT,
                       version_target: str = "",
                       version_for_file: str = ""
@@ -358,7 +358,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         """
         return shared_utils_sol.get_control_bitflags(dao, role_or_committee, group_size, functionalities_ids)
 
-    def compute_states_variables__roles_committee_computed_data(self, dao: d.DAO, functionalities_ids: dict[str, int], group_size: int):
+    def compute_states_variables__roles_committee_computed_data(self, dao: d.DAO, functionalities_ids: dict[str, int], group_size: user_functionalities_group_size_module.UserFunctionalitiesGroupSize):
         """
         Override-designed
         """

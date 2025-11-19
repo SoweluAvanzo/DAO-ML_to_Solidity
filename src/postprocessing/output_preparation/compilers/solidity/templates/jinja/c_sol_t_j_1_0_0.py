@@ -1,23 +1,17 @@
 from typing import Generator
 
 import src.pipeline.pipeline_item as pi
-# import src.model.diagram_manager as dm
-# import src.postprocessing.output_preparation.templates.jinja.c_t_j_base as tjb
 import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
-import src.postprocessing.output_preparation.compilers.shared.templates.compiler_template_base_multipart as tb_m
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_multipart as ctj_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_solidity_t_j as tjs
 import src.postprocessing.output_preparation.compilers.solidity.compiled_solidity_data as csd
-import src.postprocessing.model_translation.shared.translation_result_model as trm
-import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
-import src.postprocessing.model_translation.solidity.solidity_translator_general as stg
 import src.postprocessing.model_translation.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as conv_sol_jinja_1_0_0
 
 import src.postprocessing.consts_template as consts_t
 import src.files.file_utils as file_utils
 import src.utilities.constants as consts
-import src.files.file_utils as fu
+import src.utilities.utils as u
 
 
 class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj_m.CompilerTemplateJinjaMultipart):
@@ -25,7 +19,8 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                  key_diagram_instance_data: str = None,
                  key_diagram_model: str = None,
                  key_template_skeleton_provider_by_name: str = None,
-                 key_is_result_as_list: str = None
+                 key_is_result_as_list: str = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
         """
         @param key_template_skeleton_provider_by_name: key of a function that, provided a template name, returns its skeleton.
@@ -35,14 +30,16 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                                                    optional_external_data=optional_external_data,
                                                    key_template_instance_data=key_diagram_instance_data,
                                                    key_template_skeleton=None,
-                                                   key_diagram_model=key_diagram_model
+                                                   key_diagram_model=key_diagram_model,
+                                                   printer_debug=printer_debug
                                                    )
         ctj_m.CompilerTemplateJinjaMultipart.__init__(self, pipeline_item_data,
                                                       optional_external_data=optional_external_data,
                                                       key_diagram_instance_data=key_diagram_instance_data,
                                                       key_diagram_model=key_diagram_model,
                                                       key_template_skeleton_provider_by_name=key_template_skeleton_provider_by_name,
-                                                      key_is_result_as_list=key_is_result_as_list
+                                                      key_is_result_as_list=key_is_result_as_list,
+                                                      printer_debug=printer_debug
                                                       )
 
     #
@@ -90,7 +87,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                     template_filename_dao_out = dao_translated.translated_name_output
                     template_folder_path_base = dao_translated.suggested_input_template_folders_path_from_base
                 else:
-                    template_filename_dao_in = fu.sanitize_filename(
+                    template_filename_dao_in = file_utils.sanitize_filename(
                         dao_translated.get_name())
                     template_filename_dao_out = template_filename_dao_in
                     template_folder_path_base = ""
@@ -110,7 +107,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                             template_skeleton_dao)
                     dao_templates_loaded_by_filename[template_filename_dao_in] = template_skeleton_dao
                 # now compile
-                template_filename_dao_out = fu.sanitize_filename(
+                template_filename_dao_out = file_utils.sanitize_filename(
                     template_filename_dao_out)
                 compiled_dao = super().compile_single_template(
                     template_skeleton_dao, dao_translated.entity_specific_data)
@@ -166,7 +163,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                     if isinstance(committee_translated, conv_sol_jinja_1_0_0.TranslatedCommittee_Jinja_1_0_0):
                         template_filename_input = committee_translated.template_filename_input
                     else:
-                        template_filename_input = fu.sanitize_filename(
+                        template_filename_input = file_utils.sanitize_filename(
                             committee_translated.get_name())
                     template_skeleton_committee_path = file_utils.concat_folder_filename(
                         template_folder_path_base, consts_t.NAME_FOLDER_TEMPLATES_VOTING_PROTOCOL,

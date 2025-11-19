@@ -9,14 +9,14 @@ class SolidityTranslatorOptimizedJinja(sol_transl_opt.SolidityTranslatorOptimize
 
     def __init__(self, pipeline_item_data: pi.PIData,
                  key_model: str = None,
-                 key_converter_type: str = None,
-                 key_converter_version: str = None,
-                 key_converter_target: str = None
+                 key_translator_type: str = None,
+                 key_translator_version: str = None,
+                 key_translator_target: str = None
                  ):
         super().__init__(
             pipeline_item_data,
             key_model,
-            key_converter_type,
-            key_converter_version,
-            key_converter_target
+            key_translator_type,
+            key_translator_version,
+            key_translator_target
         )

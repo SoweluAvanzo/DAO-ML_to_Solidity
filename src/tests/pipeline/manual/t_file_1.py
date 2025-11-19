@@ -11,18 +11,21 @@ import src.validators.validation_result_to_errors as vete
 # import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
 import src.postprocessing.output_preparation.json.model_to_json as m_json
+import src.postprocessing.model_translation.translation_types as ct
 import src.postprocessing.model_translation.model_translator_configurable as mcc
+import src.postprocessing.model_translation.solidity.voting_protocols_list_loader as pi_vpll
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
 import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
-import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as sol_test_t
+import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
+import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
 
-import src.postprocessing.consts_template as consts_t
-import src.postprocessing.model_translation.translation_types as ct
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_sol_t_j_1_0_0 as c_sol_t_j_1_0_0
 import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j
 import src.postprocessing.output_preparation.compilers.solidity.tests.templates.jinja.c_sol_tests_t_j as c_sol_tests_t_j
+
+import src.postprocessing.consts_template as consts_t
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
@@ -32,6 +35,7 @@ import src.pipeline.utilities.pi_exception_raiser as perrr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
 import src.utilities.extended_enum as ex_enum
+import src.utilities.utils as u
 
 DAO_TESTS_FOLDER = "tests"
 
@@ -74,7 +78,10 @@ FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename(
 if __name__ == "__main__":
     print("START")
 
-    pm = pmp.PipelineManager()
+    printer_debug = u.PrinterDebug()
+    pm = pmp.PipelineManager(
+        printer_debug=printer_debug
+    )
 
     """
     # TEST JSON
@@ -143,7 +150,9 @@ if __name__ == "__main__":
 
     k_xml_validator = "k_xml_validator"
     xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [
-                                        k_xml_file_input_pi]), FILE_PATH_XML_SCHEMA)  # , k_grammar_generator
+                                        k_xml_file_input_pi]), FILE_PATH_XML_SCHEMA,
+                                        printer_debug=printer_debug
+                                        )  # , k_grammar_generator
     pm.addItem(xml_validator)
 
     k_tf1_p_pts = "k_tf1_p_pts"
@@ -158,13 +167,17 @@ if __name__ == "__main__":
     k_p_validator_errors_extractor = "k_p_validator_errors_extractor"
     p_validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
         pi.PIData(k_p_validator_errors_extractor, [k_xml_validator]),
-        key_validation_result=k_xml_validator)
+        key_validation_result=k_xml_validator,
+        printer_debug=printer_debug
+    )
     pm.addItem(p_validator_errors_extractor)
 
     k_v_exc_raiser = "k_v_exc_raiser"
     v_exc_raiser = perrr.PIExceptionRaiser(
         pi.PIData(k_v_exc_raiser, [k_p_validator_errors_extractor]),
-        key_error_input=k_p_validator_errors_extractor)
+        key_error_input=k_p_validator_errors_extractor,
+        printer_debug=printer_debug
+    )
     pm.addItem(v_exc_raiser)
 
     # 3)
@@ -173,7 +186,9 @@ if __name__ == "__main__":
     # just an alias, to standardize a bit more everything else
     k_model_generator = k_xml_generator
     xml_generator = xsmg.XmlStringModelGenerator(
-        pi.PIData(k_xml_generator, [k_xml_validator]))
+        pi.PIData(k_xml_generator, [k_xml_validator]),
+        printer_debug=printer_debug
+    )
     pm.addItem(xml_generator)
 
     k_string_model_printdebug = "k_string_model_printdebug"
@@ -245,10 +260,10 @@ if __name__ == "__main__":
 
     # TODO generare gli inputs (per le key_ROBE del costruttore)
 
-    converter_type = ct.TranslationTypes.SOLIDITY.value
+    translator_type = ct.TranslationTypes.SOLIDITY.value
     k_translator_type = "k_translator_type"
     pi_translator_type = pstr.PIStr(
-        pi.PIData(k_translator_type, None), converter_type)
+        pi.PIData(k_translator_type, None), translator_type)
     pm.addItem(pi_translator_type)
 
     jinja_translator_version = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
@@ -262,14 +277,23 @@ if __name__ == "__main__":
         pi.PIData(k_translator_target, None), "1.0.0")
     pm.addItem(pi_translator_target)
 
-    converter_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
-    k_converter_solidity_subtype = "k_converter_solidity_subtype"
-    pi_converter_solidity_subtype = pstr.PIStr(
-        pi.PIData(k_converter_solidity_subtype, None), converter_solidity_subtype)
-    pm.addItem(pi_converter_solidity_subtype)
+    translator_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
+    k_translator_solidity_subtype = "k_translator_solidity_subtype"
+    pi_translator_solidity_subtype = pstr.PIStr(
+        pi.PIData(k_translator_solidity_subtype, None), translator_solidity_subtype)
+    pm.addItem(pi_translator_solidity_subtype)
 
-    k_all_voting_protocols_submitter = "k_all_voting_protocols_submitter"
     all_voting_protocols_folder = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
+    # k_all_voting_protocols_submitter = "k_all_voting_protocols_submitter"
+    k_all_voting_protocols_submitter = consts_t.KEY__ALL_VOTING_PROTOCOLS__ON_ADDITIONAL_DATA
+    p_voting_protocol_list_loader = pi_vpll.VotingProtocolListLoader(
+        pi.PIData(k_all_voting_protocols_submitter, None),
+        printer_debug=printer_debug,
+        folder_voting_protocols=all_voting_protocols_folder
+    )
+    pm.addItem(p_voting_protocol_list_loader)
+
+    """
     files_vp = files.list_files_in(all_voting_protocols_folder)
     # just the filename
     files_vp = set([
@@ -282,20 +306,22 @@ if __name__ == "__main__":
     files_vp = None
     pm.addItem(all_voting_protocols_submitter)
 
-    k_translator = "k_translator"
+    additional_metadata_model_translator = {
+        consts_t.KEY__ALL_VOTING_PROTOCOLS__ON_ADDITIONAL_DATA: k_all_voting_protocols_submitter
+    }
+    """
     # translator = translator_sol_opt.SolidityTranslatorOptimized( \
     # translator = to_sol_j_1_0_0.SolidityTranslatorOptimizedJinja_1_0_0( \
-    additional_metadata_model_converter = {
-        "key_all_voting_protocols": k_all_voting_protocols_submitter
-    }
+    k_translator = "k_translator"
     translator = mcc.ModelTranslatorConfigurable(
         pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator,
-                  k_translator_target, k_converter_solidity_subtype, k_all_voting_protocols_submitter]),
+                  k_translator_target, k_translator_solidity_subtype, k_all_voting_protocols_submitter]),
         key_model=k_model_generator,
-        key_converter_type=k_translator_type,
-        key_converter_version=k_version_translator,
-        key_converter_target=k_translator_target,
-        additional_data=additional_metadata_model_converter
+        key_translator_type=k_translator_type,
+        key_translator_version=k_version_translator,
+        key_translator_target=k_translator_target,
+        # additional_data=additional_metadata_model_translator,
+        printer_debug=printer_debug
     )
     pm.addItem(translator)
 
@@ -331,7 +357,6 @@ if __name__ == "__main__":
     tjs = template_jinja_solidity.CompilerSolidityTemplateJinja(... TODO ...)
     """
 
-    k_template_provider = "k_template_provider"
     template_provider = template_by_name_txt.TemplateProviderFromTxtFile(
         base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES)
     k_PI_template_provider = "k_PI_template_provider"
@@ -340,7 +365,7 @@ if __name__ == "__main__":
         pi.PIData(k_PI_template_provider, None), template_provider)
     pm.addItem(PI_template_provider)
 
-    # TODO: (2025-08-23) NOTE: EVEN THE COMPILER SHOULD BE "configurable" IN THE SAME WAY AS THE CONVERTER DOES
+    # TODO: (2025-08-23) NOTE: EVEN THE COMPILER SHOULD BE "configurable" IN THE SAME WAY AS THE TRANSLATOR DOES
     k_template_compiler = "k_template_compiler"
     template_compiler = c_sol_t_j_1_0_0.CompilerSolidityTemplateJinja_1_0_0(pi.PIData(k_template_compiler, [
         k_translator,
@@ -349,7 +374,8 @@ if __name__ == "__main__":
     ]),
         key_diagram_instance_data=k_translator,
         key_diagram_model=k_model_generator,
-        key_template_skeleton_provider_by_name=k_PI_template_provider
+        key_template_skeleton_provider_by_name=k_PI_template_provider,
+        printer_debug=printer_debug
     )
     pm.addItem(template_compiler)
     # TODO: 2025-07-26 FARE L'OUTPUT E LA TRADUZIONE
@@ -370,13 +396,45 @@ if __name__ == "__main__":
         pi.PIData(k_is_result_as_list, None), True)
     pm.addItem(pi_is_result_as_list)
 
+#
+
     # ASM
 
+#
+
+    translator_type_asm = ct.TranslationTypes.ASM.value
+    k_translator_type_asm = "k_translator_type_asm"
+    pi_translator_type_asm = pstr.PIStr(
+        pi.PIData(k_translator_type_asm, None), translator_type_asm)
+    pm.addItem(pi_translator_type_asm)
+
+    asm_translator_version = t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value
+    k_version_translator_asm = "k_version_translator_asm"
+    pi_version_translator_asm = pstr.PIStr(
+        pi.PIData(k_version_translator_asm, None), asm_translator_version)
+    pm.addItem(pi_version_translator_asm)
+
+    k_translator_target_asm = "k_translator_target_asm"
+    pi_translator_target = pstr.PIStr(
+        pi.PIData(k_translator_target_asm, None), t_j_asm_1_0_0.TARGET_VERSION)
+    pm.addItem(pi_translator_target)
     k_translator_asm = "k_translator_asm"
+    translator_asm = mcc.ModelTranslatorConfigurable(
+        pi.PIData(k_translator_asm, [
+            k_model_generator, k_translator_type_asm, k_version_translator_asm, k_translator_target_asm
+        ]),
+        key_model=k_model_generator,
+        key_translator_type=k_translator_type_asm,
+        key_translator_version=k_version_translator_asm,
+        key_translator_target=k_translator_target_asm,
+        printer_debug=printer_debug
+    )
+    """
     translator_asm = t_j_asm_1_0_0.TranslatorJinjaASM_1_0_0(pi.PIData(k_translator_asm, [k_model_generator]),
                                                             optional_external_data=None,
                                                             key_model=k_model_generator
                                                             )
+    """
     pm.addItem(translator_asm)
 
     k_compiler_asm = "k_compiler_asm"

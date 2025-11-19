@@ -45,10 +45,9 @@ class PIChained(pi.PipelineItem):
         inputs_for_next = inputs
         output_run = None
         for pi_c in self.chain:
-            if self.is_debug:
-                print()
             try:
                 pipeline_item: pi.PipelineItem = pi_c.pit
+                self.print_msg(f"Running in chain: {pipeline_item.get_key()}")
                 # leverage the "dependencies mechanism" BUT preserve the original ones
                 original_dependencies = pipeline_item.get_dependencies()
                 pipeline_item.get_pipeline_item_data().dependencies = pi_c.chain_dependencies

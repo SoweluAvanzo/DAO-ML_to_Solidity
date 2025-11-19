@@ -27,13 +27,17 @@ class PipelineItemFactory:
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def new_pipeline_item_from_variant(self, pi_data: pi.PIData, phase_step_variant_and_data: AdditionalDataSubPhase) -> pi.PipelineItem:
+    def new_pipeline_item_from_variant(self, pi_data: pi.PIData, phase_step_variant_and_data: AdditionalDataSubPhase) -> list[pi.PipelineItem]:
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def new_pipeline_item(self,
-                          pi_data: pi.PIData,
-                          phase_step_variant_and_data: AdditionalDataSubPhase
-                          ) -> pi.PipelineItem:
+    def new_pipeline_items(self,
+                           pi_data: pi.PIData,
+                           phase_step_variant_and_data: AdditionalDataSubPhase
+                           ) -> list[pi.PipelineItem]:
+        """
+        Returns a list of PipelineItems, where the first one uses the given "PIData" and every one else
+        is just in need to be added to the graph
+        """
         if (phase_step_variant_and_data is None):
             raise Exception(
                 "Given phase_step_variant_and_data must not be None")

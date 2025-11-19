@@ -22,8 +22,15 @@ import src.utilities.utils as u
 
 
 class XmlStringModelGenerator(bg.BaseGenerator):
-    def __init__(self, pipeline_item_data: pi.PIData, printer_debug: u.PrinterDebug = None):
-        super().__init__(pipeline_item_data, printer_debug=printer_debug)
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(pipeline_item_data,
+                         printer_debug=printer_debug
+                         )
+
+    def new_XMLDAOVisitor(self):
+        return XMLDAOVisitor(printer_debug=self.printer_debug)
 
     def generate(self, validation_result):
         try:
@@ -45,7 +52,7 @@ class XmlStringModelGenerator(bg.BaseGenerator):
             tree = parser.document()
 
             # actual transformation
-            visitor = XMLDAOVisitor(self.printer_debug)
+            visitor = self.new_XMLDAOVisitor()
             diagram_manager = dm.DiagramManager()
             visitor.parseDiagramTree(tree, diagram_manager)
             return diagram_manager
@@ -63,8 +70,17 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         self.diagramManager: dm.DiagramManager = None
         self.printer_debug = printer_debug
 
+    def print_error(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_error(msg)
+
+    def print_msg(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_msg(msg)
+
     def parseDiagramTree(self, tree, diagramManager: dm.DiagramManager):
         self.diagramManager = diagramManager
+        self.print_msg("starting parsing diagram tree")
         # at first, gather all the data (raw instances) through the "visitABC" methods into the "diagramManager" ...
         self.visit(tree)
         # ... then, process and "link" all the raw data
@@ -201,15 +217,20 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
     def get_translation_summary(self):
         return str(self)
 
-
-def traverse(tree, rule_names, indent=0):
-    if tree.getText() == "<EOF>":
-        return
-    elif isinstance(tree, TerminalNodeImpl):
-        self.printer_debug.print_msg(
-            "{0}TOKEN='{1}'".format("\t" * indent, tree.getText()))
-    else:
-        self.printer_debug.print_msg("{0}{1}".format(
-            "\t" * indent, rule_names[tree.getRuleIndex()]))
-        for child in tree.children:
-            traverse(child, rule_names, indent + 1)
+    def traverse_parsing_tree_debug(self, tree, rule_names, indent=0):
+        """
+        Originally used  to just debug the parsed tree, now unused
+        """
+        if self.printer_debug is None:
+            # print("ERROR: CAN'T DEBUG using the method \"traverse_parsing_tree_debug\" because no printer_debug is found")
+            self.printer_debug = u.PrinterDebug()
+        if tree.getText() == "<EOF>":
+            return
+        elif isinstance(tree, TerminalNodeImpl):
+            self.printer_debug.print_msg(
+                "{0}TOKEN='{1}'".format("\t" * indent, tree.getText()))
+        else:
+            self.printer_debug.print_msg("{0}{1}".format(
+                "\t" * indent, rule_names[tree.getRuleIndex()]))
+            for child in tree.children:
+                self.traverse_parsing_tree_debug(child, rule_names, indent + 1)

@@ -92,8 +92,19 @@ class PipelineNode(pi.PipelineItem):
 
 
 class PipelineManager:
-    def __init__(self):
+    def __init__(self, printer_debug: u.PrinterDebug = None):
         self.items: dict[str, pi.PipelineItem] = {}
+        self.printer_debug = printer_debug
+
+    def print_error(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_error(msg)
+
+    def print_msg(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_msg(msg)
+
+    #
 
     def addItem(self, item: pi.PipelineItem):
         self.items[item.get_key()] = item
@@ -106,10 +117,10 @@ class PipelineManager:
     def getItem(self, key: str) -> pi.PipelineItem:
         return self.items[key]
 
-    def runPipeline(self) -> any:
+    def runPipeline(self):
         # setup the data structures
         items_as_list = list(self.items.values())
-        nodes = {item.get_key(): PipelineNode(self, item)
+        nodes = {item.get_key(): PipelineNode(self, item, printer_debug=self.printer_debug)
                  for item in items_as_list}
         roots = []
         # setup dependendants
@@ -137,6 +148,7 @@ class PipelineManager:
             job.status_run = NodeRunStatus.RUNNING
             input = job.getInputForRun()
             try:
+                self.print_msg(f"Running item with key: {job.item.get_key()}")
                 output = job.item.run(input)
                 job.status_run = NodeRunStatus.DONE
                 # update dependants

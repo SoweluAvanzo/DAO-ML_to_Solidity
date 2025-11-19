@@ -62,11 +62,13 @@ def input_model_provider_from_source_type(input_source: pb_shared.PersistanceTyp
     TODO
 
 
+"""
 class PhaseBuildOutput:
     def __init__(self, phase: phases.TranslationPhases):
         # keys are "value" of psv.PhaseSubstepVariants elements (its subclasses)
         self.piKey_by_subphase: dict[str, str] = {}
         self.pi_created_by_key: dict[str, pi.PipelineItem] = {}
+"""
 
 
 # TODO ; finire di preparare
@@ -98,7 +100,7 @@ class TranslatorProcess:
         self.model_transformations = self.__digest_set_enum(
             ModelTransformation.list() if model_transformations is None else model_transformations, ModelTransformation)
         self.generate_tests = generate_tests
-        self.translation_pipeline: pmp.PipelineManager = self._build_translation_pipeline()
+        self.translation_pipeline: pmp.PipelineManager = None
 
     def print_error(self, msg):
         if self.printer_debug is not None:
@@ -128,40 +130,50 @@ class TranslatorProcess:
         return set(a)
 
     def translate(self) -> dict:
+        if self.translation_pipeline is None:
+            self.translation_pipeline = self.build_translation_pipeline()
         return self.translation_pipeline.runPipeline()
 
     #
 
-    def _build_translation_pipeline(self) -> pmp.PipelineManager:
-        pm = pmp.PipelineManager()
+    def build_translation_pipeline(self) -> pmp.PipelineManager:
+        self.print_msg("Building the translation pipeline")
+        pm = pmp.PipelineManager(printer_debug=self.printer_debug)
 
         # TODO: make use of the "shared.builder_from_phase(...)"
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
+        # 1) input
+
+        # 2) model generation
+        # k_model_generator = ...
+
+        # 3) postprocessing
+        # ... k_model_generator is defined ...
+        """
+        pp_factory = ppf.PostProcessingFactory(printer_debug=self.printer_debug)
+        for pp_t in self.postprocessing_transformations:
+            pp_t_name = pp_t.value
+            pp_data = self.postprocessing_data_by_transformation[pp_t_name]
+            k_pp_t = f"k_pp_t__{pp_t_name}"
+            pp_items = pb_pp.new_pipeline_items(pp_t, pi.PIData(k_pp_t, [k_model_generator]), pp_data)
+            for pp_i in pp_items:
+                pm.addItem(pp_i)
+        """
+
+        # 4) output
+
+        raise pm
+
+    """
     def _build_phase_input(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        """
-        Retuns a dictionary
-        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-
     def _build_phase_model_generation(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        """
-        Retuns a dictionary
-        """
-
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-
     def _build_phase_postprocessing(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        """
-        Retuns a dictionary
-        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-
     def _build_phase_output(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        """
-        Retuns a dictionary
-        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+    """
 
 
 # python -m src.translator_process

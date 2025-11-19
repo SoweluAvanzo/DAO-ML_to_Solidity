@@ -10,6 +10,7 @@ import src.postprocessing.output_preparation.compilers.shared.compiled_generic_d
 import src.postprocessing.model_translation.shared.translation_result_model as trm
 
 import src.utilities.errors as e_c
+import src.utilities.utils as u
 
 """
 No differences at the moment from the super (Jinja Base) class.
@@ -21,16 +22,20 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
                  key_diagram_instance_data: str = None,
                  key_diagram_model: str = None,
                  key_template_skeleton_provider_by_name: str = None,
-                 key_is_result_as_list: str = None
+                 key_is_result_as_list: str = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
         ctjb.CompilerTemplateJinjaBase.__init__(self, pipeline_item_data,
                                                 optional_external_data=optional_external_data,
                                                 key_template_instance_data=key_diagram_instance_data,
-                                                key_template_skeleton=None
+                                                key_template_skeleton=None,
+                                                printer_debug=printer_debug
                                                 )
         tb_m.CompilerTemplateBaseMultipart.__init__(self, pipeline_item_data,
                                                     optional_external_data=optional_external_data,
-                                                    key_template_instance_data=key_diagram_instance_data)
+                                                    key_template_instance_data=key_diagram_instance_data,
+                                                    printer_debug=printer_debug
+                                                    )
         self.key_diagram_model = key_diagram_model
         self.key_template_skeleton_provider_by_name = key_template_skeleton_provider_by_name
         self.key_is_result_as_list = key_is_result_as_list

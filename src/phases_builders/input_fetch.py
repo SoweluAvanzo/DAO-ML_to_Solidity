@@ -91,23 +91,27 @@ class InputFactory(pb.PipelineItemFactory):
 
     def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
                                        additional_data: pb.AdditionalDataSubPhase
-                                       ) -> pi.PipelineItem:
+                                       ) -> list[pi.PipelineItem]:
         # the real factory
         if additional_data.phase_step_variant == InputSourceType.FILE_XML:
             if not isinstance(additional_data, FileXMLAdditionalDataSubPhase):
                 raise Exception(
                     f"Additional Data is expected to be a (sub)class of FileXMLAdditionalDataSubPhase, but is: {type(additional_data)}")
-            return xml_f_i.TextFileInputXML(pi_data,
-                                            filepath=additional_data.filepath,
-                                            xml_version=additional_data.xml_version,
-                                            should_strip_line=additional_data.should_strip_line
-                                            )
+            return [
+                xml_f_i.TextFileInputXML(pi_data,
+                                         filepath=additional_data.filepath,
+                                         xml_version=additional_data.xml_version,
+                                         should_strip_line=additional_data.should_strip_line
+                                         )
+            ]
         elif additional_data.phase_step_variant == InputSourceType.FILE_JSON:
             if not isinstance(additional_data, FileJSONAdditionalDataSubPhase):
                 raise Exception(
                     f"Additional Data is expected to be a (sub)class of FileXMLAdditionalDataSubPhase, but is: {type(additional_data)}")
-            return txt_f_i.TextFileInput(pi_data,
-                                         filepath=additional_data.filepath,
-                                         should_strip_line=additional_data.should_strip_line
-                                         )
+            return [
+                txt_f_i.TextFileInput(pi_data,
+                                      filepath=additional_data.filepath,
+                                      should_strip_line=additional_data.should_strip_line
+                                      )
+            ]
         return None

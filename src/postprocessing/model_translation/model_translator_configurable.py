@@ -4,6 +4,8 @@ import src.postprocessing.model_translation.shared.translation_result_base as cr
 import src.postprocessing.model_translation.translation_types as ct
 import src.model.diagram_manager as dm
 
+import src.utilities.utils as u
+
 
 class ModelTranslatorConfigurable(mcb.ModelTranslatorBase):
     """
@@ -11,122 +13,161 @@ class ModelTranslatorConfigurable(mcb.ModelTranslatorBase):
     the whole translator selection process depending on some configuration
     """
     KEY_ADDITIONAL_DATA_TARGET_VERSION = "target_version"
-    __KEY__SOLIDITY_CONVERTER_CONFIGURABLE = "solidity_converter_configurable"
+    __KEY__SOLIDITY_TRANSLATOR_CONFIGURABLE = "solidity_translator_configurable"
+    __KEY__ASM_TRANSLATOR_CONFIGURABLE = "asm_translator_configurable"
 
     def __init__(self, pipeline_item_data: pi.PIData,
                  key_model: str = None,
-                 key_converter_type: str = None,
-                 key_converter_version: str = None,
-                 key_converter_target: str = None,
-                 additional_data: dict = None
+                 key_translator_type: str = None,
+                 key_translator_version: str = None,
+                 key_translator_target: str = None,
+                 additional_data: dict = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
-        super().__init__(pipeline_item_data, key_model)
-        self.key_converter_type = key_converter_type
-        self.key_converter_version = key_converter_version
-        self.key_converter_target = key_converter_target
+        super().__init__(pipeline_item_data,
+                         key_model=key_model,
+                         printer_debug=printer_debug
+                         )
+        self.key_translator_type = key_translator_type
+        self.key_translator_version = key_translator_version
+        self.key_translator_target = key_translator_target
         self.additional_data = additional_data
 
     #
 
-    def get_default_converter_type(self, additional_data: dict = None) -> str:
+    def get_default_translator_type(self, additional_data: dict = None) -> str:
         """
         Override-designed
         """
         return ct.TranslationTypes.SOLIDITY.value
 
-    def get_converter_type(self, diagram: dm.DiagramManager, additional_data: dict = None) -> str:
+    def get_translator_type(self, diagram: dm.DiagramManager, additional_data: dict = None) -> str:
         """
         Override-designed, despite having a default implementation
         """
-        converter_type = additional_data[self.key_converter_type] if self.key_converter_type is not None \
-            and self.key_converter_type in additional_data else \
+        translator_type = additional_data[self.key_translator_type] if self.key_translator_type is not None \
+            and self.key_translator_type in additional_data else \
             self.get_ith_input(additional_data, 1)
-        if converter_type is None:
-            converter_type = self.get_default_converter_type(additional_data)
-        return converter_type
+        if translator_type is None:
+            translator_type = self.get_default_translator_type(additional_data)
+        return translator_type
 
     #
 
-    def new_solidity_converter_configurable(self, additional_data: dict = None):
+    def new_solidity_translator_configurable(self, additional_data: dict = None):
+        """
+        Returns a Solidity-aware configurable translator, which is useful to drill down the specific properties
+        (like language / target versions) from the eventual sub-implementations
+        """
         import src.postprocessing.model_translation.solidity.solidity_translator_configurable as stc
-        return stc.SolidityTranslatorConfigurable(self.pipeline_item_data, self.key_model,
-                                                  self.key_converter_type, self.key_converter_version, self.key_converter_target)
+        return stc.SolidityTranslatorConfigurable(self.pipeline_item_data,
+                                                  key_model=self.key_model,
+                                                  key_translator_type=self.key_translator_type,
+                                                  key_translator_version=self.key_translator_version,
+                                                  key_translator_target=self.key_translator_target,
+                                                  key_translator_solidity_subtype=None,
+                                                  printer_debug=self.printer_debug
+                                                  )
 
-    def get_default_converter_version(self, converter_type: str, additional_data: dict = None) -> str:
+    def new_asm_translator_configurable(self, additional_data: dict = None):
+        import src.postprocessing.model_translation.asm.t_j_asm_configurable as t_j_asm_c
+        return t_j_asm_c.TranslatorJinjaASMConfigurable(
+            self.pipeline_item_data,
+            key_model=self.key_model,
+            optional_external_data=additional_data,
+            printer_debug=self.printer_debug
+        )
+
+    def get_default_translator_version(self, translator_type: str, additional_data: dict = None) -> str:
         """
         Override-designed
         """
-        c_v = None
-        if converter_type is not None:
-            match converter_type:
+        translator_version: str = None
+        if translator_type is not None:
+            instance_key: str = None
+            stc_instance: ModelTranslatorConfigurable = None
+            match translator_type:
                 case ct.TranslationTypes.SOLIDITY.value:
-                    stc_instance = self.new_solidity_converter_configurable(
+                    instance_key = ModelTranslatorConfigurable.__KEY__SOLIDITY_TRANSLATOR_CONFIGURABLE
+                    stc_instance = self.new_solidity_translator_configurable(
                         additional_data)
-                    if additional_data is not None:
-                        additional_data[ModelTranslatorConfigurable.__KEY__SOLIDITY_CONVERTER_CONFIGURABLE] = stc_instance
-                    c_v = stc_instance.get_default_converter_version(
-                        converter_type, additional_data=additional_data)
-                # TODO 2025-08-06 add ASM one
-        if c_v is None:
+                case ct.TranslationTypes.ASM.value:
+                    instance_key = ModelTranslatorConfigurable.__KEY__ASM_TRANSLATOR_CONFIGURABLE
+                    stc_instance = self.new_asm_translator_configurable(
+                        additional_data)
+            if additional_data is not None:
+                additional_data[instance_key] = stc_instance
+            translator_version = stc_instance.get_default_translator_version(
+                translator_type, additional_data=additional_data)
+        if translator_version is None:
             raise Exception(
-                f"Can't define a proper default converter version for converter type: {converter_type}")
-        return c_v
+                f"Can't define a proper default translator version for translator type: {translator_type}")
+        return translator_version
 
-    def get_converter_version(self, diagram: dm.DiagramManager, converter_type: str, additional_data: dict = None) -> str:
+    def get_translator_version(self, diagram: dm.DiagramManager, translator_type: str, additional_data: dict = None) -> str:
         """
         Override-designed, despite having a default implementation
         """
-        converter_version = additional_data[self.key_converter_version] if self.key_converter_version is not None \
-            and self.key_converter_version in additional_data else \
+        translator_version = additional_data[self.key_translator_version] if self.key_translator_version is not None \
+            and self.key_translator_version in additional_data else \
             self.get_ith_input(additional_data, 2)
-        if converter_version is None:
-            converter_version = self.get_default_converter_version(
-                converter_type, additional_data)
-        return converter_version
+        if translator_version is None:
+            translator_version = self.get_default_translator_version(
+                translator_type, additional_data)
+        return translator_version
 
     #
 
-    def get_default_converter_target(self, converter_type: str, converter_version: str, additional_data: dict = None) -> str:
+    def get_default_translator_target(self, translator_type: str, translator_version: str, additional_data: dict = None) -> str:
         """
         Override-designed
         """
         raise Exception(
-            f"Too much details needed to implement get_default_converter_target for {self.__class__.__name__}")
+            f"Too much details needed to implement get_default_translator_target for {self.__class__.__name__}")
 
-    def get_converter_target(self, diagram: dm.DiagramManager, converter_type: str, converter_version: str, additional_data: dict = None) -> str:
+    def get_translator_target(self, diagram: dm.DiagramManager, translator_type: str, translator_version: str, additional_data: dict = None) -> str:
         """
         Override-designed, despite having a default implementation
         """
-        converter_target = additional_data[self.key_converter_target] if self.key_converter_target is not None \
-            and self.key_converter_target in additional_data else \
+        translator_target = additional_data[self.key_translator_target] if self.key_translator_target is not None \
+            and self.key_translator_target in additional_data else \
             self.get_ith_input(additional_data, 3)
-        if converter_target is None:
-            converter_target = self.get_default_converter_target(
-                converter_type, converter_version, additional_data)
-        return converter_target
+        if translator_target is None:
+            translator_target = self.get_default_translator_target(
+                translator_type, translator_version, additional_data)
+        return translator_target
 
     #
 
-    def select_implementation(self, diagram: dm.DiagramManager, converter_type: str, converter_version: str, converter_target: str, additional_data: dict = None) -> mcb.ModelTranslatorBase:
+    def select_implementation(self, diagram: dm.DiagramManager, translator_type: str, translator_version: str, translator_target: str, additional_data: dict = None) -> mcb.ModelTranslatorBase:
         impl = None
-        match converter_type:
+        if additional_data is None:
+            additional_data = {}
+        match translator_type:
             case ct.TranslationTypes.SOLIDITY.value:
                 import src.postprocessing.model_translation.solidity.solidity_translator_configurable as stc
                 stc_instance: stc.SolidityTranslatorConfigurable = None
-                if additional_data is not None and ModelTranslatorConfigurable.__KEY__SOLIDITY_CONVERTER_CONFIGURABLE in additional_data:
-                    stc_instance = additional_data[ModelTranslatorConfigurable.__KEY__SOLIDITY_CONVERTER_CONFIGURABLE]
+                # recycle the "configurable" implementation if available
+                if ModelTranslatorConfigurable.__KEY__SOLIDITY_TRANSLATOR_CONFIGURABLE in additional_data:
+                    stc_instance = additional_data[ModelTranslatorConfigurable.__KEY__SOLIDITY_TRANSLATOR_CONFIGURABLE]
                 else:
-                    stc_instance = self.new_solidity_converter_configurable(
+                    stc_instance = self.new_solidity_translator_configurable(
                         additional_data)
+                    additional_data[ModelTranslatorConfigurable.__KEY__SOLIDITY_TRANSLATOR_CONFIGURABLE] = stc_instance
                 impl = stc_instance.select_implementation(
-                    diagram, converter_type, converter_version, converter_target, additional_data)
+                    diagram, translator_type, translator_version, translator_target, additional_data)
             case ct.TranslationTypes.ASM.value:
-                import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
-                import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
-                if converter_version is None or converter_version == t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value:
-                    impl = t_j_asm_1_0_0.TranslatorJinjaASM_1_0_0(self.pipeline_item_data,
-                                                                  key_model=self.key_model,
-                                                                  optional_external_data=additional_data)
+                import src.postprocessing.model_translation.asm.t_j_asm_configurable as t_j_asm_c
+                asm_t_c_instance: t_j_asm_c.TranslatorJinjaASMConfigurable = None
+                # recycle the "configurable" implementation if available
+                if ModelTranslatorConfigurable.__KEY__ASM_TRANSLATOR_CONFIGURABLE in additional_data:
+                    asm_t_c_instance = additional_data[ModelTranslatorConfigurable.__KEY__ASM_TRANSLATOR_CONFIGURABLE]
+                else:
+                    asm_t_c_instance = self.new_asm_translator_configurable(
+                        additional_data)
+                    additional_data[ModelTranslatorConfigurable.__KEY__ASM_TRANSLATOR_CONFIGURABLE] = asm_t_c_instance
+                impl = asm_t_c_instance.select_implementation(
+                    diagram, translator_type, translator_version, translator_target, additional_data)
         # TODO
         if impl is None:
             raise Exception("TODO : still to be implemented 2025-08-06")
@@ -140,16 +181,18 @@ class ModelTranslatorConfigurable(mcb.ModelTranslatorBase):
                 **additional_data,
                 **(self.additional_data)
             }
-        converter_type = self.get_converter_type(diagram, additional_data)
-        converter_version = self.get_converter_version(
-            diagram, converter_type, additional_data)
-        converter_target = self.get_converter_target(
-            diagram, converter_type, converter_version, additional_data)
+        # get the trio of translator discriminators
+        translator_type = self.get_translator_type(diagram, additional_data)
+        translator_version = self.get_translator_version(
+            diagram, translator_type, additional_data)
+        translator_target = self.get_translator_target(
+            diagram, translator_type, translator_version, additional_data)
         # get the implementation
         implementation: mcb.ModelTranslatorBase = self.select_implementation(
-            diagram, converter_type, converter_version, converter_target, additional_data)
+            diagram, translator_type, translator_version, translator_target, additional_data)
         if implementation is None:
             return None
         if ModelTranslatorConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION not in additional_data:
-            additional_data[ModelTranslatorConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION] = converter_target
+            additional_data[ModelTranslatorConfigurable.KEY_ADDITIONAL_DATA_TARGET_VERSION] = translator_target
+        # do the actual translation
         return implementation.translate(diagram, additional_data)

@@ -17,17 +17,25 @@ import src.model_generators.json_string_model_generator as jsmg
 import src.utilities.utils as u
 
 
-KEY_ADDITIONAL_DATA__FILE_PATH_XML_SCHEMA = "k_a_d_FILE_PATH_XML_SCHEMA"
-
-
 class ModelGeneratorFormat(psv.PhaseSubstepVariants):
     XML = "xml"
     JSON = "json"
 
 
-class ModelPhaseVariantsAndData(pb_shared.PhaseVariantsAndData):
+class ModelPhaseVariantsAndData(pb.AdditionalDataSubPhase):
+    def __init__(self, phase_step_variant: psv.PhaseSubstepVariants):
+        super().__init__(phase_step_variant)
+
+
+class ModelXMLGeneratordData(pb.AdditionalDataSubPhase):
+    def __init__(self, file_path_xml_schema: str):
+        super().__init__(ModelGeneratorFormat.XML)
+        self.file_path_xml_schema = file_path_xml_schema
+
+
+class ModelJSONGeneratordData(pb.AdditionalDataSubPhase):
     def __init__(self):
-        super().__init__(phases.TranslationPhases.MODEL_GENERATION)
+        super().__init__(ModelGeneratorFormat.JSON)
 
 #
 
@@ -41,13 +49,16 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
         return ModelGeneratorFormat
 
     def new_pipeline_item_from_variant(self, phase_step_variant: psv.PhaseSubstepVariants, pi_data: pi.PIData,
-                                       additional_data: dict = None
-                                       ) -> pi.PipelineItem:
+                                       phase_step_variant_and_data: pb.AdditionalDataSubPhase
+                                       ) -> list[pi.PipelineItem]:
         if phase_step_variant == ModelGeneratorFormat.XML:
-            if KEY_ADDITIONAL_DATA__FILE_PATH_XML_SCHEMA not in additional_data:
+            if not isinstance(phase_step_variant_and_data, ModelXMLGeneratordData):
                 raise Exception(
-                    f"additional data is missing of the key for retrieving the XML Schema file path")
-            fpXMLs = additional_data[KEY_ADDITIONAL_DATA__FILE_PATH_XML_SCHEMA]
+                    f"Wrong class for given phase_step_variant_and_data: expected ModelXMLGeneratordData, got: {type(phase_step_variant_and_data)}")
+            if phase_step_variant_and_data.file_path_xml_schema is None:
+                raise Exception(
+                    f"file_path_xml_schema is None, so can't retrieve the XML Schema file path")
+            fpXMLs = phase_step_variant_and_data.file_path_xml_schema
             # dummy value to pass null+isinstance checks
             empty_pi_d = pi.PIData("k", dependencies=None)
             validation_store = pi_chain_store.PIChainStoreReleaserBranching(
@@ -75,7 +86,7 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 validation_store,  # ... retrieve from the branching -> generate
                 model_generator
             ]
-            return pc.PIChained(pi_data, chain_pi, printer_debug=self.printer_debug)
+            return [pc.PIChained(pi_data, chain_pi, printer_debug=self.printer_debug)]
         elif phase_step_variant == ModelGeneratorFormat.JSON:
-            return jsmg.JsonStringModelGenerator(pi_data)
+            return [jsmg.JsonStringModelGenerator(pi_data)]
         return None

@@ -1,17 +1,24 @@
 import src.pipeline.pipeline_item as pi
 
 import src.utilities.errors as e_c
+import src.utilities.utils as u
 
 
 class TemplateBase(pi.PipelineItem):
-    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None, key_template_instance_data: str = None):
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 optional_external_data=None,
+                 key_template_instance_data: str = None,
+                 printer_debug: u.PrinterDebug = None
+                 ):
         """
         Base class for each template(s)-based compilers. Each implementation might be based on one or more different templates; that's
         why no template name nor skeleton is involved at this level of class-implementation.
         @param key_template_instance_data : the input's key of a class/map/dict holding the values to populate the current instance of this template.
         """
         # @param key_template_skeleton : the input's key of the data structure holding the representation of a template (each of its parts, like loops, lists, arrays)
-        super().__init__(pipeline_item_data)
+        super().__init__(pipeline_item_data,
+                         printer_debug=printer_debug
+                         )
         self.optional_external_data = optional_external_data
         self.key_template_instance_data = key_template_instance_data
 

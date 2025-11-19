@@ -209,7 +209,7 @@ class OptimizedSolidityTranslator(Translator):
     def translate(self) -> list[TranslatedSmartContract]:
         # print("TRANSLATE() -- invocato")
         all_smart_contracts: list[TranslatedSmartContract] = [
-            self.translate_DAO_to_ASM(self.context.dao)
+            self.translate_dao_to_ASM(self.context.dao)
         ]
         # at first, translate all Committees
         ct = CommitteeTranslator(self.context)
@@ -662,7 +662,7 @@ class OptimizedSolidityTranslator(Translator):
     def generate_closure(self):
         return "}"
 
-    def translate_DAO_to_ASM(self, dao: DAO) -> TranslatedSmartContract:
+    def translate_dao_to_ASM(self, dao: DAO) -> TranslatedSmartContract:
         asm_data = {}
         template_path = os.path.join('.', "Templates", "asm", "")
         name = dao.dao_name

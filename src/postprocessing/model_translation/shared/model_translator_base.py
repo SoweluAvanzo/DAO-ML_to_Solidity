@@ -2,6 +2,8 @@ import src.pipeline.pipeline_item as pi
 import src.model.diagram_manager as dm
 import src.postprocessing.model_translation.shared.translation_result_base as crb
 
+import src.utilities.utils as u
+
 
 class ModelTranslatorBase(pi.PipelineItem):
     """
@@ -10,8 +12,11 @@ class ModelTranslatorBase(pi.PipelineItem):
     of translators.
     """
 
-    def __init__(self, pipeline_item_data: pi.PIData, key_model: str = None):
-        super().__init__(pipeline_item_data)
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 key_model: str = None,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(pipeline_item_data, printer_debug=printer_debug)
         self.key_model = key_model
 
     def translate(self, model: dm.DiagramManager, additional_data=None) -> crb.ModelConversionResultBase:

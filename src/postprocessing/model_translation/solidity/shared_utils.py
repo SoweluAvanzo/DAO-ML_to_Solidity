@@ -60,7 +60,7 @@ def get_control_bitflags(
     return mask << bits_for_id, mask
 
 
-def get_roles_committee_computed_data(dao: d.DAO, functionalities_ids: dict[str, int], group_size: int):
+def get_roles_committee_computed_data(dao: d.DAO, functionalities_ids: dict[str, int], group_size: user_functionalities_group_size_module.UserFunctionalitiesGroupSize):
     # entities_amount = len(dao.roles) + len(dao.committees)
     index_entity = 0
     entity_to_data = {}
@@ -69,7 +69,7 @@ def get_roles_committee_computed_data(dao: d.DAO, functionalities_ids: dict[str,
     i = 0
     for role in dao.roles.values():
         mask_shifted_for_id_bits, original_mask = get_control_bitflags(
-            dao, role,   group_size, functionalities_ids)
+            dao, role, group_size, functionalities_ids)
         final_id = functionalities_ids[role.get_id(
         )] | mask_shifted_for_id_bits
         name_sanitized = fu.sanitize_filename(role.role_name)

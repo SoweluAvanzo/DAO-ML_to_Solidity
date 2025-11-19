@@ -4,7 +4,7 @@ import src.files.file_utils as file_utils
 NAME_FOLDER_TEMPLATES = "Templates"
 DEFAULT_BASE_FOLDER_TEMPLATES = file_utils.concat_folder_filename(
     ".", NAME_FOLDER_TEMPLATES)
-
+KEY__ALL_VOTING_PROTOCOLS__ON_ADDITIONAL_DATA = "key_all_voting_protocols"
 JINJA_FILE_EXTENSION = "jinja"
 
 # Solidity

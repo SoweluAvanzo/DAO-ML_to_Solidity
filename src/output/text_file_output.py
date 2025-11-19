@@ -1,8 +1,13 @@
 import json
 from collections.abc import Iterable
-import src.output.base_output as bo
-import src.files.file_utils as fu
+
 import src.pipeline.pipeline_item as pi
+
+import src.output.base_output as bo
+
+import src.files.file_utils as fu
+
+import src.utilities.utils as u
 
 NEW_LINE_CHARS = ("\n", "\r")
 WRITE_MODE_KEY = "write"
@@ -10,8 +15,15 @@ WRITE_MODE_VALUES = {"true", "w", "write", "y", "yes", "t", 1, "1"}
 
 
 class TextFileOutput(bo.BaseOutput):
-    def __init__(self, pipeline_item_data: pi.PIData, base_destination=None, write_mode_key: str = None):
-        super().__init__(pipeline_item_data, base_destination)
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 base_destination=None,
+                 write_mode_key: str = None,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(pipeline_item_data,
+                         base_destination=base_destination,
+                         printer_debug=printer_debug
+                         )
         self.write_mode_key = WRITE_MODE_KEY if write_mode_key is None else write_mode_key
 
     def to_output(self, what, destination: str = None, additional_data=None) -> bool:

@@ -19,7 +19,7 @@ class DAOMetadata:
 
     def toJSON(self):
         return {
-            "user_functionalities_group_size": self.user_functionalities_group_size,
+            "user_functionalities_group_size": self.user_functionalities_group_size.name,
             "size_user_functionalities_group": self.size_user_functionalities_group
         }
 
