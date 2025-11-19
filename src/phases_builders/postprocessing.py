@@ -17,12 +17,14 @@ import src.postprocessing.model_translation.solidity.voting_protocols_list_loade
 import src.postprocessing.model_translation.solidity.solidity_translator_configurable as pp_mt_sol_c
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
 import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as sol_test_t
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
 
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
-import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_sol_t_j_1_0_0 as c_sol_t_j_1_0_0
+import src.postprocessing.output_preparation.compilers.solidity.tests.templates.jinja.c_sol_tests_t_j as c_sol_tests_t_j
+import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j
 import src.postprocessing.output_preparation.json.model_to_json as pp_o_json
 
 
@@ -71,6 +73,7 @@ class AdditionalDataSolidity(AdditionalDataTranslator):
                  version_translator: str = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value,
                  translator_solidity_subtype: str = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value,
                  version_translation_target: str = "1.0.0",
+                 generate_tests=True
                  ):
         super().__init__(PostProcessingTransformation.SOLIDITY, k_model_generator,
                          k_templates_provider=k_templates_provider,
@@ -80,6 +83,7 @@ class AdditionalDataSolidity(AdditionalDataTranslator):
         self.translator_solidity_subtype = translator_solidity_subtype
         self.folder_voting_protocols = folder_voting_protocols
         self.folder_templates = folder_templates
+        self.generate_tests = generate_tests
 
 
 class AdditionalDataASM(AdditionalDataTranslator):
@@ -195,21 +199,47 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 key_template_skeleton_provider_by_name=k_pi_template_provider,
                 printer_debug=self.printer_debug
             )
-            return [
-                p
-                for p in [
-                    translator_sol,  # this must be the first
-                    p_voting_protocol_list_loader,
-                    pi_translator_type_sol,
-                    pi_version_translator_sol,
-                    pi_translator_target_sol,
-                    pi_translator_solidity_subtype_sol,
-                    pi_template_provider,
-
-                    template_compiler_sol  # this must be the last
-                ]
-                if p is not None
+            # generate the complete list
+            all_pi = [
+                translator_sol,  # this must be the first
+                p_voting_protocol_list_loader,
+                pi_translator_type_sol,
+                pi_version_translator_sol,
+                pi_translator_target_sol,
+                pi_translator_solidity_subtype_sol
             ]
+            if pi_template_provider is not None:
+                all_pi.append(pi_template_provider)
+
+            # TESTS
+            if phase_step_variant_and_data.generate_tests:
+                # Hardhat Tests - currently (2025-11-19), there's no "configurable", just the "1.0.0"
+                k_translator_sol_test = "k_translator_sol_test"
+                translator_sol_test = sol_test_t.SolidityTestsTranslatorJinjaHardhat_1_0_0(
+                    pi.PIData(k_translator_sol_test, [k_model_generator]),
+                    optional_external_data=None,
+                    key_model=k_model_generator,
+                    is_optimized=True
+                )
+                all_pi.append(translator_sol_test)
+                k_compiler_sol_test = "k_compiler_sol_test"
+                compiler_sol_test = c_sol_tests_t_j.CompilerSolidityTestsTemplateJinja(
+                    pi.PIData(k_compiler_sol_test,
+                              [k_translator_sol_test, k_pi_template_provider,
+                                  k_model_generator, k_is_result_as_list]
+                              ),
+                    optional_external_data=None,
+                    key_diagram_instance_data=k_translator_sol_test,
+                    key_template_skeleton_provider_by_name=k_pi_template_provider,
+                    key_diagram_model=k_model_generator,
+                    key_is_result_as_list=k_is_result_as_list
+                )
+                all_pi.append(compiler_sol_test)
+            # now, the end : the
+            all_pi.append(
+                template_compiler_sol  # this must be the last
+            )
+            return all_pi
 
         elif phase_step_variant == PostProcessingTransformation.ASM:
             if not isinstance(phase_step_variant_and_data, AdditionalDataASM):
