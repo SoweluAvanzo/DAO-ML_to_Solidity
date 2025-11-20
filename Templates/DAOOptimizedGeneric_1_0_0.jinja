@@ -115,7 +115,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         {% for c in committees_names_list %}{% if loop.index0 != 0 %}, {% endif %}
         address _{{space_to_underscore_fn(c)}} {% endfor %}
         ) {{visibility_committee_initialization_function}} {{"{"}}
-        reqiure( roles[msg.sender] == all_roles[{{ roles|length -1 }}], "Only the owner can initialize the Dao" {{")"}}; // {{dao_name}}Owner
+        require( roles[msg.sender] == all_roles[{{ roles|length -1 }}], "Only the owner can initialize the Dao" {{")"}}; // {{dao_name}}Owner
         {% if committees_names_list|length > 0 %}
         require(committee_initialization_blocked == false {% for c in committees_names_list %} && _{{space_to_underscore_fn(c)}} != address(0) {% endfor %}, "Invalid committee initialization");
         {% for c in committees_names_list %}
@@ -135,7 +135,7 @@ contract {{dao_name}} is IPermissionManager {{"{"}}
         ) public pure returns(bool controls){{"{"}}
             // "CAN the sender control the target user (through its role)?"
             // (allowNullRole && (target_role_id == 0)) || // allow to add role if the user has not already one assigned to it
-            icontrols = ((
+            controls = ((
                 (controlled >> {{group_size_bitmask}} ) // get the role's bitmask 
                 &  // (and then perform the bitwise-and with ...)
                 ({{id_var_type}}(1) << ( controller & {{id_mask}} )) // (...) get the sender role's index AND shift it accordingly 

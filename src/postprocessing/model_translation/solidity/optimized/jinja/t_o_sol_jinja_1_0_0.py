@@ -440,11 +440,12 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                            version_for_file: str = ""
                                            ):
         interface_filename = "IPermissionManager"
+        interface_template_name = "iPermissionManager"  # Template uses lowercase 'i'
         interface_related_data = {}
         interface_converted = crt.TranslatedSubpartTemplated(
             None, interface_related_data)
         interface_converted.translated_name_output = interface_filename
-        interface_converted.template_filename_input = f"{interface_filename}_{version_for_file}"
+        interface_converted.template_filename_input = f"{interface_template_name}_{version_for_file}"
         interface_converted.suggested_input_template_folders_path_from_base = consts_t.NAME_FOLDER_TEMPLATES_INTERFACES
         interface_related_data["solidity_version"] = solidity_version
         interface_related_data["perm_var_type"] = perm_var_type
@@ -452,11 +453,12 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         dao_conversion.interfaces_and_fullpath_by_filenames[interface_filename] = interface_converted
 
         interface_filename = "ICondition"
+        interface_template_name = "iCondition"  # Template uses lowercase 'i'
         interface_related_data = {}
         interface_converted = crt.TranslatedSubpartTemplated(
             None, interface_related_data)
         interface_converted.translated_name_output = interface_filename
-        interface_converted.template_filename_input = f"{interface_filename}_{version_for_file}"
+        interface_converted.template_filename_input = f"{interface_template_name}_{version_for_file}"
         interface_converted.suggested_input_template_folders_path_from_base = consts_t.NAME_FOLDER_TEMPLATES_INTERFACES
         interface_related_data["solidity_version"] = solidity_version
         # interface_related_data["perm_var_type"] = perm_var_type
