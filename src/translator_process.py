@@ -2,8 +2,10 @@ from typing import Type
 
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
+
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phases as phases
+import src.phases_builders.phase_builder as pb
 import src.phases_builders.input_fetch as pb_i_f
 import src.phases_builders.model_generation as pb_m_g
 import src.phases_builders.postprocessing as pb_pp
@@ -101,6 +103,8 @@ class TranslatorProcess:
             ModelTransformation.list() if model_transformations is None else model_transformations, ModelTransformation)
         self.generate_tests = generate_tests
         self.translation_pipeline: pmp.PipelineManager = None
+        self.postprocessing_data_by_transformation: dict[str, pb.AdditionalDataSubPhase] = {
+        }
 
     def print_error(self, msg):
         if self.printer_debug is not None:
@@ -143,26 +147,74 @@ class TranslatorProcess:
         # TODO: make use of the "shared.builder_from_phase(...)"
 
         # 1) input
+        pf_input = self.builder_from_phase(
+            phases.TranslationPhases.INPUT_FETCHING)
+        # TODO
 
         # 2) model generation
+        pf_model_generator = self.builder_from_phase(
+            phases.TranslationPhases.MODEL_GENERATION)
+        # TODO
         # k_model_generator = ...
 
         # 3) postprocessing
         # ... k_model_generator is defined ...
-        """
-        pp_factory = ppf.PostProcessingFactory(printer_debug=self.printer_debug)
-        for pp_t in self.postprocessing_transformations:
+        pp_factory = self.builder_from_phase(
+            phases.TranslationPhases.TRANSLATION_CONVERSION_POSTPROCESSING)
+        for pp_t in self.postprocessing_transformations:  # TODO: define this list, taken from the constructor
             pp_t_name = pp_t.value
-            pp_data = self.postprocessing_data_by_transformation[pp_t_name]
+            # TODO: define this list, taken from the constructor
+            pp_data: pb.AdditionalDataSubPhase = self.postprocessing_data_by_transformation[
+                pp_t_name]
             k_pp_t = f"k_pp_t__{pp_t_name}"
-            pp_items = pb_pp.new_pipeline_items(pp_t, pi.PIData(k_pp_t, [k_model_generator]), pp_data)
+            pp_items = pp_factory.new_pipeline_items(
+                pp_t, pi.PIData(k_pp_t, [k_model_generator]), pp_data)
             for pp_i in pp_items:
                 pm.addItem(pp_i)
         """
+        """
 
         # 4) output
+        pf_output = self.builder_from_phase(phases.TranslationPhases.OUTPUT)
+        # TODO
 
         return pm
+
+    def build_phase_input(self, printer_debug: u.PrinterDebug = None):
+        """
+        Override-designed
+        """
+        return pb_i_f.InputFactory(printer_debug=printer_debug)
+
+    def build_phase_model_generation(self, printer_debug: u.PrinterDebug = None):
+        """
+        Override-designed
+        """
+        return pb_m_g.ModelGeneratorFactory(printer_debug=printer_debug)
+
+    def build_phase_postprocessing(self, printer_debug: u.PrinterDebug = None):
+        """
+        Override-designed
+        """
+        return pb_pp.PostProcessingFactory(printer_debug=printer_debug)
+
+    def build_phase_output(self, printer_debug: u.PrinterDebug = None):
+        """
+        Override-designed
+        """
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    def builder_from_phase(self, phase: phases.TranslationPhases) -> pb.PipelineItemFactory:
+        match phase:
+            case phases.TranslationPhases.INPUT_FETCHING:
+                return self.build_phase_input(printer_debug=self.printer_debug)
+            case phases.TranslationPhases.MODEL_GENERATION:
+                return self.build_phase_model_generation(printer_debug=self.printer_debug)
+            case phases.TranslationPhases.TRANSLATION_CONVERSION_POSTPROCESSING:
+                return self.build_phase_postprocessing(printer_debug=self.printer_debug)
+            case phases.TranslationPhases.OUTPUT:
+                return self.build_phase_output(printer_debug=self.printer_debug)
+        raise Exception(f"Unrecognized phase: {phase}")
 
     """
     def _build_phase_input(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:

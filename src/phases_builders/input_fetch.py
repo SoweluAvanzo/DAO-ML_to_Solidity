@@ -78,7 +78,7 @@ def input_source_type(i_s: pb_shared.PersistanceType, i_t: InputType) -> InputSo
         elif i_t == InputType.JSON:
             return InputSourceType.FILE_JSON
     raise Exception(
-        f"Unknown/unmanaged input source-type pair: < {i_s} ; {i_t} >")
+        f"Unknown/unmanaged input & source-type pair: < {i_s} ; {i_t} >")
 
 
 class InputFactory(pb.PipelineItemFactory):
