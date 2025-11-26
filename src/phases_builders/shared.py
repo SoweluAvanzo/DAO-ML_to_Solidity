@@ -5,6 +5,7 @@ import src.phases_builders.phase_builder as pb
 import src.phases_builders.phase_step_variants as psv
 
 import src.utilities.utils as u
+import src.utilities.errors as e_c
 
 
 class PersistanceType(psv.PhaseSubstepVariants):
@@ -34,5 +35,27 @@ class PhaseVariantsAndData:
 
     def add_phase_variant_and_data(self, phase_step_variant: psv.PhaseSubstepVariants, additional_data: dict = None):
         return self.add_phase_variant_data(pb.AdditionalDataSubPhase(phase_step_variant, additional_data=additional_data))
+
+#
+
+
+class KeyUniqueProducer:
+    def new_unique_key(self) -> str:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+
+class KeyUniqueProducerSimpleSequential:
+    """
+    WARNING: no thread-safety implemented!
+    """
+
+    def __init__(self):
+        self.counter = 0
+
+    def new_unique_key(self) -> str:
+        c = self.counter
+        self.counter += 1
+        return f"key_{c}"
+
 
 #

@@ -1,6 +1,7 @@
 
 import src.pipeline.pipeline_item as pi
 
+import src.phases_builders.shared as pb_shared
 import src.phases_builders.phase_step_variants as psv
 
 import src.utilities.utils as u
@@ -21,13 +22,27 @@ class PipelineItemFactory:
     PhaseSubstepVariants
     """
 
-    def __init__(self, printer_debug: u.PrinterDebug = None):
+    def __init__(self, key_unique_producer: pb_shared.KeyUniqueProducer,
+                 printer_debug: u.PrinterDebug = None):
         self.printer_debug = printer_debug
+        self.key_unique_producer = key_unique_producer
+
+    def new_unique_key(self) -> str:
+        """
+        Proxy-like method invoking the instance of KeyUniqueProducer
+        """
+        return self.key_unique_producer.new_unique_key()
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
+        """
+        Return the class/type of the enumeration of the substep variants this PipelineItem Factory relies on.
+        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def new_pipeline_item_from_variant(self, pi_data: pi.PIData, phase_step_variant_and_data: AdditionalDataSubPhase) -> list[pi.PipelineItem]:
+        """
+        Override-designed
+        """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def new_pipeline_items(self,
@@ -36,7 +51,8 @@ class PipelineItemFactory:
                            ) -> list[pi.PipelineItem]:
         """
         Returns a list of PipelineItems, where the first one uses the given "PIData" and every one else
-        is just in need to be added to the graph
+        is just in need to be added to the graph.
+        SHOULD NOT BE OVERRIDDEN
         """
         if (phase_step_variant_and_data is None):
             raise Exception(

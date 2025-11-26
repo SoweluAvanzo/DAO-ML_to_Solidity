@@ -26,8 +26,8 @@ import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_a
 import src.postprocessing.output_preparation.json.model_to_json as pp_o_json
 
 
-import src.input.xml_file_input as xml_f_i
-import src.input.txt_file_input as txt_f_i
+import src.output.text_file_output as tfo
+import src.output.jinja_text_file_output as jtfo
 
 import src.utilities.utils as u
 import src.postprocessing.consts_template as consts_t
@@ -73,20 +73,58 @@ def output_destination_type(i_s: pb_shared.PersistanceType, o_t: OutputType) -> 
         f"Unknown/unmanaged output & destination-type pair: < {i_s} ; {o_t} >")
 
 
-class InputFactory(pb.PipelineItemFactory):
+class AdditionalDataOutput(pb.AdditionalDataSubPhase):
+    def __init__(self, phase_step_variant: OutputDestinationType):
+        super().__init__(phase_step_variant)
 
-    def __init__(self, printer_debug: u.PrinterDebug = None):
-        super().__init__(printer_debug)
+
+class AdditionalDataFile(AdditionalDataOutput):
+    def __init__(self, phase_step_variant: OutputDestinationType,
+                 folder_output_path_base: str
+                 ):
+        super().__init__(phase_step_variant)
+        self.folder_output_path_base = folder_output_path_base
+
+
+class AdditionalDataFileString(AdditionalDataFile):
+    def __init__(self,
+                 folder_output_path_base: str
+                 ):
+        super().__init__(OutputDestinationType.FILE_STRING, folder_output_path_base)
+
+
+class OutputFactory(pb.PipelineItemFactory):
+
+    def __init__(self, key_unique_producer: pb_shared.KeyUniqueProducer,
+                 printer_debug: u.PrinterDebug = None):
+        super().__init__(key_unique_producer, printer_debug=printer_debug)
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return OutputDestinationType
 
     def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
-                                       additional_data: pb.AdditionalDataSubPhase
+                                       phase_step_variant_and_data: pb.AdditionalDataSubPhase
                                        ) -> list[pi.PipelineItem]:
+
         # the real factory
-        if additional_data.phase_step_variant == OutputDestinationType.FILE_JINJA:
+        if phase_step_variant_and_data.phase_step_variant == OutputDestinationType.FILE_JINJA:
             return None  # TODO DO IT
-        elif additional_data.phase_step_variant == OutputDestinationType.FILE_STRING:
-            return None  # TODO DO IT
+        elif phase_step_variant_and_data.phase_step_variant == OutputDestinationType.FILE_STRING:
+            if not isinstance(phase_step_variant_and_data, AdditionalDataFileString):
+                raise Exception(
+                    f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataSolidity, got: {type(phase_step_variant_and_data)}")
+            k_source = pi_data.dependencies[0]
+            k_additional_output_data = f"k_additional_output_data__output_txt_{self.new_unique_key()}"
+            additional_metadata = {
+                "mode": "w"
+            }
+            additional_output_data = pval.PIAnyValue(
+                pi.PIData(k_additional_output_data, [k_source]), additional_metadata)
+            k_model_text_to_file_output = f"k_model_text_to_file_output_{self.new_unique_key()}"
+            model_text_to_file_output = tfo.TextFileOutput(pi.PIData(k_model_text_to_file_output, [
+                k_source, k_additional_output_data]), phase_step_variant_and_data.folder_output_path_base)
+            return [
+                additional_output_data,
+                model_text_to_file_output
+            ]
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)

@@ -3,6 +3,7 @@ import src.pipeline.pipeline_item as pi
 import src.pipeline.utilities.pi_str as pstr
 import src.pipeline.utilities.pi_any_value as pval
 
+import src.phases_builders.shared as pb_shared
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phase_builder as pb
 
@@ -45,8 +46,8 @@ class SolidityAdditionalDataKeys(ee.ExtendedEnum):
 #
 
 
-class AdditionalDataTranslator(pb.AdditionalDataSubPhase):
-    def __init__(self, phase_step_variant: psv.PhaseSubstepVariants,
+class AdditionalDataPostProcessing(pb.AdditionalDataSubPhase):
+    def __init__(self, phase_step_variant: PostProcessingTransformation,
                  k_model_generator: str,
                  k_templates_provider: str = None,
                  version_translator: str = None,
@@ -59,7 +60,7 @@ class AdditionalDataTranslator(pb.AdditionalDataSubPhase):
         self.version_translation_target = version_translation_target
 
 
-class AdditionalDataSolidity(AdditionalDataTranslator):
+class AdditionalDataSolidity(AdditionalDataPostProcessing):
     def __init__(self, k_model_generator: str,
                  folder_voting_protocols: str,
                  k_templates_provider: str = None,
@@ -80,7 +81,7 @@ class AdditionalDataSolidity(AdditionalDataTranslator):
         self.generate_tests = generate_tests
 
 
-class AdditionalDataASM(AdditionalDataTranslator):
+class AdditionalDataASM(AdditionalDataPostProcessing):
     def __init__(self, k_model_generator: str,
                  k_templates_provider: str = None,
                  folder_templates: str = None,
@@ -95,21 +96,47 @@ class AdditionalDataASM(AdditionalDataTranslator):
         self.folder_templates = folder_templates
 
 
+class AdditionalDataJSON(AdditionalDataPostProcessing):
+    def __init__(self, k_model_generator: str,
+                 indent=None
+                 ):
+        super().__init__(PostProcessingTransformation.JSON, k_model_generator,
+                         k_templates_provider=None,
+                         version_translator=None,
+                         version_translation_target=None)
+        self.indent = indent
+
+
+# class AdditionalDataPetriNets(AdditionalDataPostProcessing):
+#    def __init__(self, k_model_generator: str,
+#                 version_translator=None,
+#                 version_translation_target=None,
+#                 altro=None
+#                 ):
+#        super().__init__(PostProcessingTransformation.PETRI_NETS, k_model_generator,
+#                         k_templates_provider=None,
+#                         version_translator=None,
+#                         version_translation_target=None)
+#        self.altro = altro
+
+
 #
 #
 #
 
+
 class PostProcessingFactory(pb.PipelineItemFactory):
-    def __init__(self, printer_debug: u.PrinterDebug = None):
-        super().__init__(printer_debug)
+    def __init__(self, key_unique_producer: pb_shared.KeyUniqueProducer,
+                 printer_debug: u.PrinterDebug = None):
+        super().__init__(key_unique_producer, printer_debug=printer_debug)
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return PostProcessingTransformation
 
-    def new_pipeline_item_from_variant(self, phase_step_variant: psv.PhaseSubstepVariants, pi_data: pi.PIData,
+    def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
                                        phase_step_variant_and_data: pb.AdditionalDataSubPhase
                                        ) -> list[pi.PipelineItem]:
-        if phase_step_variant == PostProcessingTransformation.SOLIDITY:
+        if phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.SOLIDITY:
             if not isinstance(phase_step_variant_and_data, AdditionalDataSolidity):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataSolidity, got: {type(phase_step_variant_and_data)}")
@@ -123,22 +150,22 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             translator_solidity_subtype = phase_step_variant_and_data.translator_solidity_subtype
             version_translation_target = phase_step_variant_and_data.version_translation_target
             # prepare PipelineItems
-            k_translator_type_sol = "k_translator_type_sol"
+            k_translator_type_sol = f"k_translator_type_sol_{self.new_unique_key()}"
             pi_translator_type_sol = pstr.PIStr(
                 pi.PIData(k_translator_type_sol, None),
                 tt.TranslationTypes.SOLIDITY.value
             )
-            k_version_translator_sol = "k_version_translator_sol"
+            k_version_translator_sol = f"k_version_translator_sol_{self.new_unique_key()}"
             pi_version_translator_sol = pstr.PIStr(
                 pi.PIData(k_version_translator_sol, None),
                 jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value if version_translator is None else version_translator
             )
-            k_translator_target_sol = "k_translator_target_sol"
+            k_translator_target_sol = f"k_translator_target_sol_{self.new_unique_key()}"
             pi_translator_target_sol = pstr.PIStr(
                 pi.PIData(k_translator_target_sol, None),
                 "1.0.0" if version_translation_target is None else version_translation_target
             )
-            k_translator_solidity_subtype_sol = "k_translator_solidity_subtype_sol"
+            k_translator_solidity_subtype_sol = f"k_translator_solidity_subtype_sol_{self.new_unique_key()}"
             pi_translator_solidity_subtype_sol = pstr.PIStr(
                 pi.PIData(k_translator_solidity_subtype_sol, None),
                 translator_solidity_subtype
@@ -150,7 +177,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 folder_voting_protocols=folder_voting_protocols
             )
 
-            k_translator_sol = "k_translator_sol"
+            k_translator_sol = f"k_translator_sol_{self.new_unique_key()}"
             translator_deps = [
                 k_model_generator, k_translator_type_sol, k_version_translator_sol, k_translator_target_sol, k_translator_solidity_subtype_sol, k_all_voting_protocols_submitter
             ]
@@ -175,14 +202,14 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 template_provider = template_by_name_txt.TemplateProviderFromTxtFile(
                     base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES if folder_templates is None else folder_templates
                 )
-                k_pi_template_provider = "k_pi_template_provider_sol"
+                k_pi_template_provider = f"k_pi_template_provider_sol_{self.new_unique_key()}"
                 # the template provider must be added to the chain so that the template compiler could retrieve it and use it
                 pi_template_provider = pval.PIAnyValue(
                     pi.PIData(k_pi_template_provider, None),
                     template_provider
                 )
 
-            k_template_compiler_sol = "k_template_compiler_sol"
+            k_template_compiler_sol = f"k_template_compiler_sol_{self.new_unique_key()}"
             template_compiler_sol = c_sol_t_j_1_0_0.CompilerSolidityTemplateJinja_1_0_0(pi.PIData(k_template_compiler_sol, [
                 k_translator_sol,
                 k_model_generator,
@@ -208,7 +235,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             # TESTS
             if phase_step_variant_and_data.generate_tests:
                 # Hardhat Tests - currently (2025-11-19), there's no "configurable", just the "1.0.0"
-                k_translator_sol_test = "k_translator_sol_test"
+                k_translator_sol_test = f"k_translator_sol_test_{self.new_unique_key()}"
                 translator_sol_test = sol_test_t.SolidityTestsTranslatorJinjaHardhat_1_0_0(
                     pi.PIData(k_translator_sol_test, [k_model_generator]),
                     optional_external_data=None,
@@ -216,7 +243,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                     is_optimized=True
                 )
                 all_pi.append(translator_sol_test)
-                k_compiler_sol_test = "k_compiler_sol_test"
+                k_compiler_sol_test = f"k_compiler_sol_test_{self.new_unique_key()}"
                 compiler_sol_test = c_sol_tests_t_j.CompilerSolidityTestsTemplateJinja(
                     pi.PIData(k_compiler_sol_test,
                               [k_translator_sol_test, k_pi_template_provider,
@@ -235,7 +262,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             )
             return all_pi
 
-        elif phase_step_variant == PostProcessingTransformation.ASM:
+        elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.ASM:
             if not isinstance(phase_step_variant_and_data, AdditionalDataASM):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataASM, got: {type(phase_step_variant_and_data)}")
@@ -245,23 +272,23 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             version_translator = phase_step_variant_and_data.version_translator
             version_translation_target = phase_step_variant_and_data.version_translation_target
             # prepare PipelineItems
-            k_translator_type_asm = "k_translator_type_asm"
+            k_translator_type_asm = f"k_translator_type_asm_{self.new_unique_key()}"
             pi_translator_type_asm = pstr.PIStr(
                 pi.PIData(k_translator_type_asm, None),
                 tt.TranslationTypes.ASM.value
             )
-            k_version_translator_asm = "k_version_translator_asm"
+            k_version_translator_asm = f"k_version_translator_asm_{self.new_unique_key()}"
             pi_version_translator_asm = pstr.PIStr(
                 pi.PIData(k_version_translator_asm, None),
                 t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value if version_translator is None else version_translator
             )
-            k_translator_target_asm = "k_translator_target_asm"
+            k_translator_target_asm = f"k_translator_target_asm_{self.new_unique_key()}"
             pi_translator_target_asm = pstr.PIStr(
                 pi.PIData(k_translator_target_asm, None),
                 t_j_asm_1_0_0.TARGET_VERSION if version_translation_target is None else version_translation_target
             )
 
-            k_translator_asm = "k_translator_asm"
+            k_translator_asm = f"k_translator_asm_{self.new_unique_key()}"
             translator_deps = [
                 k_model_generator, k_translator_type_asm, k_version_translator_asm, k_translator_target_asm,
             ]
@@ -286,17 +313,17 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 template_provider = template_by_name_txt.TemplateProviderFromTxtFile(
                     base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES if folder_templates is None else folder_templates
                 )
-                k_pi_template_provider = "k_pi_template_provider_sol"
+                k_pi_template_provider = f"k_pi_template_provider_asm_{self.new_unique_key()}"
                 # the template provider must be added to the chain so that the template compiler could retrieve it and use it
                 pi_template_provider = pval.PIAnyValue(
                     pi.PIData(k_pi_template_provider, None),
                     template_provider
                 )
 
-            k_is_result_as_list = "k_is_result_as_list"
+            k_is_result_as_list = f"k_is_result_as_list_{self.new_unique_key()}"
             pi_is_result_as_list = pval.PIAnyValue(
                 pi.PIData(k_is_result_as_list, None), True)
-            k_compiler_asm = "k_compiler_asm"
+            k_compiler_asm = f"k_compiler_asm_{self.new_unique_key()}"
             compiler_asm = c_asm_t_j.CompilerASMTemplateJinja(
                 pi.PIData(k_compiler_asm, [
                     k_translator_asm, k_pi_template_provider, k_model_generator, k_is_result_as_list
@@ -320,14 +347,19 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 ]
                 if p is not None
             ]
-
-        elif phase_step_variant == PostProcessingTransformation.JSON:
+        elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.JSON:
+            if not isinstance(phase_step_variant_and_data, AdditionalDataJSON):
+                raise Exception(
+                    f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataJSON, got: {type(phase_step_variant_and_data)}")
             return [
                 pp_o_json.JsonStringModelGenerator(pi_data,
                                                    string_output_required=False,
                                                    indent=phase_step_variant_and_data.indent if "indent" in phase_step_variant_and_data else None
                                                    )
             ]
-        # elif phase_step_variant == PostProcessingTransformation.PETRI_NETS:
+        # elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.PETRI_NETS:
+        #    if not isinstance(phase_step_variant_and_data, AdditionalDatapetriNets):
+        #        raise Exception(
+        #            f"Wrong class for given phase_step_variant_and_data: expected AdditionalDatapetriNets, got: {type(phase_step_variant_and_data)}")
         #   TODO
         return None

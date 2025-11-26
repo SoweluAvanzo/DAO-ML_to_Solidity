@@ -4,10 +4,10 @@ import src.pipeline.pipeline_items_chained as pc
 import src.pipeline.utilities.pi_chain_store_releaser_branching as pi_chain_store
 import src.pipeline.utilities.pi_exception_raiser as perrr
 
+import src.phases_builders.shared as pb_shared
 import src.phases_builders.phases as phases
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phase_builder as pb
-import src.phases_builders.shared as pb_shared
 
 import src.validators.validation_result_to_errors as vete
 import src.validators.xml.xml_dao_validator as xvi
@@ -22,18 +22,18 @@ class ModelGeneratorFormat(psv.PhaseSubstepVariants):
     JSON = "json"
 
 
-class ModelPhaseVariantsAndData(pb.AdditionalDataSubPhase):
-    def __init__(self, phase_step_variant: psv.PhaseSubstepVariants):
+class AdditionalDataModelGeneration(pb.AdditionalDataSubPhase):
+    def __init__(self, phase_step_variant: ModelGeneratorFormat):
         super().__init__(phase_step_variant)
 
 
-class ModelXMLGeneratordData(pb.AdditionalDataSubPhase):
+class ModelXMLGeneratordData(AdditionalDataModelGeneration):
     def __init__(self, file_path_xml_schema: str):
         super().__init__(ModelGeneratorFormat.XML)
         self.file_path_xml_schema = file_path_xml_schema
 
 
-class ModelJSONGeneratordData(pb.AdditionalDataSubPhase):
+class ModelJSONGeneratordData(AdditionalDataModelGeneration):
     def __init__(self):
         super().__init__(ModelGeneratorFormat.JSON)
 
@@ -42,16 +42,17 @@ class ModelJSONGeneratordData(pb.AdditionalDataSubPhase):
 
 class ModelGeneratorFactory(pb.PipelineItemFactory):
 
-    def __init__(self, printer_debug: u.PrinterDebug = None):
-        super().__init__(printer_debug)
+    def __init__(self, key_unique_producer: pb_shared.KeyUniqueProducer,
+                 printer_debug: u.PrinterDebug = None):
+        super().__init__(key_unique_producer, printer_debug=printer_debug)
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return ModelGeneratorFormat
 
-    def new_pipeline_item_from_variant(self, phase_step_variant: psv.PhaseSubstepVariants, pi_data: pi.PIData,
+    def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
                                        phase_step_variant_and_data: pb.AdditionalDataSubPhase
                                        ) -> list[pi.PipelineItem]:
-        if phase_step_variant == ModelGeneratorFormat.XML:
+        if phase_step_variant_and_data.phase_step_variant == ModelGeneratorFormat.XML:
             if not isinstance(phase_step_variant_and_data, ModelXMLGeneratordData):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected ModelXMLGeneratordData, got: {type(phase_step_variant_and_data)}")
@@ -60,7 +61,8 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                     f"file_path_xml_schema is None, so can't retrieve the XML Schema file path")
             fpXMLs = phase_step_variant_and_data.file_path_xml_schema
             # dummy value to pass null+isinstance checks
-            empty_pi_d = pi.PIData("k", dependencies=None)
+            empty_pi_d = pi.PIData(
+                f"k_{self.new_unique_key()}", dependencies=None)
             validation_store = pi_chain_store.PIChainStoreReleaserBranching(
                 empty_pi_d)
             xml_validator = xvi.XMLDaoValidator(
@@ -87,6 +89,6 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 model_generator
             ]
             return [pc.PIChained(pi_data, chain_pi, printer_debug=self.printer_debug)]
-        elif phase_step_variant == ModelGeneratorFormat.JSON:
+        elif phase_step_variant_and_data.phase_step_variant == ModelGeneratorFormat.JSON:
             return [jsmg.JsonStringModelGenerator(pi_data)]
         return None

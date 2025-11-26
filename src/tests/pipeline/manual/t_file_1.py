@@ -10,7 +10,6 @@ import src.validators.xml.xml_dao_validator as xvi
 import src.validators.validation_result_to_errors as vete
 # import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
-import src.postprocessing.output_preparation.json.model_to_json as m_json
 import src.postprocessing.model_translation.translation_types as ct
 import src.postprocessing.model_translation.model_translator_configurable as mcc
 import src.postprocessing.model_translation.solidity.voting_protocols_list_loader as pi_vpll
@@ -20,6 +19,7 @@ import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
 
+import src.postprocessing.output_preparation.json.model_to_json as m_json
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_sol_t_j_1_0_0 as c_sol_t_j_1_0_0
 import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j

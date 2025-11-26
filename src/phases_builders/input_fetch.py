@@ -39,7 +39,7 @@ class InputSourceType(psv.PhaseSubstepVariants):
 #
 
 
-class FileAdditionalDataSubPhase(pb.AdditionalDataSubPhase):
+class AdditionalDataInput(pb.AdditionalDataSubPhase):
     def __init__(self, phase_step_variant: InputSourceType, filepath: str,
                  should_strip_line: bool = False
                  ):
@@ -51,7 +51,7 @@ class FileAdditionalDataSubPhase(pb.AdditionalDataSubPhase):
         self.should_strip_line = should_strip_line
 
 
-class FileXMLAdditionalDataSubPhase(FileAdditionalDataSubPhase):
+class FileXMLAdditionalDataSubPhase(AdditionalDataInput):
     def __init__(self, filepath: str,
                  xml_version: str,
                  should_strip_line: bool = False
@@ -61,7 +61,7 @@ class FileXMLAdditionalDataSubPhase(FileAdditionalDataSubPhase):
         self.xml_version = xml_version
 
 
-class FileJSONAdditionalDataSubPhase(FileAdditionalDataSubPhase):
+class FileJSONAdditionalDataSubPhase(AdditionalDataInput):
     def __init__(self, filepath: str,
                  should_strip_line: bool = False
                  ):
@@ -83,8 +83,9 @@ def input_source_type(i_s: pb_shared.PersistanceType, i_t: InputType) -> InputSo
 
 class InputFactory(pb.PipelineItemFactory):
 
-    def __init__(self, printer_debug: u.PrinterDebug = None):
-        super().__init__(printer_debug)
+    def __init__(self, key_unique_producer: pb_shared.KeyUniqueProducer,
+                 printer_debug: u.PrinterDebug = None):
+        super().__init__(key_unique_producer, printer_debug=printer_debug)
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return InputSourceType

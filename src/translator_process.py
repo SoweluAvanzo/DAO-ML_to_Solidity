@@ -3,6 +3,7 @@ from typing import Type
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
 
+import src.phases_builders.shared as pb_shared
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phases as phases
 import src.phases_builders.phase_builder as pb
@@ -10,7 +11,6 @@ import src.phases_builders.input_fetch as pb_i_f
 import src.phases_builders.model_generation as pb_m_g
 import src.phases_builders.postprocessing as pb_pp
 import src.phases_builders.output as pb_o
-import src.phases_builders.shared as pb_shared
 
 import src.utilities.extended_enum as ex_enum
 import src.utilities.errors as e_c
@@ -105,6 +105,7 @@ class TranslatorProcess:
         self.translation_pipeline: pmp.PipelineManager = None
         self.postprocessing_data_by_transformation: dict[str, pb.AdditionalDataSubPhase] = {
         }
+        self.key_unique_producer = self.new_key_unique_producer()
 
     def print_error(self, msg):
         if self.printer_debug is not None:
@@ -132,6 +133,66 @@ class TranslatorProcess:
                     f"ERRPR on getting enum set (of type: {e_t}): element # {i} is not a str nor an Enum value, but: {type(v)}")
             i += 1
         return set(a)
+
+    #
+
+    # override-designed methods
+
+    #
+
+    def new_key_unique_producer(self) -> pb_shared.KeyUniqueProducer:
+        return pb_shared.KeyUniqueProducerSimpleSequential()
+
+    def build_phase_input(self):
+        """
+        Override-designed
+        """
+        return pb_i_f.InputFactory(self.key_unique_producer, printer_debug=self.printer_debug)
+
+    def build_phase_model_generation(self):
+        """
+        Override-designed
+        """
+        return pb_m_g.ModelGeneratorFactory(self.key_unique_producer, printer_debug=self.printer_debug)
+
+    def build_phase_postprocessing(self):
+        """
+        Override-designed
+        """
+        return pb_pp.PostProcessingFactory(self.key_unique_producer, printer_debug=self.printer_debug)
+
+    def build_phase_output(self):
+        """
+        Override-designed
+        """
+        return pb_o.OutputFactory(self.key_unique_producer, printer_debug=self.printer_debug)
+
+    def builder_from_phase(self, phase: phases.TranslationPhases) -> pb.PipelineItemFactory:
+        match phase:
+            case phases.TranslationPhases.INPUT_FETCHING:
+                return self.build_phase_input()
+            case phases.TranslationPhases.MODEL_GENERATION:
+                return self.build_phase_model_generation()
+            case phases.TranslationPhases.TRANSLATION_CONVERSION_POSTPROCESSING:
+                return self.build_phase_postprocessing()
+            case phases.TranslationPhases.OUTPUT:
+                return self.build_phase_output()
+        raise Exception(f"Unrecognized phase: {phase}")
+
+    """
+    def _build_phase_input(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+    def _build_phase_model_generation(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+    def _build_phase_postprocessing(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+    def _build_phase_output(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+    """
+
+    #
+
+    #
 
     def translate(self) -> dict:
         if self.translation_pipeline is None:
@@ -179,53 +240,6 @@ class TranslatorProcess:
         # TODO
 
         return pm
-
-    def build_phase_input(self, printer_debug: u.PrinterDebug = None):
-        """
-        Override-designed
-        """
-        return pb_i_f.InputFactory(printer_debug=printer_debug)
-
-    def build_phase_model_generation(self, printer_debug: u.PrinterDebug = None):
-        """
-        Override-designed
-        """
-        return pb_m_g.ModelGeneratorFactory(printer_debug=printer_debug)
-
-    def build_phase_postprocessing(self, printer_debug: u.PrinterDebug = None):
-        """
-        Override-designed
-        """
-        return pb_pp.PostProcessingFactory(printer_debug=printer_debug)
-
-    def build_phase_output(self, printer_debug: u.PrinterDebug = None):
-        """
-        Override-designed
-        """
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-
-    def builder_from_phase(self, phase: phases.TranslationPhases) -> pb.PipelineItemFactory:
-        match phase:
-            case phases.TranslationPhases.INPUT_FETCHING:
-                return self.build_phase_input(printer_debug=self.printer_debug)
-            case phases.TranslationPhases.MODEL_GENERATION:
-                return self.build_phase_model_generation(printer_debug=self.printer_debug)
-            case phases.TranslationPhases.TRANSLATION_CONVERSION_POSTPROCESSING:
-                return self.build_phase_postprocessing(printer_debug=self.printer_debug)
-            case phases.TranslationPhases.OUTPUT:
-                return self.build_phase_output(printer_debug=self.printer_debug)
-        raise Exception(f"Unrecognized phase: {phase}")
-
-    """
-    def _build_phase_input(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-    def _build_phase_model_generation(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-    def _build_phase_postprocessing(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-    def _build_phase_output(self, pm: pmp.PipelineManager) -> PhaseBuildOutput:
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
-    """
 
 
 # python -m src.translator_process
