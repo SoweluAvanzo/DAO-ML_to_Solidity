@@ -74,24 +74,66 @@ def output_destination_type(i_s: pb_shared.PersistanceType, o_t: OutputType) -> 
 
 
 class AdditionalDataOutput(pb.AdditionalDataSubPhase):
-    def __init__(self, phase_step_variant: OutputDestinationType):
+    def __init__(self, phase_step_variant: OutputDestinationType, key_output_holder: str = None):
         super().__init__(phase_step_variant)
+        self.key_output_holder = key_output_holder
+
+#
 
 
 class AdditionalDataFile(AdditionalDataOutput):
     def __init__(self, phase_step_variant: OutputDestinationType,
-                 folder_output_path_base: str
+                 folder_output_path_base: str,
+                 key_output_holder: str = None
                  ):
-        super().__init__(phase_step_variant)
+        super().__init__(phase_step_variant,
+                         key_output_holder=key_output_holder
+                         )
         self.folder_output_path_base = folder_output_path_base
 
 
 class AdditionalDataFileString(AdditionalDataFile):
     def __init__(self,
-                 folder_output_path_base: str
+                 folder_output_path_base: str,
+                 key_output_holder: str = None
                  ):
-        super().__init__(OutputDestinationType.FILE_STRING, folder_output_path_base)
+        super().__init__(OutputDestinationType.FILE_STRING, folder_output_path_base,
+                         key_output_holder=key_output_holder
+                         )
 
+
+class AdditionalDataFileJinja(AdditionalDataFile):
+    def __init__(self,
+                 folder_output_path_base: str,
+                 key_output_holder: str = None
+                 ):
+        super().__init__(OutputDestinationType.FILE_JINJA, folder_output_path_base,
+                         key_output_holder=key_output_holder
+                         )
+
+#
+
+
+# class AdditionalDataDB(AdditionalDataOutput):
+#    def __init__(self, phase_step_variant: OutputDestinationType,
+#                 db_type: str,
+#                 db_name: str,
+#                 db_uri: str,
+#                 db_config=None,
+#                 db_interface=None # the actual connection to perform CRUD operations
+#                 ):
+#        super().__init__(phase_step_variant)
+#        self.db_type = db_type
+#        self.db_name = db_name
+#        self.db_uri = db_uri
+#        self.db_config = db_config
+#        self.db_interface = db_interface
+# TODO: add all other DB types
+
+
+#
+#
+#
 
 class OutputFactory(pb.PipelineItemFactory):
 
@@ -105,26 +147,47 @@ class OutputFactory(pb.PipelineItemFactory):
     def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
                                        phase_step_variant_and_data: pb.AdditionalDataSubPhase
                                        ) -> list[pi.PipelineItem]:
-
+        if not isinstance(phase_step_variant_and_data, AdditionalDataOutput):
+            raise Exception(
+                f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataOutput, got: {type(phase_step_variant_and_data)}")
         # the real factory
         if phase_step_variant_and_data.phase_step_variant == OutputDestinationType.FILE_JINJA:
-            return None  # TODO DO IT
+            if not isinstance(phase_step_variant_and_data, AdditionalDataFileJinja):
+                raise Exception(
+                    f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataFileJinja, got: {type(phase_step_variant_and_data)}")
+            k_model_jinja_to_file_output = self.new_unique_key(
+                "k_model_jinja_to_file_output")
+            key_output_holder = pi_data.dependencies[
+                0] if phase_step_variant_and_data.key_output_holder is None else phase_step_variant_and_data.key_output_holder
+            model_jinja_to_file_output = jtfo.JinjaTextFileOutput(
+                pi.PIData(k_model_jinja_to_file_output, [k_template_compiler]),
+                key_compiled_diagram=k_template_compiler,
+                base_destination=phase_step_variant_and_data.folder_output_path_base
+            )
+            return [model_jinja_to_file_output]
         elif phase_step_variant_and_data.phase_step_variant == OutputDestinationType.FILE_STRING:
             if not isinstance(phase_step_variant_and_data, AdditionalDataFileString):
                 raise Exception(
-                    f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataSolidity, got: {type(phase_step_variant_and_data)}")
-            k_source = pi_data.dependencies[0]
-            k_additional_output_data = f"k_additional_output_data__output_txt_{self.new_unique_key()}"
+                    f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataFileString, got: {type(phase_step_variant_and_data)}")
+            key_output_holder = pi_data.dependencies[
+                0] if phase_step_variant_and_data.key_output_holder is None else phase_step_variant_and_data.key_output_holder
+            k_additional_output_data = self.new_unique_key(
+                "k_additional_output_data__output_txt")
             additional_metadata = {
                 "mode": "w"
             }
             additional_output_data = pval.PIAnyValue(
-                pi.PIData(k_additional_output_data, [k_source]), additional_metadata)
-            k_model_text_to_file_output = f"k_model_text_to_file_output_{self.new_unique_key()}"
-            model_text_to_file_output = tfo.TextFileOutput(pi.PIData(k_model_text_to_file_output, [
-                k_source, k_additional_output_data]), phase_step_variant_and_data.folder_output_path_base)
+                pi.PIData(k_additional_output_data, [key_output_holder]), additional_metadata)
+            k_model_text_to_file_output = self.new_unique_key(
+                "k_model_text_to_file_output")
+            model_text_to_file_output = tfo.TextFileOutput(
+                pi.PIData(k_model_text_to_file_output, [
+                          key_output_holder, k_additional_output_data]),
+                base_destination=phase_step_variant_and_data.folder_output_path_base
+            )
             return [
                 additional_output_data,
                 model_text_to_file_output
             ]
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
+                        " : " + phase_step_variant_and_data.phase_step_variant.value)

@@ -9,6 +9,7 @@ import src.input.xml_file_input as xml_f_i
 import src.input.txt_file_input as txt_f_i
 
 import src.utilities.utils as u
+import src.utilities.errors as e_c
 
 
 class InputType(psv.PhaseSubstepVariants):
@@ -115,4 +116,5 @@ class InputFactory(pb.PipelineItemFactory):
                                       should_strip_line=additional_data.should_strip_line
                                       )
             ]
-        return None
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
+                        " : " + phase_step_variant_and_data.phase_step_variant.value)

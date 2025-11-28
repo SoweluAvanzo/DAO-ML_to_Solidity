@@ -55,3 +55,19 @@ class PrinterDebug:
                 self.print_error(args[0])
                 return
         self.print_msg(args[0])
+
+
+class MultiPrinterDebug(PrinterDebug):
+    def __init__(self, delegators: list[PrinterDebug]):
+        super().__init__()
+        if (delegators is None) or (len(delegators) <= 0):
+            raise Exception("No delegators provided")
+        self.__delegators = delegators
+
+    def print_msg(self, msg: str):
+        for d in self.__delegators:
+            d.print_msg(msg)
+
+    def print_error(self, msg):
+        for d in self.__delegators:
+            d.print_error(msg)

@@ -27,11 +27,12 @@ class PipelineItemFactory:
         self.printer_debug = printer_debug
         self.key_unique_producer = key_unique_producer
 
-    def new_unique_key(self) -> str:
+    def new_unique_key(self, base_key:str=None) -> str:
         """
         Proxy-like method invoking the instance of KeyUniqueProducer
         """
-        return self.key_unique_producer.new_unique_key()
+        k = self.key_unique_producer.new_unique_key()
+        return k if base_key is None else f"{base_key}_{k}"
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         """

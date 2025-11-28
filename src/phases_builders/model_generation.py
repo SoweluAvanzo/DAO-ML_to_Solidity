@@ -15,6 +15,7 @@ import src.model_generators.xml_string_model_generator as xsmg
 import src.model_generators.json_string_model_generator as jsmg
 
 import src.utilities.utils as u
+import src.utilities.errors as e_c
 
 
 class ModelGeneratorFormat(psv.PhaseSubstepVariants):
@@ -62,7 +63,7 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
             fpXMLs = phase_step_variant_and_data.file_path_xml_schema
             # dummy value to pass null+isinstance checks
             empty_pi_d = pi.PIData(
-                f"k_{self.new_unique_key()}", dependencies=None)
+                self.new_unique_key("k"), dependencies=None)
             validation_store = pi_chain_store.PIChainStoreReleaserBranching(
                 empty_pi_d)
             xml_validator = xvi.XMLDaoValidator(
@@ -91,4 +92,5 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
             return [pc.PIChained(pi_data, chain_pi, printer_debug=self.printer_debug)]
         elif phase_step_variant_and_data.phase_step_variant == ModelGeneratorFormat.JSON:
             return [jsmg.JsonStringModelGenerator(pi_data)]
-        return None
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
+                        " : " + phase_step_variant_and_data.phase_step_variant.value)
