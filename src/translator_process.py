@@ -134,8 +134,6 @@ class TranslatorProcess:
                  input_configuration: InputConfiguration,
                  model_configuration: ModelConfiguration,
                  postprocessing_output_configurations: list[PostprocessingOutput],
-
-                 generate_tests=True,  # only when applicable
                  # TODO altro?
                  printer_debug: u.PrinterDebug = None,
                  external_unique_key_producer: pb_shared.KeyUniqueProducer = None
@@ -146,9 +144,7 @@ class TranslatorProcess:
         self.input_configuration = input_configuration
         self.model_configuration = model_configuration
         self.postprocessing_output_configurations = postprocessing_output_configurations
-        self.generate_tests = generate_tests
         #
-        self.current_phase: TranslationPhases = None
         self.translation_pipeline: pmp.PipelineManager = None
         self.postprocessing_data_by_transformation: dict[str, pb.AdditionalDataSubPhase] = {
         }
