@@ -99,6 +99,8 @@ class PipelineManager:
     def print_error(self, msg):
         if self.printer_debug is not None:
             self.printer_debug.print_error(msg)
+        else:
+            print(msg)
 
     def print_msg(self, msg):
         if self.printer_debug is not None:
@@ -130,7 +132,9 @@ class PipelineManager:
             if item.get_dependencies() != None and (len(item.get_dependencies()) > 0):
                 for d in item.get_dependencies():
                     if d not in nodes:
-                        print(f"ERROR: dependency {d} does not exist")
+                        self.print_error(
+                            f"ERROR: dependency {d} in node '{key}' does not exist")
+
                     else:
                         n = nodes[d]
                         n.addDependant(current_node)

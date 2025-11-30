@@ -58,7 +58,8 @@ FILE_PATH_XML = files.concat_folder_filename(
 print(f"FILE_PATH_XML: {FILE_PATH_XML}")
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
-FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.', 'data', FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
+FILE_PATH_XML_SCHEMA = files.concat_folder_filename(
+    '.', 'data', f"{FILE_NAME_XML_SCHEMA}.{EXTENSION_XML_SCHEMA}")
 
 XML_DAO_GRAMMAR_FILENAME = "XMLParser"
 XML_DAO_GRAMMAR_EXTENSION = "g4"
@@ -130,7 +131,8 @@ if __name__ == "__main__":
 
     k_xml_file_input_pi = "k_xml_file_input_pi_1"
     xml_file_input_pi = xfi.TextFileInputXML(
-        pi.PIData(k_xml_file_input_pi, [k_xml_filepath_provider]), xml_version="1.0")
+        pi.PIData(k_xml_file_input_pi, [k_xml_filepath_provider]),
+        xml_version="1.0")
     pm.addItem(xml_file_input_pi)
 
     k_printer_echo_xml = "k_printer_echo_xml"
@@ -357,24 +359,24 @@ if __name__ == "__main__":
     tjs = template_jinja_solidity.CompilerSolidityTemplateJinja(... TODO ...)
     """
 
-    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(
+    templates_provider = template_by_name_txt.TemplateProviderFromTxtFile(
         base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES)
-    k_PI_template_provider = "k_PI_template_provider"
+    k_PI_templates_provider = "k_PI_templates_provider"
     # the template provider must be added to the chain so that the template compiler could retrieve it and use it
-    PI_template_provider = pval.PIAnyValue(
-        pi.PIData(k_PI_template_provider, None), template_provider)
-    pm.addItem(PI_template_provider)
+    PI_templates_provider = pval.PIAnyValue(
+        pi.PIData(k_PI_templates_provider, None), templates_provider)
+    pm.addItem(PI_templates_provider)
 
     # TODO: (2025-08-23) NOTE: EVEN THE COMPILER SHOULD BE "configurable" IN THE SAME WAY AS THE TRANSLATOR DOES
     k_template_compiler = "k_template_compiler"
     template_compiler = c_sol_t_j_1_0_0.CompilerSolidityTemplateJinja_1_0_0(pi.PIData(k_template_compiler, [
         k_translator,
         k_model_generator,
-        k_PI_template_provider
+        k_PI_templates_provider
     ]),
         key_diagram_instance_data=k_translator,
         key_diagram_model=k_model_generator,
-        key_template_skeleton_provider_by_name=k_PI_template_provider,
+        key_template_skeleton_provider_by_name=k_PI_templates_provider,
         printer_debug=printer_debug
     )
     pm.addItem(template_compiler)
@@ -438,10 +440,10 @@ if __name__ == "__main__":
     pm.addItem(translator_asm)
 
     k_compiler_asm = "k_compiler_asm"
-    compiler_asm = c_asm_t_j.CompilerASMTemplateJinja(pi.PIData(k_compiler_asm, [k_translator_asm, k_PI_template_provider, k_model_generator, k_is_result_as_list]),
+    compiler_asm = c_asm_t_j.CompilerASMTemplateJinja(pi.PIData(k_compiler_asm, [k_translator_asm, k_PI_templates_provider, k_model_generator, k_is_result_as_list]),
                                                       optional_external_data=None,
                                                       key_diagram_instance_data=k_translator_asm,
-                                                      key_template_skeleton_provider_by_name=k_PI_template_provider,
+                                                      key_template_skeleton_provider_by_name=k_PI_templates_provider,
                                                       key_diagram_model=k_model_generator,
                                                       key_is_result_as_list=k_is_result_as_list
                                                       )
@@ -472,10 +474,10 @@ if __name__ == "__main__":
     pm.addItem(translator_sol_test)
 
     k_compiler_sol_test = "k_compiler_sol_test"
-    compiler_sol_test = c_sol_tests_t_j.CompilerSolidityTestsTemplateJinja(pi.PIData(k_compiler_sol_test, [k_translator_sol_test, k_PI_template_provider, k_model_generator, k_is_result_as_list]),
+    compiler_sol_test = c_sol_tests_t_j.CompilerSolidityTestsTemplateJinja(pi.PIData(k_compiler_sol_test, [k_translator_sol_test, k_PI_templates_provider, k_model_generator, k_is_result_as_list]),
                                                                            optional_external_data=None,
                                                                            key_diagram_instance_data=k_translator_sol_test,
-                                                                           key_template_skeleton_provider_by_name=k_PI_template_provider,
+                                                                           key_template_skeleton_provider_by_name=k_PI_templates_provider,
                                                                            key_diagram_model=k_model_generator,
                                                                            key_is_result_as_list=k_is_result_as_list
                                                                            )

@@ -42,7 +42,7 @@ class PostProcessingTransformation(psv.PhaseSubstepVariants):
 
 class AdditionalDataPostProcessing(pb.AdditionalDataSubPhase):
     def __init__(self, phase_step_variant: PostProcessingTransformation,
-                 k_model_generator: str
+                 k_model_generator: str = None
                  ):
         super().__init__(phase_step_variant)
         self.k_model_generator = k_model_generator
@@ -50,27 +50,30 @@ class AdditionalDataPostProcessing(pb.AdditionalDataSubPhase):
 
 class AdditionalDataPostProcessingTemplated(AdditionalDataPostProcessing):
     def __init__(self, phase_step_variant: PostProcessingTransformation,
-                 k_model_generator: str,
+                 k_model_generator: str = None,
                  templates_provider: t_prov_by_name.TemplateProviderByName = None,
                  version_translator: str = None,
                  version_translation_target: str = None
                  ):
-        super().__init__(phase_step_variant, k_model_generator)
+        super().__init__(phase_step_variant, k_model_generator=k_model_generator)
         self.templates_provider = templates_provider
         self.version_translator = version_translator
         self.version_translation_target = version_translation_target
 
+#
+
 
 class AdditionalDataSolidity(AdditionalDataPostProcessingTemplated):
-    def __init__(self, k_model_generator: str,
+    def __init__(self,
                  folder_voting_protocols: str,
+                 k_model_generator: str = None,
                  templates_provider: t_prov_by_name.TemplateProviderByName = None,
                  folder_templates: str = None,
                  version_translator: str = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value,
                  translator_solidity_subtype: str = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value,
-                 version_translation_target: str = "1.0.0",
+                 version_translation_target: str = "1.0.0"
                  ):
-        super().__init__(PostProcessingTransformation.SOLIDITY, k_model_generator,
+        super().__init__(PostProcessingTransformation.SOLIDITY, k_model_generator=k_model_generator,
                          templates_provider=templates_provider,
                          version_translator=version_translator,
                          version_translation_target=version_translation_target
@@ -81,13 +84,13 @@ class AdditionalDataSolidity(AdditionalDataPostProcessingTemplated):
 
 
 class AdditionalDataSolidityHardhatTests(AdditionalDataPostProcessingTemplated):
-    def __init__(self, k_model_generator: str,
+    def __init__(self, k_model_generator: str = None,
                  templates_provider: t_prov_by_name.TemplateProviderByName = None,
                  folder_templates: str = None,
                  version_translator: str = "1.0.0",
                  version_translation_target: str = "1.0.0",
                  ):
-        super().__init__(PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS, k_model_generator,
+        super().__init__(PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS, k_model_generator=k_model_generator,
                          templates_provider=templates_provider,
                          version_translator=version_translator,
                          version_translation_target=version_translation_target
@@ -96,13 +99,13 @@ class AdditionalDataSolidityHardhatTests(AdditionalDataPostProcessingTemplated):
 
 
 class AdditionalDataASM(AdditionalDataPostProcessingTemplated):
-    def __init__(self, k_model_generator: str,
+    def __init__(self, k_model_generator: str = None,
                  templates_provider: t_prov_by_name.TemplateProviderByName = None,
                  folder_templates: str = None,
                  version_translator: str = t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value,
                  version_translation_target: str = t_j_asm_1_0_0.TARGET_VERSION,
                  ):
-        super().__init__(PostProcessingTransformation.ASM, k_model_generator,
+        super().__init__(PostProcessingTransformation.ASM, k_model_generator=k_model_generator,
                          templates_provider=templates_provider,
                          version_translator=version_translator,
                          version_translation_target=version_translation_target
@@ -111,15 +114,16 @@ class AdditionalDataASM(AdditionalDataPostProcessingTemplated):
 
 
 class AdditionalDataJSON(AdditionalDataPostProcessing):
-    def __init__(self, k_model_generator: str,
+    def __init__(self, k_model_generator: str = None,
                  indent=None
                  ):
-        super().__init__(PostProcessingTransformation.JSON, k_model_generator,)
+        super().__init__(PostProcessingTransformation.JSON,
+                         k_model_generator=k_model_generator)
         self.indent = indent
 
 
 # class AdditionalDataPetriNets(AdditionalDataPostProcessingTemplated):
-#    def __init__(self, k_model_generator: str,
+#    def __init__(self, k_model_generator: str=None,
 #                 version_translator=None,
 #                 version_translation_target=None,
 #                 altro=None
@@ -144,10 +148,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return PostProcessingTransformation
 
-    def new_folder_based_templates_provider(self, subphase: PostProcessingTransformation,  folder_templates: str = None) -> tuple[t_prov_by_name.TemplateProviderByName, pi.PipelineItem]:
-        templates_provider = template_by_name_txt.TemplateProviderFromTxtFile(
-            base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES if folder_templates is None else folder_templates
-        )
+    def new_templates_provider_pi(self, subphase: PostProcessingTransformation, templates_provider: t_prov_by_name.TemplateProviderByName) -> tuple[t_prov_by_name.TemplateProviderByName, pi.PipelineItem]:
         k_pi_templates_provider = self.new_unique_key(
             f"k_pi_templates_provider_{subphase.value}")
         # the template provider must be added to the chain so that the template compiler could retrieve it and use it
@@ -159,14 +160,22 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             )
         )
 
-    def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
+    def new_folder_based_templates_provider(self, subphase: PostProcessingTransformation,  folder_templates: str = None) -> tuple[t_prov_by_name.TemplateProviderByName, pi.PipelineItem]:
+        templates_provider = template_by_name_txt.TemplateProviderFromTxtFile(
+            base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES if folder_templates is None else folder_templates
+        )
+        return self.new_templates_provider_pi(subphase, templates_provider)
+
+    def new_pipeline_item_from_variant(self,
                                        phase_step_variant_and_data: pb.AdditionalDataSubPhase
-                                       ) -> list[pi.PipelineItem]:
+                                       ) -> pb.PipelineItemsGenerated:
         if phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.SOLIDITY:
             if not isinstance(phase_step_variant_and_data, AdditionalDataSolidity):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataSolidity, got: {type(phase_step_variant_and_data)}")
             k_model_generator = phase_step_variant_and_data.k_model_generator
+            if k_model_generator is None:
+                raise Exception("k_model_generator is mandatory")
             templates_provider = phase_step_variant_and_data.templates_provider
             folder_voting_protocols = phase_step_variant_and_data.folder_voting_protocols
             version_translator = phase_step_variant_and_data.version_translator
@@ -209,12 +218,8 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             translator_deps = [
                 k_model_generator, k_translator_type_sol, k_version_translator_sol, k_translator_target_sol, k_translator_solidity_subtype_sol, k_all_voting_protocols_submitter
             ]
+            self.print_msg(f"transl deps: {translator_deps}")
             encountered_transl_deps = set(translator_deps)
-            for d in pi_data.dependencies:
-                if d not in encountered_transl_deps:
-                    translator_deps.append(d)
-                    encountered_transl_deps.add(d)
-            del encountered_transl_deps  # free the memory
             translator_sol = mcc.ModelTranslatorConfigurable(
                 pi.PIData(k_translator_sol, translator_deps),
                 key_model=k_model_generator,
@@ -231,21 +236,32 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 folder_templates = phase_step_variant_and_data.folder_templates
                 # the template provider must be added to the chain so that the template compiler could retrieve it and use it
                 t_p, pi_t_p = self.new_folder_based_templates_provider(
-                    subphase=phase_step_variant_and_data.phase_step_variant,
+                    phase_step_variant_and_data.phase_step_variant,
                     folder_templates=folder_templates
                 )
                 pi_templates_provider = pi_t_p
                 phase_step_variant_and_data.templates_provider = t_p
-                k_pi_templates_provider = pi_templates_provider.get_key()
+            else:
+                tp, tp_i = self.new_templates_provider_pi(
+                    phase_step_variant_and_data.phase_step_variant, templates_provider
+                )
+                templates_provider = tp
+                phase_step_variant_and_data.templates_provider = tp
+                pi_templates_provider = tp_i
+            k_pi_templates_provider = pi_templates_provider.get_key()
 
             # ... compiler
             k_template_compiler_sol = self.new_unique_key(
                 "k_template_compiler_sol")
-            template_compiler_sol = c_sol_t_j_1_0_0.CompilerSolidityTemplateJinja_1_0_0(pi.PIData(k_template_compiler_sol, [
-                k_translator_sol,
-                k_model_generator,
-                k_pi_templates_provider
-            ]),
+            template_compiler_sol = c_sol_t_j_1_0_0.CompilerSolidityTemplateJinja_1_0_0(
+                pi.PIData(
+                    k_template_compiler_sol,
+                    [
+                        k_translator_sol,
+                        k_model_generator,
+                        k_pi_templates_provider
+                    ]
+                ),
                 key_diagram_instance_data=k_translator_sol,
                 key_diagram_model=k_model_generator,
                 key_template_skeleton_provider_by_name=k_pi_templates_provider,
@@ -267,7 +283,10 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             all_pi.append(
                 template_compiler_sol  # this must be the last
             )
-            return all_pi
+            return pb.PipelineItemsGenerated(
+                all_pi,
+                k_translator_sol
+            )
 
         elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS:
             if not isinstance(phase_step_variant_and_data, AdditionalDataSolidityHardhatTests):
@@ -286,12 +305,19 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 folder_templates = phase_step_variant_and_data.folder_templates
                 # the template provider must be added to the chain so that the template compiler could retrieve it and use it
                 t_p, pi_t_p = self.new_folder_based_templates_provider(
-                    subphase=phase_step_variant_and_data.phase_step_variant,
+                    phase_step_variant_and_data.phase_step_variant,
                     folder_templates=folder_templates
                 )
                 pi_templates_provider = pi_t_p
                 phase_step_variant_and_data.templates_provider = t_p
-                k_pi_templates_provider = pi_templates_provider.get_key()
+            else:
+                tp, tp_i = self.new_templates_provider_pi(
+                    phase_step_variant_and_data.phase_step_variant, templates_provider
+                )
+                templates_provider = tp
+                phase_step_variant_and_data.templates_provider = tp
+                pi_templates_provider = tp_i
+            k_pi_templates_provider = pi_templates_provider.get_key()
 
             k_translator_sol_test = self.new_unique_key(
                 "k_translator_sol_test")
@@ -318,11 +344,14 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 key_diagram_model=k_model_generator,
                 key_is_result_as_list=k_is_result_as_list
             )
-            return [
-                translator_sol_test,
-                k_compiler_sol_test,
-                compiler_sol_test
-            ]
+            return pb.PipelineItemsGenerated(
+                [
+                    translator_sol_test,  # this must be the first
+                    pi_is_result_as_list,
+                    compiler_sol_test  # this must be the last
+                ],
+                k_translator_sol_test
+            )
 
         elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.ASM:
             if not isinstance(phase_step_variant_and_data, AdditionalDataASM):
@@ -357,12 +386,6 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             translator_deps = [
                 k_model_generator, k_translator_type_asm, k_version_translator_asm, k_translator_target_asm,
             ]
-            encountered_transl_deps = set(translator_deps)
-            for d in pi_data.dependencies:
-                if d not in encountered_transl_deps:
-                    translator_deps.append(d)
-                    encountered_transl_deps.add(d)
-            del encountered_transl_deps  # free the memory
             translator_asm = mcc.ModelTranslatorConfigurable(
                 pi.PIData(k_translator_asm, translator_deps),
                 key_model=k_model_generator,
@@ -379,12 +402,19 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 folder_templates = phase_step_variant_and_data.folder_templates
                 # the template provider must be added to the chain so that the template compiler could retrieve it and use it
                 t_p, pi_t_p = self.new_folder_based_templates_provider(
-                    subphase=phase_step_variant_and_data.phase_step_variant,
+                    phase_step_variant_and_data.phase_step_variant,
                     folder_templates=folder_templates
                 )
                 pi_templates_provider = pi_t_p
                 phase_step_variant_and_data.templates_provider = t_p
-                k_pi_templates_provider = pi_templates_provider.get_key()
+            else:
+                tp, tp_i = self.new_templates_provider_pi(
+                    phase_step_variant_and_data.phase_step_variant, templates_provider
+                )
+                templates_provider = tp
+                phase_step_variant_and_data.templates_provider = tp
+                pi_templates_provider = tp_i
+            k_pi_templates_provider = pi_templates_provider.get_key()
 
             k_is_result_as_list = self.new_unique_key("k_is_result_as_list")
             pi_is_result_as_list = pval.PIAnyValue(
@@ -400,29 +430,37 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 key_diagram_model=k_model_generator,
                 key_is_result_as_list=k_is_result_as_list
             )
-            return [
-                p
-                for p in [
-                    translator_asm,  # this must be the first
-                    pi_translator_type_asm,
-                    pi_version_translator_asm,
-                    pi_translator_target_asm,
-                    pi_is_result_as_list,
-                    pi_templates_provider,
-                    compiler_asm  # this must be the last
-                ]
-                if p is not None
-            ]
+            return pb.PipelineItemsGenerated(
+                [
+                    p
+                    for p in [
+                        translator_asm,  # this must be the first
+                        pi_translator_type_asm,
+                        pi_version_translator_asm,
+                        pi_translator_target_asm,
+                        pi_is_result_as_list,
+                        pi_templates_provider,
+                        compiler_asm  # this must be the last
+                    ]
+                    if p is not None
+                ],
+                k_translator_asm
+            )
         elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.JSON:
             if not isinstance(phase_step_variant_and_data, AdditionalDataJSON):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataJSON, got: {type(phase_step_variant_and_data)}")
-            return [
-                pp_o_json.JsonStringModelGenerator(pi_data,
-                                                   string_output_required=False,
-                                                   indent=phase_step_variant_and_data.indent if "indent" in phase_step_variant_and_data else None
-                                                   )
-            ]
+            k_translator_json = self.new_unique_key("k_translator_json")
+            return pb.PipelineItemsGenerated(
+                [
+                    pp_o_json.JsonStringModelGenerator(
+                        pi.PIData(k_translator_json),
+                        string_output_required=False,
+                        indent=phase_step_variant_and_data.indent if "indent" in phase_step_variant_and_data else None
+                    )
+                ],
+                k_translator_json
+            )
         # elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.PETRI_NETS:
         #    if not isinstance(phase_step_variant_and_data, AdditionalDatapetriNets):
         #        raise Exception(

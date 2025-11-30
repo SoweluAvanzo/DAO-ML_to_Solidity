@@ -144,9 +144,9 @@ class OutputFactory(pb.PipelineItemFactory):
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return OutputDestinationType
 
-    def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
+    def new_pipeline_item_from_variant(self,
                                        phase_step_variant_and_data: pb.AdditionalDataSubPhase
-                                       ) -> list[pi.PipelineItem]:
+                                       ) -> pb.PipelineItemsGenerated:
         if not isinstance(phase_step_variant_and_data, AdditionalDataOutput):
             raise Exception(
                 f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataOutput, got: {type(phase_step_variant_and_data)}")
@@ -157,20 +157,28 @@ class OutputFactory(pb.PipelineItemFactory):
                     f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataFileJinja, got: {type(phase_step_variant_and_data)}")
             k_model_jinja_to_file_output = self.new_unique_key(
                 "k_model_jinja_to_file_output")
-            key_output_holder = pi_data.dependencies[
-                0] if phase_step_variant_and_data.key_output_holder is None else phase_step_variant_and_data.key_output_holder
+            key_output_holder = phase_step_variant_and_data.key_output_holder
+            if phase_step_variant_and_data.key_output_holder is None:
+                raise Exception(
+                    f"ERROR: missing key_output_holder for output {phase_step_variant_and_data.phase_step_variant.name}")
+            self.print_msg(f"jinja key_output_holder: {key_output_holder}")
             model_jinja_to_file_output = jtfo.JinjaTextFileOutput(
-                pi.PIData(k_model_jinja_to_file_output, [k_template_compiler]),
-                key_compiled_diagram=k_template_compiler,
+                pi.PIData(k_model_jinja_to_file_output, [key_output_holder]),
+                key_compiled_diagram=key_output_holder,
                 base_destination=phase_step_variant_and_data.folder_output_path_base
             )
-            return [model_jinja_to_file_output]
+            return pb.PipelineItemsGenerated(
+                [model_jinja_to_file_output],
+                k_model_jinja_to_file_output
+            )
         elif phase_step_variant_and_data.phase_step_variant == OutputDestinationType.FILE_STRING:
             if not isinstance(phase_step_variant_and_data, AdditionalDataFileString):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataFileString, got: {type(phase_step_variant_and_data)}")
-            key_output_holder = pi_data.dependencies[
-                0] if phase_step_variant_and_data.key_output_holder is None else phase_step_variant_and_data.key_output_holder
+            key_output_holder = phase_step_variant_and_data.key_output_holder
+            if phase_step_variant_and_data.key_output_holder is None:
+                raise Exception(
+                    f"ERROR: missing key_output_holder for output {phase_step_variant_and_data.phase_step_variant.name}")
             k_additional_output_data = self.new_unique_key(
                 "k_additional_output_data__output_txt")
             additional_metadata = {
@@ -185,9 +193,12 @@ class OutputFactory(pb.PipelineItemFactory):
                           key_output_holder, k_additional_output_data]),
                 base_destination=phase_step_variant_and_data.folder_output_path_base
             )
-            return [
-                additional_output_data,
-                model_text_to_file_output
-            ]
+            return pb.PipelineItemsGenerated(
+                [
+                    additional_output_data,
+                    model_text_to_file_output
+                ],
+                k_model_text_to_file_output
+            )
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                         " : " + phase_step_variant_and_data.phase_step_variant.value)

@@ -251,53 +251,59 @@ class TranslatorProcess:
         # function to add items to the pipeline
         def add_pi_s(items):
             for item in items:
+                self.print_msg(f"adding PipelineItem of type {type(item)} ...")
+                self.print_msg(f"\t ... of key: {item.get_key()}")
                 pm.addItem(item)
 
         #
         # 1) input
-        k_input = f"k_input__{self.key_unique_producer.new_unique_key()}"
+        self.print_msg("building input phase")
+        # k_input = f"k_input__{self.key_unique_producer.new_unique_key()}"
         input_data = self.input_configuration.additional_data
         pf_input = self.builder_from_phase(
             phases.TranslationPhases.INPUT_FETCHING)
-        input_items = pf_input.new_pipeline_items(
-            pi.PIData(k_input, None),
-            input_data
-        )
+        input_p_g: pb.PipelineItemsGenerated = pf_input.new_pipeline_items(
+            input_data)
+        input_items = input_p_g.pipeline_items
+        k_input = input_p_g.key_last_pi  # input_items[-1].get_key()
         add_pi_s(input_items)
         # clean the memory
         input_data = None
         pf_input = None
+        input_p_g = None
         input_items = None
 
         #
         # 2) model generation
-        k_model_generator = f"k_model_generator__{self.key_unique_producer.new_unique_key()}"
+        self.print_msg("building model generation phase")
+        # k_model_generator = f"k_model_generator__{self.key_unique_producer.new_unique_key()}"
         mg_data = self.model_configuration.additional_data
+        mg_data.key_input_provider = k_input
         pf_model_generator = self.builder_from_phase(
             phases.TranslationPhases.MODEL_GENERATION)
-        model_items = pf_model_generator.new_pipeline_items(
-            pi.PIData(k_model_generator, [k_input]),
-            mg_data
-        )
+        mg_p_g: pb.PipelineItemsGenerated = pf_model_generator.new_pipeline_items(
+            mg_data)
+        model_items = mg_p_g.pipeline_items
+        k_model_generator = mg_p_g.key_last_pi
         add_pi_s(model_items)
         # clean the memory
         mg_data = None
         pf_model_generator = None
+        mg_p_g = None
         model_items = None
 
         #
         # 3-4) postprocessing and output
-
-        # ... k_model_generator is defined, somehow ...
+        self.print_msg("building postprocessing and output phase")
         pp_factory = self.builder_from_phase(
             phases.TranslationPhases.TRANSLATION_CONVERSION_POSTPROCESSING)
         output_factory = self.builder_from_phase(
             phases.TranslationPhases.OUTPUT)
-
         for poc in self.postprocessing_output_configurations:
             pp_conf: PostprocessingConfiguration = poc.postprocessing_configuration
             pp_subphase: pb_pp.PostProcessingTransformation = pp_conf.subphase
             pp_data: pb_pp.AdditionalDataPostProcessing = pp_conf.additional_data
+            pp_data.k_model_generator = k_model_generator
             o_conf: OutputConfiguration = poc.output_configuration
             o_subphase: pb_o.OutputDestinationType = o_conf.subphase
             o_data: pb_o.AdditionalDataOutput = o_conf.additional_data
@@ -306,23 +312,24 @@ class TranslatorProcess:
             pp_data.k_model_generator = k_model_generator
             pp_t_name = pp_subphase.value
             k_pp_t = f"k_pp_t__{pp_t_name}__{self.key_unique_producer.new_unique_key()}"
-            pp_items = pp_factory.new_pipeline_items(
-                pi.PIData(k_pp_t, [k_model_generator]),
-                pp_data
-            )
-            pp_output_producer: pi.PipelineItem = pp_items[-1]
+            self.print_msg(f"\t postprocessing key: {k_pp_t}")
+            pp_p_g: pb.PipelineItemsGenerated = pp_factory.new_pipeline_items(
+                pp_data)
+            pp_items = pp_p_g.pipeline_items
+            # pp_items[-1].get_key()
+            k_pp_output_producer: pb.PipelineItemsGenerated = pp_p_g.key_last_pi
             add_pi_s(pp_items)
 
             # 4) output
             o_name = pp_subphase.value
             k_o = f"k_o__{o_name}__{self.key_unique_producer.new_unique_key()}"
             # the last one is the "compiler", or whatever it is that produces the output
-            key_output_holder = pp_output_producer.get_key()
+            key_output_holder = k_pp_output_producer
             o_data.key_output_holder = key_output_holder
-            o_items = output_factory.new_pipeline_items(
-                pi.PIData(k_o, [key_output_holder]),
-                o_data
-            )
+            self.print_msg(f"\t output key: {k_o}")
+            o_p_g: pb.PipelineItemsGenerated = output_factory.new_pipeline_items(
+                o_data)
+            o_items = o_p_g.pipeline_items
             add_pi_s(o_items)
             # clean the memory
             pp_conf = None
@@ -330,7 +337,8 @@ class TranslatorProcess:
             pp_data = None
             pp_t_name = None
             pp_items = None
-            pp_output_producer = None
+            pp_p_g = None
+            k_pp_output_producer = None
             k_pp_t = None
             o_conf = None
             o_subphase = None
@@ -338,6 +346,7 @@ class TranslatorProcess:
             o_name = None
             k_o = None
             key_output_holder = None
+            o_p_g = None
             o_items = None
 
         # DONE

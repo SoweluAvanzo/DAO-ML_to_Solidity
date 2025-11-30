@@ -16,6 +16,12 @@ class AdditionalDataSubPhase:
         self.phase_step_variant = phase_step_variant
 
 
+class PipelineItemsGenerated:
+    def __init__(self, pipeline_items: list[pi.PipelineItem], key_last_pi: str):
+        self.pipeline_items = pipeline_items
+        self.key_last_pi = key_last_pi
+
+
 class PipelineItemFactory:
     """
     Base-class for an automated way of building a PipelineItem based on a
@@ -27,7 +33,13 @@ class PipelineItemFactory:
         self.printer_debug = printer_debug
         self.key_unique_producer = key_unique_producer
 
-    def new_unique_key(self, base_key:str=None) -> str:
+    def print_msg(self, msg):
+        self.printer_debug.print_msg(msg)
+
+    def print_error(self, err):
+        self.printer_debug.print_error(err)
+
+    def new_unique_key(self, base_key: str = None) -> str:
         """
         Proxy-like method invoking the instance of KeyUniqueProducer
         """
@@ -40,16 +52,15 @@ class PipelineItemFactory:
         """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def new_pipeline_item_from_variant(self, pi_data: pi.PIData, phase_step_variant_and_data: AdditionalDataSubPhase) -> list[pi.PipelineItem]:
+    def new_pipeline_item_from_variant(self, phase_step_variant_and_data: AdditionalDataSubPhase) -> PipelineItemsGenerated:
         """
         Override-designed
         """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def new_pipeline_items(self,
-                           pi_data: pi.PIData,
                            phase_step_variant_and_data: AdditionalDataSubPhase
-                           ) -> list[pi.PipelineItem]:
+                           ) -> PipelineItemsGenerated:
         """
         Returns a list of PipelineItems, where the first one uses the given "PIData" and every one else
         is just in need to be added to the graph.
@@ -67,7 +78,6 @@ class PipelineItemFactory:
                 phase_step_variant_and_data.phase_step_variant)
         # the real factory
         p = self.new_pipeline_item_from_variant(
-            pi_data,
             phase_step_variant_and_data
         )
         if p is None:

@@ -1,5 +1,6 @@
 
 import src.pipeline.pipeline_item as pi
+import src.pipeline.utilities.pi_str as pstr
 
 import src.phases_builders.phase_step_variants as psv
 import src.phases_builders.phase_builder as pb
@@ -91,7 +92,7 @@ class InputFactory(pb.PipelineItemFactory):
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return InputSourceType
 
-    def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
+    def new_pipeline_item_from_variant(self,
                                        additional_data: pb.AdditionalDataSubPhase
                                        ) -> list[pi.PipelineItem]:
         # the real factory
@@ -99,22 +100,44 @@ class InputFactory(pb.PipelineItemFactory):
             if not isinstance(additional_data, FileXMLAdditionalDataSubPhase):
                 raise Exception(
                     f"Additional Data is expected to be a (sub)class of FileXMLAdditionalDataSubPhase, but is: {type(additional_data)}")
-            return [
-                xml_f_i.TextFileInputXML(pi_data,
-                                         filepath=additional_data.filepath,
-                                         xml_version=additional_data.xml_version,
-                                         should_strip_line=additional_data.should_strip_line
-                                         )
-            ]
+            key_input = self.new_unique_key(
+                f"key_input_{additional_data.phase_step_variant.name}")
+            k_filepath_provider = self.new_unique_key("k_filepath_provider")
+            filepath_provider = pstr.PIStr(
+                pi.PIData(k_filepath_provider, None),
+                val=additional_data.filepath
+            )
+            return pb.PipelineItemsGenerated([
+                filepath_provider,
+                xml_f_i.TextFileInputXML(
+                    pi.PIData(key_input, [k_filepath_provider]),
+                    filepath=additional_data.filepath,
+                    xml_version=additional_data.xml_version,
+                    should_strip_line=additional_data.should_strip_line
+                )
+            ],
+                key_input
+            )
         elif additional_data.phase_step_variant == InputSourceType.FILE_JSON:
             if not isinstance(additional_data, FileJSONAdditionalDataSubPhase):
                 raise Exception(
                     f"Additional Data is expected to be a (sub)class of FileXMLAdditionalDataSubPhase, but is: {type(additional_data)}")
-            return [
-                txt_f_i.TextFileInput(pi_data,
-                                      filepath=additional_data.filepath,
-                                      should_strip_line=additional_data.should_strip_line
-                                      )
-            ]
+            key_input = self.new_unique_key(
+                f"key_input_{additional_data.phase_step_variant.name}")
+            k_filepath_provider = self.new_unique_key("k_filepath_provider")
+            filepath_provider = pstr.PIStr(
+                pi.PIData(k_filepath_provider, None),
+                val=additional_data.filepath
+            )
+            return pb.PipelineItemsGenerated([
+                filepath_provider,
+                txt_f_i.TextFileInput(
+                    pi.PIData(key_input, [k_filepath_provider]),
+                    filepath=additional_data.filepath,
+                    should_strip_line=additional_data.should_strip_line
+                )
+            ],
+                key_input
+            )
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                         " : " + phase_step_variant_and_data.phase_step_variant.value)

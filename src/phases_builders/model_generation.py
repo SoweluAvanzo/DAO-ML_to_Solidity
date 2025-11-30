@@ -24,19 +24,24 @@ class ModelGeneratorFormat(psv.PhaseSubstepVariants):
 
 
 class AdditionalDataModelGeneration(pb.AdditionalDataSubPhase):
-    def __init__(self, phase_step_variant: ModelGeneratorFormat):
+    def __init__(self, phase_step_variant: ModelGeneratorFormat,
+                 key_input_provider: str = None
+                 ):
         super().__init__(phase_step_variant)
+        self.key_input_provider = key_input_provider
 
 
 class ModelXMLGeneratordData(AdditionalDataModelGeneration):
-    def __init__(self, file_path_xml_schema: str):
-        super().__init__(ModelGeneratorFormat.XML)
+    def __init__(self, file_path_xml_schema: str,
+                 key_input_provider: str = None):
+        super().__init__(ModelGeneratorFormat.XML, key_input_provider=key_input_provider)
         self.file_path_xml_schema = file_path_xml_schema
 
 
 class ModelJSONGeneratordData(AdditionalDataModelGeneration):
-    def __init__(self):
-        super().__init__(ModelGeneratorFormat.JSON)
+    def __init__(self,
+                 key_input_provider: str = None):
+        super().__init__(ModelGeneratorFormat.JSON, key_input_provider=key_input_provider)
 
 #
 
@@ -50,9 +55,9 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return ModelGeneratorFormat
 
-    def new_pipeline_item_from_variant(self, pi_data: pi.PIData,
+    def new_pipeline_item_from_variant(self,
                                        phase_step_variant_and_data: pb.AdditionalDataSubPhase
-                                       ) -> list[pi.PipelineItem]:
+                                       ) -> pb.PipelineItemsGenerated:
         if phase_step_variant_and_data.phase_step_variant == ModelGeneratorFormat.XML:
             if not isinstance(phase_step_variant_and_data, ModelXMLGeneratordData):
                 raise Exception(
@@ -61,15 +66,20 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 raise Exception(
                     f"file_path_xml_schema is None, so can't retrieve the XML Schema file path")
             fpXMLs = phase_step_variant_and_data.file_path_xml_schema
+            k_input = ModelXMLGeneratordData(
+                phase_step_variant_and_data).key_input_provider
             # dummy value to pass null+isinstance checks
             empty_pi_d = pi.PIData(
                 self.new_unique_key("k"), dependencies=None)
             validation_store = pi_chain_store.PIChainStoreReleaserBranching(
-                empty_pi_d)
+                pi.PIData(k_input)
+            )
             xml_validator = xvi.XMLDaoValidator(
                 empty_pi_d, fpXMLs, printer_debug=self.printer_debug)
+            k_model_generator = self.new_unique_key(
+                f"k_model_generator_{phase_step_variant_and_data.phase_step_variant.name}")
             model_generator = xsmg.XmlStringModelGenerator(
-                pi_data, printer_debug=self.printer_debug)
+                pi.PIData(k_model_generator), printer_debug=self.printer_debug)
             validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
                 empty_pi_d,
                 # "None" so that the errors extractor MUST rely on the chain
@@ -89,8 +99,24 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 validation_store,  # ... retrieve from the branching -> generate
                 model_generator
             ]
-            return [pc.PIChained(pi_data, chain_pi, printer_debug=self.printer_debug)]
+            return pb.PipelineItemsGenerated(
+                [
+                    pc.PIChained(
+                        xml_validator.get_pipeline_item_data(),
+                        chain_pi,
+                        printer_debug=self.printer_debug
+                    )
+                ],
+                k_model_generator
+            )
         elif phase_step_variant_and_data.phase_step_variant == ModelGeneratorFormat.JSON:
-            return [jsmg.JsonStringModelGenerator(pi_data)]
+            k_input = ModelJSONGeneratordData(
+                phase_step_variant_and_data).key_input_provider
+            return pb.PipelineItemsGenerated(
+                [jsmg.JsonStringModelGenerator(
+                    pi.PIData(k_input)
+                )],
+                k_input
+            )
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                         " : " + phase_step_variant_and_data.phase_step_variant.value)

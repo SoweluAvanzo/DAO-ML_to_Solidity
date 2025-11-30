@@ -20,12 +20,13 @@ class VotingProtocolListLoader(pi.PipelineItem):
         """
         Override-designed
         """
-        files_vp = files.list_files_in(from_input)
+        files_vp_l = files.list_files_in(from_input)
         # just the filename
-        files_vp = set([
-            f[:f.find(".")]
-            for f in files_vp
-        ])
+        files_vp = set()
+        for f in files_vp_l:
+            index_dot = f.find(".")
+            if index_dot >= 0:
+                files_vp.add(f[:index_dot])
         return files_vp
 
     def run(self, inputs: dict):
