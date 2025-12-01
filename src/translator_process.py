@@ -351,9 +351,3 @@ class TranslatorProcess:
 
         # DONE
         return pm
-
-
-# python -m src.translator_process
-if __name__ == "__main__":
-    printer_debug = u.PrinterDebug()
-    printer_debug.print_msg("START A TEST ... of what?")

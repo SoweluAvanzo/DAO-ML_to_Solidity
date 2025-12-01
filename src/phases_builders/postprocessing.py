@@ -177,7 +177,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             if k_model_generator is None:
                 raise Exception("k_model_generator is mandatory")
             self.print_msg(
-                f"Postprocessing {phase_step_variant_and_data.k_model_generator.name} has k_model_generator: {k_model_generator}")
+                f"Postprocessing {phase_step_variant_and_data.phase_step_variant.name} has k_model_generator: {k_model_generator}")
             templates_provider = phase_step_variant_and_data.templates_provider
             folder_voting_protocols = phase_step_variant_and_data.folder_voting_protocols
             version_translator = phase_step_variant_and_data.version_translator
@@ -287,7 +287,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             )
             return pb.PipelineItemsGenerated(
                 all_pi,
-                k_translator_sol
+                k_template_compiler_sol
             )
 
         elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS:
@@ -350,9 +350,10 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                 [
                     translator_sol_test,  # this must be the first
                     pi_is_result_as_list,
+                    pi_templates_provider,
                     compiler_sol_test  # this must be the last
                 ],
-                k_translator_sol_test
+                k_compiler_sol_test
             )
 
         elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.ASM:
@@ -446,7 +447,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
                     ]
                     if p is not None
                 ],
-                k_translator_asm
+                k_compiler_asm
             )
         elif phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.JSON:
             if not isinstance(phase_step_variant_and_data, AdditionalDataJSON):

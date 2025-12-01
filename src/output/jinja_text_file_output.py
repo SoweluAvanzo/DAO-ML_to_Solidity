@@ -144,7 +144,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
             classes_list = ', '.join(
                 c.__name__ for c in class_based_TD_translator.keys())
             raise Exception(
-                f"The provided translated diagram should be an instance of one of [{classes_list}], but it's a: {class_compiled_diagram}")
+                f"In {type(self)} with key ''{self.get_key()}'', The provided translated diagram should be an instance of one of [{classes_list}], but it's a: {class_compiled_diagram}")
 
         content_and_filepath_to_output = class_based_TD_translator[class_compiled_diagram](
             compiled_diagram)
