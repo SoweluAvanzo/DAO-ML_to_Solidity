@@ -66,46 +66,39 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 raise Exception(
                     f"file_path_xml_schema is None, so can't retrieve the XML Schema file path")
             fpXMLs = phase_step_variant_and_data.file_path_xml_schema
-            k_input = ModelXMLGeneratordData(
-                phase_step_variant_and_data).key_input_provider
-            # dummy value to pass null+isinstance checks
-            empty_pi_d = pi.PIData(
-                self.new_unique_key("k"), dependencies=None)
-            validation_store = pi_chain_store.PIChainStoreReleaserBranching(
-                pi.PIData(k_input)
-            )
+            psvd: ModelXMLGeneratordData = phase_step_variant_and_data
+            k_input = psvd.key_input_provider
+            k_xml_validator = self.new_unique_key("k_xml_validator")
             xml_validator = xvi.XMLDaoValidator(
-                empty_pi_d, fpXMLs, printer_debug=self.printer_debug)
+                pi.PIData(k_xml_validator, [k_input]),
+                fpXMLs,
+                printer_debug=self.printer_debug
+            )
             k_model_generator = self.new_unique_key(
                 f"k_model_generator_{phase_step_variant_and_data.phase_step_variant.name}")
             model_generator = xsmg.XmlStringModelGenerator(
-                pi.PIData(k_model_generator), printer_debug=self.printer_debug)
-            validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
-                empty_pi_d,
-                # "None" so that the errors extractor MUST rely on the chain
-                # (i.e., retrieve the value from the inputs by the 0-th dependency)
-                key_validation_result=None,
+                pi.PIData(k_model_generator, [k_xml_validator]),
                 printer_debug=self.printer_debug
             )
-            v_exc_raiser = perrr.PIExceptionRaiser(empty_pi_d,
-                                                   key_error_input=None,
-                                                   printer_debug=self.printer_debug
-                                                   )
-            chain_pi: list[pi.PipelineItem] = [
-                xml_validator,
-                validation_store,  # ... setup the branching ...
-                validator_errors_extractor,
-                v_exc_raiser,
-                validation_store,  # ... retrieve from the branching -> generate
-                model_generator
-            ]
+            k_validator_errors_extractor = self.new_unique_key(
+                "validator_errors_extractor")
+            validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
+                pi.PIData(k_validator_errors_extractor, [k_xml_validator]),
+                key_validation_result=k_xml_validator,
+                printer_debug=self.printer_debug
+            )
+            k_v_exc_raiser = self.new_unique_key("k_v_exc_raiser")
+            v_exc_raiser = perrr.PIExceptionRaiser(
+                pi.PIData(k_v_exc_raiser, [k_validator_errors_extractor]),
+                key_error_input=k_validator_errors_extractor,
+                printer_debug=self.printer_debug
+            )
             return pb.PipelineItemsGenerated(
                 [
-                    pc.PIChained(
-                        xml_validator.get_pipeline_item_data(),
-                        chain_pi,
-                        printer_debug=self.printer_debug
-                    )
+                    xml_validator,
+                    validator_errors_extractor,
+                    v_exc_raiser,
+                    model_generator
                 ],
                 k_model_generator
             )

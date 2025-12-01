@@ -151,10 +151,14 @@ if __name__ == "__main__":
     # 2)
 
     k_xml_validator = "k_xml_validator"
-    xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [
-                                        k_xml_file_input_pi]), FILE_PATH_XML_SCHEMA,
-                                        printer_debug=printer_debug
-                                        )  # , k_grammar_generator
+    xml_validator = xvi.XMLDaoValidator(
+        pi.PIData(
+            k_xml_validator,
+            [k_xml_file_input_pi]
+        ),
+        FILE_PATH_XML_SCHEMA,
+        printer_debug=printer_debug
+    )  # , k_grammar_generator
     pm.addItem(xml_validator)
 
     k_tf1_p_pts = "k_tf1_p_pts"

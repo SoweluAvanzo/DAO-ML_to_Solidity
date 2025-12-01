@@ -176,6 +176,8 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             k_model_generator = phase_step_variant_and_data.k_model_generator
             if k_model_generator is None:
                 raise Exception("k_model_generator is mandatory")
+            self.print_msg(
+                f"Postprocessing {phase_step_variant_and_data.k_model_generator.name} has k_model_generator: {k_model_generator}")
             templates_provider = phase_step_variant_and_data.templates_provider
             folder_voting_protocols = phase_step_variant_and_data.folder_voting_protocols
             version_translator = phase_step_variant_and_data.version_translator
