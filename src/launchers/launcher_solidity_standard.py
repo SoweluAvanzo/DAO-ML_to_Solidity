@@ -18,7 +18,6 @@ import src.postprocessing.output_preparation.compilers.shared.templates.template
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.consts_template as consts_t
 
-import src.utilities.utils as u
 import src.files.file_utils as files
 import src.utilities.logger_debug as logger_debug
 
@@ -29,13 +28,24 @@ external_unique_key_producer: pb_shared.KeyUniqueProducer = pb_shared.KeyUniqueP
 
 
 def main():
+    config = configs.TranslatorConfigs()
+
+    # TODO : sistemare gli input
+    # input
+    config.input_source_uri = "Travelhive_final_model"
+    config.input_source_type = pb_shared.PersistanceType.FILE
+    config.input_source_type = pb_i_f.InputType.XML
+    config.folder_voting_protocols = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
+    config.base_template_folder = consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
+    # model
+    # preprocessing & output
+    config.output_source_type = pb_shared.PersistanceType.FILE
+    config.output_source_uri = files.concat_folder_filename(
+        '.', 'out')
+
     tp = launcher_config.new_translator_process(
-        logger=logger,
-        source_filename_default="Travelhive_final_model",
-        output_folder_default=files.concat_folder_filename(
-            '.', 'out'),
-        folder_voting_protocols=consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL,
-        base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
+        config,
+        logger=logger
     )
 
     logger.print_msg("START\n\n")

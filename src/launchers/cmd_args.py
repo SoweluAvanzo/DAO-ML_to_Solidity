@@ -40,19 +40,19 @@ def get_args(logger: u.PrinterDebug = None):
 
     args = parser.parse_args()
 
-    cmd = configs.CmdConfigs()
+    cmd_configs = configs.TranslatorConfigs()
     if args.file:
-        cmd.input_source_uri = args.file
+        cmd_configs.input_source_uri = args.file
     if args.output:
-        cmd.output_source_uri = args.output
+        cmd_configs.output_source_uri = args.output
     if args.templates_folder:
-        cmd.base_template_folder = args.templates_folder
+        cmd_configs.base_template_folder = args.templates_folder
     if "folder_voting_protocols" in args and args.folder_voting_protocols:
-        cmd.folder_voting_protocols = args.folder_voting_protocols
+        cmd_configs.folder_voting_protocols = args.folder_voting_protocols
     elif args.folder_voting:
-        cmd.folder_voting_protocols = args.folder_voting
+        cmd_configs.folder_voting_protocols = args.folder_voting
 
     if logger:
-        logger.print_msg(cmd.to_string())
+        logger.print_msg(cmd_configs.to_string())
 
-    return cmd
+    return cmd_configs

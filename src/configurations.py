@@ -2,15 +2,20 @@
 import src.phases_builders.shared as pb_shared
 
 
-class CmdConfigs:
+class TranslatorConfigs:
     def __init__(self):
+        # input
         self.input_source_type: pb_shared.PersistanceType = pb_shared.PersistanceType.FILE  # as default
         self.input_source_uri: str = None
         self.input_additional_data: dict = None
+        # ... input-specifics
+        self.xml_version: str = "1.0.0"
+
+        # output (?)
         self.output_source_type: pb_shared.PersistanceType = pb_shared.PersistanceType.FILE  # as default
         self.output_source_uri: str = None
         self.output_additional_data: dict = None
-        #
+        # other
         self.folder_voting_protocols: str = None
         self.base_template_folder: str = None
 

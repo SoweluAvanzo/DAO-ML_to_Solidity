@@ -1,36 +1,88 @@
 # TUTTO configurabile da argomenti di linea di comando
 
 import src.translator_process as translator_process
+
+import src.phases_builders.shared as pb_shared
+import src.phases_builders.input_fetch as pb_i_f
+import src.phases_builders.model_generation as pb_m_g
+import src.phases_builders.postprocessing as pb_pp
+import src.phases_builders.output as pb_o
+
+import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as t_prov_by_name
+import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
+import src.postprocessing.consts_template as consts_t
+
 import src.launchers.cmd_args as cmd_args
 import src.configurations as configs
 
+import src.files.file_utils as files
 import src.utilities.utils as u
+import src.utilities.errors as e_c
+
+
+def non_none(what, name):
+    if what is None:
+        raise Exception(f"Missing mandatory paramter: {name}")
 
 
 def new_translator_process(
+        config: configs.TranslatorConfigs,
     logger: u.PrinterDebug = None,
-    source_filename_default: str = None,
-    output_folder_default: str = None,
+) -> translator_process.TranslatorProcess:
+    """
+    TODO: sistemare gli input
+
+        source_filename_default=config.get_input_source_uri(),
+        folder_voting_protocols=config.get_folder_voting_protocols(),
+        base_template_folder=config.get_base_template_folder()
+    """
+    # input
+    source_uri: str = None,
+    input_source_type: pb_shared.PersistanceType = None,
+    input_type: pb_i_f.InputType = None,
+
     folder_voting_protocols: str = None,
     base_template_folder: str = None,
-) -> translator_process.TranslatorProcess:
+
+    # outputs
+    output_folder_default: str = None,
 
     # 1) Input
-    if source_filename_default is None:
-        raise Exception(f"Missing mandatory paramter: source_filename_default")
-    source_filename = source_filename_default
+    non_none(source_uri, "source_uri")
+    non_none(input_source_type, "input_source_type")
+    non_none(input_type, "input_type")
     EXTENSION_XML = "xml"
     source_fullpath = files.concat_folder_filename(
-        '.', 'data', f"{source_filename}.{EXTENSION_XML}")
+        '.', 'data', f"{source_uri}.{EXTENSION_XML}")
 
+    input_additional_data: pb_i_f.AdditionalDataInput = None
+    match(input_source_type):
+        case pb_shared.PersistanceType.FILE:
+            match(input_type):
+                case pb_i_f.InputType.XML:
+                    input_additional_data = pb_i_f.FileXMLAdditionalDataSubPhase(
+                        filepath=source_fullpath,
+                        xml_version="1.0.0",
+                        should_strip_line=True
+                    )
+                case pb_i_f.InputType.JSON:
+                    input_additional_data = pb_i_f.FileJSONAdditionalDataSubPhase(
+                        filepath=source_fullpath,
+                        should_strip_line=True
+                    )
+                case _:
+                    raise Exception(
+                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + ": " + input_type)
+        case pb_shared.PersistanceType.DATABASE:
+            raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
+                            ": PersistanceType.DATABASE")
+        case _:
+            raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
+                            ": " + input_source_type)
     input_configuration = translator_process.InputConfiguration(
-        input_source_type=pb_shared.PersistanceType.FILE,
-        input_type=pb_i_f.InputType.XML,
-        additional_data=pb_i_f.FileXMLAdditionalDataSubPhase(
-            filepath=source_fullpath,
-            xml_version="1.0.0",
-            should_strip_line=True
-        )
+        input_source_type=input_source_type,
+        input_type=input_type,
+        additional_data=input_additional_data
     )
 
     # 2) Model

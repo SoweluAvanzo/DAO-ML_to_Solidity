@@ -27,19 +27,9 @@ logger = u.PrinterDebug()  # logger_debug.LoggerDebug(class_name=__name__)
 external_unique_key_producer: pb_shared.KeyUniqueProducer = pb_shared.KeyUniqueProducerSimpleSequential()
 
 
-def main(
-    source_filename_default: str = None,
-    output_folder_default: str = None,
-    folder_voting_protocols: str = None,
-    base_template_folder: str = None,
-):
-    tp = launcher_config.new_translator_process(
-        logger=logger,
-        source_filename_default=source_filename_default,
-        output_folder_default=output_folder_default,
-        folder_voting_protocols=folder_voting_protocols,
-        base_template_folder=base_template_folder,
-    )
+def main(args: configs.TranslatorConfigs):
+    tp: translator_process.TranslatorProcess = launcher_config.new_translator_process(
+        args)
     logger.print_msg("START\n\n")
     tp.translate()
     logger.print_msg("\n\nEND")
@@ -49,16 +39,6 @@ def main(
 #
 
 
-#
-#
-#
-
-
 if __name__ == "__main__":
-    args: configs.CmdConfigs = cmd_args.get_args()
-
-    main(
-        source_filename_default=args.get_input_source_uri(),
-        folder_voting_protocols=args.get_folder_voting_protocols(),
-        base_template_folder=args.get_base_template_folder()
-    )
+    args: configs.TranslatorConfigs = cmd_args.get_args()
+    main(args)
