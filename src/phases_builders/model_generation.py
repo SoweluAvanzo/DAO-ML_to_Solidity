@@ -18,13 +18,8 @@ import src.utilities.utils as u
 import src.utilities.errors as e_c
 
 
-class ModelGeneratorFormat(psv.PhaseSubstepVariants):
-    XML = "xml"
-    JSON = "json"
-
-
 class AdditionalDataModelGeneration(pb.AdditionalDataSubPhase):
-    def __init__(self, phase_step_variant: ModelGeneratorFormat,
+    def __init__(self, phase_step_variant: pb_shared.ModelPersistanceFormat,
                  key_input_provider: str = None
                  ):
         super().__init__(phase_step_variant)
@@ -34,14 +29,16 @@ class AdditionalDataModelGeneration(pb.AdditionalDataSubPhase):
 class ModelXMLGeneratordData(AdditionalDataModelGeneration):
     def __init__(self, file_path_xml_schema: str,
                  key_input_provider: str = None):
-        super().__init__(ModelGeneratorFormat.XML, key_input_provider=key_input_provider)
+        super().__init__(pb_shared.ModelPersistanceFormat.XML,
+                         key_input_provider=key_input_provider)
         self.file_path_xml_schema = file_path_xml_schema
 
 
 class ModelJSONGeneratordData(AdditionalDataModelGeneration):
     def __init__(self,
                  key_input_provider: str = None):
-        super().__init__(ModelGeneratorFormat.JSON, key_input_provider=key_input_provider)
+        super().__init__(pb_shared.ModelPersistanceFormat.JSON,
+                         key_input_provider=key_input_provider)
 
 #
 
@@ -53,12 +50,12 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
         super().__init__(key_unique_producer, printer_debug=printer_debug)
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
-        return ModelGeneratorFormat
+        return pb_shared.ModelPersistanceFormat
 
     def new_pipeline_item_from_variant(self,
                                        phase_step_variant_and_data: pb.AdditionalDataSubPhase
                                        ) -> pb.PipelineItemsGenerated:
-        if phase_step_variant_and_data.phase_step_variant == ModelGeneratorFormat.XML:
+        if phase_step_variant_and_data.phase_step_variant == pb_shared.ModelPersistanceFormat.XML:
             if not isinstance(phase_step_variant_and_data, ModelXMLGeneratordData):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected ModelXMLGeneratordData, got: {type(phase_step_variant_and_data)}")
@@ -102,7 +99,7 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 ],
                 k_model_generator
             )
-        elif phase_step_variant_and_data.phase_step_variant == ModelGeneratorFormat.JSON:
+        elif phase_step_variant_and_data.phase_step_variant == pb_shared.ModelPersistanceFormat.JSON:
             k_input = ModelJSONGeneratordData(
                 phase_step_variant_and_data).key_input_provider
             return pb.PipelineItemsGenerated(

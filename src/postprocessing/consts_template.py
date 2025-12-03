@@ -1,5 +1,8 @@
 import src.files.file_utils as file_utils
 
+DEFAULT_BASE_FOLDER_INPUT_NAME = "data"
+DEFAULT_BASE_FOLDER_INPUT = file_utils.concat_folder_filename(
+    ".", DEFAULT_BASE_FOLDER_INPUT_NAME)
 
 NAME_FOLDER_TEMPLATES = "Templates"
 DEFAULT_BASE_FOLDER_TEMPLATES = file_utils.concat_folder_filename(

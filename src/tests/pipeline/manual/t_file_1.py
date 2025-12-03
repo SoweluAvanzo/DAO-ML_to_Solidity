@@ -49,17 +49,17 @@ class DAO_TESTS(ex_enum.ExtendedEnum):
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
 FOLDER_PATH_TXT_TEST = files.concat_folder_filename(
-    ".", "data", "tests", "pipeline")
+    consts_t.DEFAULT_BASE_FOLDER_INPUT, "tests", "pipeline")
 
 FILE_NAME_XML_1 = DAO_TESTS.TRAVELWARE.value  # T_DAO_1.value
 EXTENSION_XML = "xml"
 FILE_PATH_XML = files.concat_folder_filename(
-    '.', 'data', f"{FILE_NAME_XML_1}.{EXTENSION_XML}")
+    consts_t.DEFAULT_BASE_FOLDER_INPUT, f"{FILE_NAME_XML_1}.{EXTENSION_XML}")
 print(f"FILE_PATH_XML: {FILE_PATH_XML}")
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
 FILE_PATH_XML_SCHEMA = files.concat_folder_filename(
-    '.', 'data', f"{FILE_NAME_XML_SCHEMA}.{EXTENSION_XML_SCHEMA}")
+    consts_t.DEFAULT_BASE_FOLDER_INPUT, f"{FILE_NAME_XML_SCHEMA}.{EXTENSION_XML_SCHEMA}")
 
 XML_DAO_GRAMMAR_FILENAME = "XMLParser"
 XML_DAO_GRAMMAR_EXTENSION = "g4"

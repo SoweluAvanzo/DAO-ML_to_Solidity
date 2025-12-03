@@ -26,77 +26,101 @@ def non_none(what, name):
 
 
 def new_translator_process(
-        config: configs.TranslatorConfigs,
-    logger: u.PrinterDebug = None,
+    config: configs.TranslatorConfigs,
+    logger: u.PrinterDebug = None
 ) -> translator_process.TranslatorProcess:
     """
     TODO: sistemare gli input
 
-        source_filename_default=config.get_input_source_uri(),
-        folder_voting_protocols=config.get_folder_voting_protocols(),
-        base_template_folder=config.get_base_template_folder()
     """
     # input
-    source_uri: str = None,
-    input_source_type: pb_shared.PersistanceType = None,
-    input_type: pb_i_f.InputType = None,
+    source_uri: str = config.input_config.source_uri
+    input_persistance_type: pb_shared.PersistanceType = config.input_config.persistance_type
+    input_format: pb_shared.ModelPersistanceFormat = config.model_format
 
-    folder_voting_protocols: str = None,
-    base_template_folder: str = None,
+    folder_voting_protocols: str = config.folder_voting_protocols
+    base_template_folder: str = config.base_template_folder
 
     # outputs
-    output_folder_default: str = None,
+    output_folder_default: str = None  # TODO
 
     # 1) Input
     non_none(source_uri, "source_uri")
-    non_none(input_source_type, "input_source_type")
-    non_none(input_type, "input_type")
-    EXTENSION_XML = "xml"
-    source_fullpath = files.concat_folder_filename(
-        '.', 'data', f"{source_uri}.{EXTENSION_XML}")
+    non_none(input_persistance_type, "input_persistance_type")
+    non_none(input_format, "input_format")
 
     input_additional_data: pb_i_f.AdditionalDataInput = None
-    match(input_source_type):
-        case pb_shared.PersistanceType.FILE:
-            match(input_type):
-                case pb_i_f.InputType.XML:
+    match(input_persistance_type):
+        case pb_shared.PersistanceType.FILE.value:
+            non_none(config.input_config.file_extension,
+                     "input_config.file_extension")
+            fbf: str = config.input_config.file_base_folder
+            if fbf is None:
+                fbf = consts_t.DEFAULT_BASE_FOLDER_INPUT
+            source_fullpath = files.concat_folder_filename(
+                fbf,
+                f"{source_uri}.{config.input_config.file_extension}"
+            )
+            match(input_format):
+                case pb_shared.ModelPersistanceFormat.XML.value:
+                    non_none(config.input_config.xml_version,
+                             "input_config.xml_version")
                     input_additional_data = pb_i_f.FileXMLAdditionalDataSubPhase(
                         filepath=source_fullpath,
-                        xml_version="1.0.0",
+                        xml_version=config.input_config.xml_version,
                         should_strip_line=True
                     )
-                case pb_i_f.InputType.JSON:
+                case pb_shared.ModelPersistanceFormat.JSON.value:
                     input_additional_data = pb_i_f.FileJSONAdditionalDataSubPhase(
                         filepath=source_fullpath,
                         should_strip_line=True
                     )
                 case _:
                     raise Exception(
-                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + ": " + input_type)
-        case pb_shared.PersistanceType.DATABASE:
+                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + ": " + input_format)
+        case pb_shared.PersistanceType.DATABASE.value:
+            # TODO: make use of the source_uri
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                             ": PersistanceType.DATABASE")
         case _:
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
-                            ": " + input_source_type)
+                            ": " + input_persistance_type)
     input_configuration = translator_process.InputConfiguration(
-        input_source_type=input_source_type,
-        input_type=input_type,
+        input_persistance_type=input_persistance_type,
+        input_format=input_format,
         additional_data=input_additional_data
     )
 
     # 2) Model
+    model_configuration: translator_process.ModelConfiguration = None
+    match(input_format):
+        case pb_shared.ModelPersistanceFormat.XML.value:
+            non_none(config.model_gen_config.xml_schema_folder,
+                     "model_gen_config.xml_schema_folder")
+            non_none(config.model_gen_config.xml_schema_filename,
+                     "model_gen_config.xml_schema_filename")
+            non_none(config.model_gen_config.xml_schema_extension,
+                     "model_gen_config.xml_schema_extension")
+            file_path_xml_schema = files.concat_folder_filename(
+                config.model_gen_config.xml_schema_folder,
+                f"{config.model_gen_config.xml_schema_filename}.{config.model_gen_config.xml_schema_extension}"
+            )
+            model_configuration = translator_process.ModelConfiguration(
+                pb_shared.ModelPersistanceFormat.XML,
+                additional_data=pb_m_g.ModelXMLGeneratordData(
+                    file_path_xml_schema
+                )
+            )
+        case pb_shared.ModelPersistanceFormat.JSON.value:
+            model_configuration = translator_process.ModelConfiguration(
+                pb_shared.ModelPersistanceFormat.JSON,
+                additional_data=pb_m_g.ModelJSONGeneratordData()
+            )
+        case _:
+            raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
+                            ": " + input_format)
 
-    FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
-    EXTENSION_XML_SCHEMA = "xsd"
-    file_path_xml_schema = files.concat_folder_filename(
-        '.', 'data', f"{FILE_NAME_XML_SCHEMA}.{EXTENSION_XML_SCHEMA}")
-    model_configuration = translator_process.ModelConfiguration(
-        pb_m_g.ModelGeneratorFormat.XML,
-        additional_data=pb_m_g.ModelXMLGeneratordData(
-            file_path_xml_schema
-        )
-    )
+    # TODO: 03-12-2025 TODO EVERYTHIG ELSE
 
     # 3-4) Postprocessing + Output
 

@@ -15,6 +15,14 @@ class PersistanceType(psv.PhaseSubstepVariants):
     # API="api" # of any kind: calling an HTTP API method, a WebSocket, an RSS-Feed, etc
 
 
+class ModelPersistanceFormat(psv.PhaseSubstepVariants):
+    XML = "xml"
+    JSON = "json"
+    # YAML="yaml"
+    # BSON = "bson"
+    # BINARY = "bytes"
+
+
 #
 
 class PhaseVariantsAndData:

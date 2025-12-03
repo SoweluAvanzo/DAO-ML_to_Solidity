@@ -31,15 +31,19 @@ def main():
     config = configs.TranslatorConfigs()
 
     # TODO : sistemare gli input
+    config.model_format = pb_shared.ModelPersistanceFormat.XML
     # input
-    config.input_source_uri = "Travelhive_final_model"
-    config.input_source_type = pb_shared.PersistanceType.FILE
-    config.input_source_type = pb_i_f.InputType.XML
+    config.input_config.source_uri = "Travelhive_final_model"
+    config.input_config.persistance_type = pb_shared.PersistanceType.FILE
+    config.input_config.file_base_folder = consts_t.DEFAULT_BASE_FOLDER_INPUT
+    # model generation
+    config.model_gen_config.xml_schema_filename = "XSD_DAO_ML"
+    config.model_gen_config.xml_schema_extension = "xsd"
     config.folder_voting_protocols = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
     config.base_template_folder = consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
-    # model
+    #
     # preprocessing & output
-    config.output_source_type = pb_shared.PersistanceType.FILE
+    config.output_persistance_type = pb_shared.PersistanceType.FILE
     config.output_source_uri = files.concat_folder_filename(
         '.', 'out')
 
