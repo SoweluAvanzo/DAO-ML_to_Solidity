@@ -25,26 +25,16 @@ def non_none(what, name):
         raise Exception(f"Missing mandatory paramter: {name}")
 
 
-def new_translator_process(
+def prepare_input(
     config: configs.TranslatorConfigs,
+    folder_voting_protocols: str,
+    base_template_folder: str,
     logger: u.PrinterDebug = None
-) -> translator_process.TranslatorProcess:
-    """
-    TODO: sistemare gli input
-
-    """
+) -> translator_process.InputConfiguration:
     # input
     source_uri: str = config.input_config.source_uri
     input_persistance_type: pb_shared.PersistanceType = config.input_config.persistance_type
     input_format: pb_shared.ModelPersistanceFormat = config.model_format
-
-    folder_voting_protocols: str = config.folder_voting_protocols
-    base_template_folder: str = config.base_template_folder
-
-    # outputs
-    output_folder_default: str = None  # TODO
-
-    # 1) Input
     non_none(source_uri, "source_uri")
     non_none(input_persistance_type, "input_persistance_type")
     non_none(input_format, "input_format")
@@ -79,20 +69,24 @@ def new_translator_process(
                     raise Exception(
                         e_c.ERROR_TEXT__NOT_IMPLEMENTED + ": " + input_format)
         case pb_shared.PersistanceType.DATABASE.value:
-            # TODO: make use of the source_uri
+            # TODO: upon future developments, make use of the source_uri
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
-                            ": PersistanceType.DATABASE")
+                            ": " + pb_shared.PersistanceType.DATABASE.name)
         case _:
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                             ": " + input_persistance_type)
-    input_configuration = translator_process.InputConfiguration(
+    return translator_process.InputConfiguration(
         input_persistance_type=input_persistance_type,
         input_format=input_format,
         additional_data=input_additional_data
     )
 
-    # 2) Model
-    model_configuration: translator_process.ModelConfiguration = None
+
+def prepare_model(
+    config: configs.TranslatorConfigs,
+    input_format: pb_shared.ModelPersistanceFormat,
+    logger: u.PrinterDebug = None
+) -> translator_process.ModelConfiguration:
     match(input_format):
         case pb_shared.ModelPersistanceFormat.XML.value:
             non_none(config.model_gen_config.xml_schema_folder,
@@ -105,14 +99,14 @@ def new_translator_process(
                 config.model_gen_config.xml_schema_folder,
                 f"{config.model_gen_config.xml_schema_filename}.{config.model_gen_config.xml_schema_extension}"
             )
-            model_configuration = translator_process.ModelConfiguration(
+            return translator_process.ModelConfiguration(
                 pb_shared.ModelPersistanceFormat.XML,
                 additional_data=pb_m_g.ModelXMLGeneratordData(
                     file_path_xml_schema
                 )
             )
         case pb_shared.ModelPersistanceFormat.JSON.value:
-            model_configuration = translator_process.ModelConfiguration(
+            return translator_process.ModelConfiguration(
                 pb_shared.ModelPersistanceFormat.JSON,
                 additional_data=pb_m_g.ModelJSONGeneratordData()
             )
@@ -120,7 +114,151 @@ def new_translator_process(
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                             ": " + input_format)
 
-    # TODO: 03-12-2025 TODO EVERYTHIG ELSE
+
+def additional_data_from_PostProcessingTransformation(
+    config: configs.TranslatorConfigs,
+    ppc: configs.PostprocessingConfigs,
+    templates_provider,
+    base_template_folder: str,
+    folder_voting_protocols: str,
+    logger: u.PrinterDebug = None
+) -> pb_pp.AdditionalDataPostProcessing:
+    add_data: pb_pp.AdditionalDataPostProcessing = None
+    match(ppc.post_processing_transformation):
+        case pb_pp.PostProcessingTransformation.SOLIDITY:
+            non_none(ppc.version_translator)
+            non_none(ppc.translator_solidity_subtype)
+            non_none(ppc.version_translation_target)
+            add_data = pb_pp.AdditionalDataSolidity(  # TODO 05-12-2025 PUT ALL PARAMETERS IN THE CONFIGURATION
+                folder_voting_protocols,
+                templates_provider=templates_provider,
+                folder_templates=base_template_folder,
+                version_translator=ppc.version_translator,
+                translator_solidity_subtype=ppc.translator_solidity_subtype,
+                version_translation_target=ppc.version_translation_target
+            )
+        case pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS:
+            non_none(ppc.version_translator)
+            non_none(ppc.version_translation_target)
+            add_data = pb_pp.AdditionalDataSolidityHardhatTests(
+                templates_provider=templates_provider,
+                folder_templates=base_template_folder,
+                version_translator=ppc.version_translator,
+                version_translation_target=ppc.version_translation_target
+            )
+        case pb_pp.PostProcessingTransformation.ASM:
+            non_none(ppc.version_translator)
+            non_none(ppc.version_translation_target)
+            add_data = pb_pp.AdditionalDataASM(
+                templates_provider=templates_provider,
+                folder_templates=base_template_folder,
+                version_translator=ppc.version_translator,
+                version_translation_target=ppc.version_translation_target
+            )
+        case pb_pp.PostProcessingTransformation.JSON:
+            # non_none(ppc.indent_json)
+            add_data = pb_pp.AdditionalDataJSON(
+                indent=2 if ppc.indent_json is None else ppc.indent_json
+            )
+        # FUTURE: case pb_pp.PostProcessingTransformation.PETRI_NETS:
+    return add_data
+
+
+def additional_data_from_Output(
+    config: configs.TranslatorConfigs,
+    oc: configs.OutputConfigs,
+    templates_provider: t_prov_by_name.TemplateProviderByName,
+    base_template_folder: str,
+    folder_voting_protocols: str,
+    logger: u.PrinterDebug = None
+) -> pb_o.AdditionalDataOutput:
+    add_data: pb_o.AdditionalDataOutput = None
+
+    # TODO 05-12-2025 DO THE configs.OutputConfigs
+
+    match(oc.persistance_type):
+        case pb_shared.PersistanceType.FILE.value:
+            match(oc.output_type):
+                case pb_o.OutputType.PLAIN_STRING:
+                    raise Exception(
+                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + " TODOOOOOOOOO")
+                case pb_o.OutputType.JINJA_COMPILATION:
+                    raise Exception(
+                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + " TODOOOOOOOOO")
+        case pb_shared.PersistanceType.DATABASE.value:
+            raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
+                            ": " + oc.persistance_type)
+    return add_data
+
+
+def prepare_ppt_o(
+    config: configs.TranslatorConfigs,
+    # inherited from PPT
+    templates_provider: t_prov_by_name.TemplateProviderByName,
+    base_template_folder: str,
+    folder_voting_protocols: str,
+    # inherited from Output
+
+    #
+    logger: u.PrinterDebug = None
+) -> list[translator_process.PostprocessingOutput]:
+    return [
+        translator_process.PostprocessingOutput(
+            translator_process.PostprocessingConfiguration(
+                ppopc.postprocessingConfigs.post_processing_transformation,
+                additional_data_from_PostProcessingTransformation(
+                    config,
+                    ppopc.postprocessingConfigs,
+                    logger=logger
+                ),
+                translator_process.OutputConfiguration(
+                    ppopc.outputConfigs.persistance_type,
+                    ppopc.outputConfigs.output_type,
+                    additional_data=additional_data_from_Output(
+                        config,
+                        ppopc.postprocessingConfigs,
+                        ppopc.outputConfigs,
+                        templates_provider,
+                        base_template_folder,
+                        folder_voting_protocols,
+                        logger=logger
+                    )
+                )
+            )
+        )
+        for ppopc in config.all_postprocessingOutputPairConfigs
+    ]
+
+#
+
+
+def new_translator_process(
+    config: configs.TranslatorConfigs,
+    logger: u.PrinterDebug = None
+) -> translator_process.TranslatorProcess:
+    """
+    TODO: sistemare gli input
+
+    """
+
+    folder_voting_protocols: str = config.folder_voting_protocols
+    base_template_folder: str = config.base_template_folder
+
+    # 1) Input
+    input_configuration: translator_process.InputConfiguration = prepare_input(
+        config,
+        folder_voting_protocols,
+        base_template_folder,
+        logger=logger
+    )
+
+    # 2) Model
+    input_format = input_configuration.input_format
+    model_configuration: translator_process.ModelConfiguration = prepare_model(
+        config,
+        input_format=input_format,
+        logger=logger
+    )
 
     # 3-4) Postprocessing + Output
 
@@ -129,7 +267,10 @@ def new_translator_process(
 
     templates_provider: t_prov_by_name.TemplateProviderByName = template_by_name_txt.TemplateProviderFromTxtFile(
         base_template_folder=base_template_folder
-    )
+    )  # TODO: find a way to  generalize it
+
+    non_none(config.all_postprocessingOutputPairConfigs,
+             "config.all_postprocessingOutputPairConfigs")
 
     if output_folder_default is None:
         raise Exception(f"Missing mandatory paramter: output_folder_default")
@@ -143,41 +284,15 @@ def new_translator_process(
         )
     )
 
-    non_none(config.all_postprocessingOutputPairConfigs,
-             "config.all_postprocessingOutputPairConfigs")
+    postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = prepare_ppt_o(
+        config,
+        templates_provider,
+        base_template_folder,
+        folder_voting_protocols,
+        logger=logger
+    )
 
-    def additional_data_from_PostProcessingTransformation(ppt: pb_pp.PostProcessingTransformation, ppc: configs.PostprocessingConfigs) -> pb_pp.AdditionalDataPostProcessing:
-        add_data = None
-        match(ppc.post_processing_transformation):
-            case pb_pp.PostProcessingTransformation.SOLIDITY:
-                add_data = pb_pp.AdditionalDataSolidity(  # TODO 05-12-2025 PUT ALL PARAMETERS IN THE CONFIGURATION
-                    folder_voting_protocols,
-                    templates_provider=templates_provider,
-                    folder_templates=base_template_folder,
-                    version_translator=jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value,
-                    translator_solidity_subtype=transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value,
-                    version_translation_target="1.0.0"
-
-                )
-                # TODO 05-12-2025 DO ALL OTHER CASES
-        return add_data
-
-    postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = [
-        translator_process.PostprocessingOutput(
-            translator_process.PostprocessingConfiguration(
-                ppopc.postprocessingConfigs.post_processing_transformation,
-                additional_data_from_PostProcessingTransformation(
-                    ppopc.postprocessingConfigs
-                ),
-                translator_process.OutputConfiguration(
-                    # TODO 05-12-2025 DO THE configs.OutputConfigs
-                )
-            )
-        )
-        for ppopc in config.all_postprocessingOutputPairConfigs
-    ]
-
-    postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = [
+    postprocessing_output_configurations_OLD: list[translator_process.PostprocessingOutput] = [
         # solidity
         translator_process.PostprocessingOutput(
             translator_process.PostprocessingConfiguration(

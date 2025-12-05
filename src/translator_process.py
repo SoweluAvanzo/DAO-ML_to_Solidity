@@ -36,16 +36,17 @@ class SubPhaseConfiguration:
 
 
 class InputConfiguration(SubPhaseConfiguration):
-    def __init__(self, input_persistance_type: pb_shared.PersistanceType, input_type: pb_shared.ModelPersistanceFormat,
+    def __init__(self, input_persistance_type: pb_shared.PersistanceType, input_format: pb_shared.ModelPersistanceFormat,
                  additional_data: pb_i_f.AdditionalDataInput
                  ):
         super().__init__(
             phases.TranslationPhases.INPUT_FETCHING,
-            pb_i_f.input_persistance_type(input_persistance_type, input_type),
+            pb_i_f.input_persistance_type_format(
+                input_persistance_type, input_format),
             additional_data
         )
         self.input_persistance_type = input_persistance_type
-        self.input_type = input_type
+        self.input_format = input_format
 
 
 class ModelConfiguration(SubPhaseConfiguration):

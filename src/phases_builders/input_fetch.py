@@ -67,7 +67,7 @@ class FileJSONAdditionalDataSubPhase(AdditionalDataInput):
 #
 
 
-def input_persistance_type(p_t: pb_shared.PersistanceType, m_p_f: pb_shared.ModelPersistanceFormat) -> InputTypeSourceFormat:
+def input_persistance_type_format(p_t: pb_shared.PersistanceType, m_p_f: pb_shared.ModelPersistanceFormat) -> InputTypeSourceFormat:
     # TODO: refactor with "match/case" unpon developing more Persistance Types and Input Formats
     if p_t == pb_shared.PersistanceType.FILE:
         if m_p_f == pb_shared.ModelPersistanceFormat.XML:

@@ -40,14 +40,34 @@ class ModelGenerationConfig(s_j.StringableJsonable):
 
 class PostprocessingConfigs(s_j.StringableJsonable):
     def __init__(self, json_data: dict = None):
-        pass  # TODO
-        self.post_processing_transformation: pb_pp.PostProcessingTransformatio = None if (json_data is None) or ("post_processing_transformation" not in json_data) \
+        self.post_processing_transformation: pb_pp.PostProcessingTransformation = None if (json_data is None) or ("post_processing_transformation" not in json_data) \
             else json_data["post_processing_transformation"]
+        self.version_translator: str = "1.0.0" if (json_data is None) or ("version_translator" not in json_data) \
+            else json_data["version_translator"]
+        self.version_translation_target: str = None if (json_data is None) or ("version_translation_target" not in json_data) \
+            else json_data["version_translation_target"]
+        # specific ones
+        self.translator_solidity_subtype: str = None if (json_data is None) or ("translator_solidity_subtype" not in json_data) \
+            else json_data["translator_solidity_subtype"]
+        self.indent_json = 2 if (json_data is None) or ("indent_json" not in json_data) \
+            else json_data["indent_json"]
 
 
 class OutputConfigs(s_j.StringableJsonable):
     def __init__(self, json_data: dict = None):
-        pass  # TODO
+        self.output_type: pb_o.OutputType =  \
+            pb_o.OutputType.JINJA_COMPILATION if (json_data is None) or ("output_type" not in json_data) \
+            else json_data["output_type"]
+        self.persistance_type: pb_shared.PersistanceType = \
+            pb_shared.PersistanceType.FILE if (json_data is None) or ("persistance_type" not in json_data) \
+            else json_data["persistance_type"]
+        # TODO
+        self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \
+            else json_data["AAAAAAA"]
+        self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \
+            else json_data["AAAAAAA"]
+        self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \
+            else json_data["AAAAAAA"]
 
 #
 
