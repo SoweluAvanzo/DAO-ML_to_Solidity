@@ -6,9 +6,10 @@ import src.phases_builders.postprocessing as pb_pp
 import src.phases_builders.output as pb_o
 
 import src.utilities.utils as u
+import src.utilities.stringable_jsonable as s_j
 
 
-class InputConfigs(u.ToStringable):
+class InputConfigs(s_j.StringableJsonable):
     def __init__(self, json_data: dict = None):
         self.persistance_type: pb_shared.PersistanceType = \
             pb_shared.PersistanceType.FILE if (json_data is None) or ("persistance_type" not in json_data) \
@@ -27,7 +28,7 @@ class InputConfigs(u.ToStringable):
             else json_data["xml_version"]
 
 
-class ModelGenerationConfig(u.ToStringable):
+class ModelGenerationConfig(s_j.StringableJsonable):
     def __init__(self, json_data: dict = None):
         self.xml_schema_folder: str = "xsd" if (json_data is None) or ("xml_schema_folder" not in json_data) \
             else json_data["xml_schema_folder"]
@@ -37,19 +38,21 @@ class ModelGenerationConfig(u.ToStringable):
             else json_data["xml_schema_extension"]
 
 
-class PostprocessingConfigs(u.ToStringable):
+class PostprocessingConfigs(s_j.StringableJsonable):
     def __init__(self, json_data: dict = None):
         pass  # TODO
+        self.post_processing_transformation: pb_pp.PostProcessingTransformatio = None if (json_data is None) or ("post_processing_transformation" not in json_data) \
+            else json_data["post_processing_transformation"]
 
 
-class OutputConfigs(u.ToStringable):
+class OutputConfigs(s_j.StringableJsonable):
     def __init__(self, json_data: dict = None):
         pass  # TODO
 
 #
 
 
-class PostprocessingOutputPairConfigs(u.ToStringable):
+class PostprocessingOutputPairConfigs(s_j.StringableJsonable):
     def __init__(self,
                  json_data: dict = None,
                  postprocessingConfigs: PostprocessingConfigs = None,
@@ -59,8 +62,14 @@ class PostprocessingOutputPairConfigs(u.ToStringable):
         self.outputConfigs = outputConfigs
 
 
-class TranslatorConfigs(u.ToStringable):
-    def __init__(self, json_data: dict = None):
+class TranslatorConfigs(s_j.StringableJsonable):
+    def __init__(self,
+                 json_data: dict = None,
+                 external_unique_key_producer: pb_shared.KeyUniqueProducer = None
+                 ):
+        self.external_unique_key_producer = pb_shared.KeyUniqueProducerSimpleSequential() \
+            if external_unique_key_producer is None \
+            else external_unique_key_producer
         self.model_format: pb_shared.ModelPersistanceFormat = pb_shared.ModelPersistanceFormat.XML \
             if (json_data is None) or ("model_format" not in json_data) \
             else json_data["model_format"]

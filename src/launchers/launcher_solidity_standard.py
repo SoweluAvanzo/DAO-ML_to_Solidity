@@ -24,28 +24,48 @@ import src.utilities.logger_debug as logger_debug
 logger = logger_debug.LoggerDebug(
     class_name=__name__
 )
-external_unique_key_producer: pb_shared.KeyUniqueProducer = pb_shared.KeyUniqueProducerSimpleSequential()
 
 
 def main():
+    """
+    Default version and configuration of the pipeline
+    """
+    external_unique_key_producer: pb_shared.KeyUniqueProducer = pb_shared.KeyUniqueProducerSimpleSequential()
     config = configs.TranslatorConfigs()
 
     # TODO : sistemare gli input
     config.model_format = pb_shared.ModelPersistanceFormat.XML
+
     # input
     config.input_config.source_uri = "Travelhive_final_model"
     config.input_config.persistance_type = pb_shared.PersistanceType.FILE
     config.input_config.file_base_folder = consts_t.DEFAULT_BASE_FOLDER_INPUT
+
     # model generation
     config.model_gen_config.xml_schema_filename = "XSD_DAO_ML"
     config.model_gen_config.xml_schema_extension = "xsd"
     config.folder_voting_protocols = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
     config.base_template_folder = consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
+
     #
     # preprocessing & output
-    config.output_persistance_type = pb_shared.PersistanceType.FILE
-    config.output_source_uri = files.concat_folder_filename(
+
+    ppc_solidity = configs.PostprocessingConfigs()
+    ppc_solidity.post_processing_transformation = pb_pp.PostProcessingTransformation.SOLIDITY
+    ppopc_solidity = configs.PostprocessingOutputPairConfigs(
+        postprocessingConfigs=ppc_solidity
+    )
+
+    all_postprocessingOutputPairConfigs: list[configs.PostprocessingOutputPairConfigs] = [
+
+    ]
+
+    persistance_type_file = pb_shared.PersistanceType.FILE
+    output_folder_base_path: str = files.concat_folder_filename(
         '.', 'out')
+
+    # config.output_persistance_type = persistance_type_file
+    # config.output_source_uri =
 
     tp = launcher_config.new_translator_process(
         config,

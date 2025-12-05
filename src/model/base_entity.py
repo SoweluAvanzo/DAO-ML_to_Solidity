@@ -1,9 +1,10 @@
 
 from io import StringIO
 import src.utilities.utils as u
+import src.utilities.stringable_jsonable as s_j
 
 
-class BaseEntity(u.ToStringable):
+class BaseEntity(s_j.StringableJsonable):
     def __init__(self, id) -> None:
         self.id = id
 

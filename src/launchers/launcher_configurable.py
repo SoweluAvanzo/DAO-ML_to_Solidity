@@ -124,11 +124,8 @@ def new_translator_process(
 
     # 3-4) Postprocessing + Output
 
-    if folder_voting_protocols is None:
-        raise Exception(f"Missing mandatory paramter: folder_voting_protocols")
-
-    if base_template_folder is None:
-        raise Exception(f"Missing mandatory paramter: base_template_folder")
+    non_none(folder_voting_protocols, "folder_voting_protocols")
+    non_none(base_template_folder, "base_template_folder")
 
     templates_provider: t_prov_by_name.TemplateProviderByName = template_by_name_txt.TemplateProviderFromTxtFile(
         base_template_folder=base_template_folder
@@ -145,6 +142,40 @@ def new_translator_process(
             folder_output
         )
     )
+
+    non_none(config.all_postprocessingOutputPairConfigs,
+             "config.all_postprocessingOutputPairConfigs")
+
+    def additional_data_from_PostProcessingTransformation(ppt: pb_pp.PostProcessingTransformation, ppc: configs.PostprocessingConfigs) -> pb_pp.AdditionalDataPostProcessing:
+        add_data = None
+        match(ppc.post_processing_transformation):
+            case pb_pp.PostProcessingTransformation.SOLIDITY:
+                add_data = pb_pp.AdditionalDataSolidity(  # TODO 05-12-2025 PUT ALL PARAMETERS IN THE CONFIGURATION
+                    folder_voting_protocols,
+                    templates_provider=templates_provider,
+                    folder_templates=base_template_folder,
+                    version_translator=jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value,
+                    translator_solidity_subtype=transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value,
+                    version_translation_target="1.0.0"
+
+                )
+                # TODO 05-12-2025 DO ALL OTHER CASES
+        return add_data
+
+    postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = [
+        translator_process.PostprocessingOutput(
+            translator_process.PostprocessingConfiguration(
+                ppopc.postprocessingConfigs.post_processing_transformation,
+                additional_data_from_PostProcessingTransformation(
+                    ppopc.postprocessingConfigs
+                ),
+                translator_process.OutputConfiguration(
+                    # TODO 05-12-2025 DO THE configs.OutputConfigs
+                )
+            )
+        )
+        for ppopc in config.all_postprocessingOutputPairConfigs
+    ]
 
     postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = [
         # solidity

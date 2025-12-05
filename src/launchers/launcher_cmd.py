@@ -5,7 +5,6 @@ import src.translator_process as translator_process
 import src.launchers.launcher_configurable as launcher_config
 import src.configurations as configs
 
-import src.phases_builders.shared as pb_shared
 import src.phases_builders.input_fetch as pb_i_f
 import src.phases_builders.model_generation as pb_m_g
 import src.phases_builders.postprocessing as pb_pp
@@ -24,7 +23,6 @@ import src.files.file_utils as files
 # import src.utilities.logger_debug as logger_debug
 
 logger = u.PrinterDebug()  # logger_debug.LoggerDebug(class_name=__name__)
-external_unique_key_producer: pb_shared.KeyUniqueProducer = pb_shared.KeyUniqueProducerSimpleSequential()
 
 
 def main(args: configs.TranslatorConfigs):

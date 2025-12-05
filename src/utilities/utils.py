@@ -1,28 +1,5 @@
 import regex as re
 import src.files.file_utils as fu
-import src.utilities.errors as e_c
-
-
-class ToStringable:
-    def to_string(self, indent=None, **kwarg) -> str:
-        ind = None
-        isint = False
-        if isinstance(indent, int):
-            ind = indent
-            isint = True
-        elif isinstance(indent, str):
-            ind = indent
-        else:  # None or something else
-            isint = True
-            ind = 2
-        if isint:
-            ind = '\t' * ind
-        indent = f"{ind}\t\t"
-        field_spacer = f',\n{ind}'
-        return f"{'{'} {field_spacer.join(f"{k}: {v.to_string() if isinstance(v, ToStringable) else v}" for k, v in self.__dict__.items())} {'}'}"
-
-    def __str__(self):
-        return self.to_string(indent=2)
 
 
 def is_string_or_list(t):
