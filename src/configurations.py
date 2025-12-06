@@ -61,9 +61,9 @@ class OutputConfigs(s_j.StringableJsonable):
         self.persistance_type: pb_shared.PersistanceType = \
             pb_shared.PersistanceType.FILE if (json_data is None) or ("persistance_type" not in json_data) \
             else json_data["persistance_type"]
-        # TODO
-        self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \
-            else json_data["AAAAAAA"]
+        # file-specific info
+        self.folder_output_path_base_file: str = None if (json_data is None) or ("folder_output_path_base_file" not in json_data) \
+            else json_data["folder_output_path_base_file"]
         self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \
             else json_data["AAAAAAA"]
         self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \

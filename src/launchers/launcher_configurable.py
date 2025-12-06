@@ -126,9 +126,11 @@ def additional_data_from_PostProcessingTransformation(
     add_data: pb_pp.AdditionalDataPostProcessing = None
     match(ppc.post_processing_transformation):
         case pb_pp.PostProcessingTransformation.SOLIDITY:
-            non_none(ppc.version_translator)
-            non_none(ppc.translator_solidity_subtype)
-            non_none(ppc.version_translation_target)
+            non_none(ppc.version_translator, "ppc.version_translator")
+            non_none(ppc.translator_solidity_subtype,
+                     "ppc.translator_solidity_subtype")
+            non_none(ppc.version_translation_target,
+                     "ppc.version_translation_target")
             add_data = pb_pp.AdditionalDataSolidity(  # TODO 05-12-2025 PUT ALL PARAMETERS IN THE CONFIGURATION
                 folder_voting_protocols,
                 templates_provider=templates_provider,
@@ -138,8 +140,9 @@ def additional_data_from_PostProcessingTransformation(
                 version_translation_target=ppc.version_translation_target
             )
         case pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS:
-            non_none(ppc.version_translator)
-            non_none(ppc.version_translation_target)
+            non_none(ppc.version_translator, "ppc.version_translator")
+            non_none(ppc.version_translation_target,
+                     "ppc.version_translation_target")
             add_data = pb_pp.AdditionalDataSolidityHardhatTests(
                 templates_provider=templates_provider,
                 folder_templates=base_template_folder,
@@ -147,8 +150,9 @@ def additional_data_from_PostProcessingTransformation(
                 version_translation_target=ppc.version_translation_target
             )
         case pb_pp.PostProcessingTransformation.ASM:
-            non_none(ppc.version_translator)
-            non_none(ppc.version_translation_target)
+            non_none(ppc.version_translator, "ppc.version_translator")
+            non_none(ppc.version_translation_target,
+                     "ppc.version_translation_target")
             add_data = pb_pp.AdditionalDataASM(
                 templates_provider=templates_provider,
                 folder_templates=base_template_folder,
@@ -179,12 +183,18 @@ def additional_data_from_Output(
     match(oc.persistance_type):
         case pb_shared.PersistanceType.FILE.value:
             match(oc.output_type):
-                case pb_o.OutputType.PLAIN_STRING:
-                    raise Exception(
-                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + " TODOOOOOOOOO")
                 case pb_o.OutputType.JINJA_COMPILATION:
-                    raise Exception(
-                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + " TODOOOOOOOOO")
+                    non_none(oc.folder_output_path_base_file,
+                             "folder_output_path_base_file")
+                    add_data = pb_o.AdditionalDataFileJinja(
+                        folder_output_path_base=oc.folder_output_path_base_file
+                    )
+                case pb_o.OutputType.PLAIN_STRING:
+                    non_none(oc.folder_output_path_base_file,
+                             "folder_output_path_base_file")
+                    add_data = pb_o.AdditionalDataFileString(
+                        folder_output_path_base=oc.folder_output_path_base_file
+                    )
         case pb_shared.PersistanceType.DATABASE.value:
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                             ": " + oc.persistance_type)
@@ -276,14 +286,6 @@ def new_translator_process(
         raise Exception(f"Missing mandatory paramter: output_folder_default")
     folder_output = output_folder_default
 
-    solidity_output_configuration = translator_process.OutputConfiguration(
-        pb_shared.PersistanceType.FILE,
-        pb_o.OutputType.JINJA_COMPILATION,
-        additional_data=pb_o.AdditionalDataFileJinja(
-            folder_output
-        )
-    )
-
     postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = prepare_ppt_o(
         config,
         templates_provider,
@@ -291,50 +293,6 @@ def new_translator_process(
         folder_voting_protocols,
         logger=logger
     )
-
-    postprocessing_output_configurations_OLD: list[translator_process.PostprocessingOutput] = [
-        # solidity
-        translator_process.PostprocessingOutput(
-            translator_process.PostprocessingConfiguration(
-                pb_pp.PostProcessingTransformation.SOLIDITY,
-                additional_data=pb_pp.AdditionalDataSolidity(
-                    folder_voting_protocols,
-                    templates_provider=templates_provider,
-                    folder_templates=base_template_folder,
-                    version_translator=jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value,
-                    translator_solidity_subtype=transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value,
-                    version_translation_target="1.0.0"
-                )
-            ),
-            solidity_output_configuration
-        ),
-        # solidity hardhat test
-        translator_process.PostprocessingOutput(
-            translator_process.PostprocessingConfiguration(
-                pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS,
-                additional_data=pb_pp.AdditionalDataSolidityHardhatTests(
-                    templates_provider=templates_provider,
-                    folder_templates=base_template_folder,
-                    version_translator=jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value,
-                    version_translation_target="1.0.0"
-                )
-            ),
-            solidity_output_configuration
-        ),
-        # ASM
-        translator_process.PostprocessingOutput(
-            translator_process.PostprocessingConfiguration(
-                pb_pp.PostProcessingTransformation.ASM,
-                additional_data=pb_pp.AdditionalDataASM(
-                    templates_provider=templates_provider,
-                    folder_templates=base_template_folder,
-                    version_translator=t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value,
-                    version_translation_target=t_j_asm_1_0_0.TARGET_VERSION
-                )
-            ),
-            solidity_output_configuration
-        ),
-    ]
 
     # THE TRANSLATOR PROCESS
 
