@@ -31,7 +31,9 @@ def main():
     Default version and configuration of the pipeline
     """
     external_unique_key_producer: pb_shared.KeyUniqueProducer = pb_shared.KeyUniqueProducerSimpleSequential()
-    config = configs.TranslatorConfigs()
+    config = configs.TranslatorConfigs(
+        external_unique_key_producer=external_unique_key_producer
+    )
 
     # TODO : sistemare gli input
     config.model_format = pb_shared.ModelPersistanceFormat.XML
@@ -56,13 +58,10 @@ def main():
     output_folder_base_path: str = files.concat_folder_filename(
         '.', 'out')
 
-    solidity_output_configuration = translator_process.OutputConfiguration(
-        pb_shared.PersistanceType.FILE,
-        pb_o.OutputType.JINJA_COMPILATION,
-        additional_data=pb_o.AdditionalDataFileJinja(
-            folder_output_path_base=output_folder_base_path
-        )
-    )
+    oc_all = configs.OutputConfigs()
+    oc_all.folder_output_path_base_file = output_folder_base_path
+    oc_all.output_type = pb_o.OutputType.JINJA_COMPILATION
+    oc_all.persistance_type = pb_shared.PersistanceType.FILE
 
     # .. solidity
     ppc_solidity = configs.PostprocessingConfigs()
@@ -75,7 +74,8 @@ def main():
     oc_solidity.output_type = pb_o.OutputType.JINJA_COMPILATION
     # TODO: CONTINUE THE OUTPUT
     ppopc_solidity = configs.PostprocessingOutputPairConfigs(
-        postprocessingConfigs=ppc_solidity
+        postprocessingConfigs=ppc_solidity,
+        outputConfigs=oc_all
     )
 
     # .. TODO solidity hardhat tests
@@ -85,7 +85,8 @@ def main():
     # TODO: is there a way to generalize the following?
     ppc_solidity_hardhat_tests.version_translation_target = "1.0.0"
     ppopc_solidity_hardhat_tests = configs.PostprocessingOutputPairConfigs(
-        postprocessingConfigs=ppc_solidity_hardhat_tests
+        postprocessingConfigs=ppc_solidity_hardhat_tests,
+        outputConfigs=oc_all
     )
 
     # .. TODO asm
@@ -94,8 +95,11 @@ def main():
     ppc_asm.version_translator = t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value
     ppc_asm.version_translation_target = t_j_asm_1_0_0.TARGET_VERSION
     ppopc_asm = configs.PostprocessingOutputPairConfigs(
-        postprocessingConfigs=ppc_asm
+        postprocessingConfigs=ppc_asm,
+        outputConfigs=oc_all
     )
+
+    # now, the list of PostProcessing and Output pairs
 
     all_postprocessingOutputPairConfigs: list[configs.PostprocessingOutputPairConfigs] = [
         ppopc_solidity,
@@ -103,9 +107,6 @@ def main():
         ppopc_asm
     ]
     config.all_postprocessingOutputPairConfigs = all_postprocessingOutputPairConfigs
-
-    # config.output_persistance_type = persistance_type_file
-    # config.output_source_uri =
 
     tp = launcher_config.new_translator_process(
         config,
@@ -125,6 +126,7 @@ def main():
 #
 #
 
-
+# python -m ./src/launchers/launcher_solidity_standard > lss.txt
+# python -m src.launchers.launcher_solidity_standard > lss.txt
 if __name__ == "__main__":
     main()

@@ -64,10 +64,6 @@ class OutputConfigs(s_j.StringableJsonable):
         # file-specific info
         self.folder_output_path_base_file: str = None if (json_data is None) or ("folder_output_path_base_file" not in json_data) \
             else json_data["folder_output_path_base_file"]
-        self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \
-            else json_data["AAAAAAA"]
-        self.AAAAAAA: str = None if (json_data is None) or ("AAAAAAA" not in json_data) \
-            else json_data["AAAAAAA"]
 
 #
 

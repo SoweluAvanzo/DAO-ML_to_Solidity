@@ -37,6 +37,10 @@ class PostProcessingTransformation(psv.PhaseSubstepVariants):
     JSON = "json"
     # PETRI_NETS = "petri"
 
+
+REVERSE_MAPPING_PostProcessingTransformation = {
+    v.value: v for v in PostProcessingTransformation}
+
 #
 
 

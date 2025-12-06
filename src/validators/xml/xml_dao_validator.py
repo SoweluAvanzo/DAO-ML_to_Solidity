@@ -55,7 +55,10 @@ class XMLDaoValidator(bv.BaseValidator):
 
         xml_schema_fp = DEFAULT_XML_SCHEMA if self.xml_schema_filepath is None else self.xml_schema_filepath
         cv = ConstraintValidator(
-            xml_schema_fp, input) if self.constraint_validator is None else self.constraint_validator
+            xml_schema_fp,
+            input,
+            self.printer_debug
+        ) if self.constraint_validator is None else self.constraint_validator
 
         errors_ok = cv.validate_dao_ml_diagram(tree_root)
         ok: bool = errors_ok[0]

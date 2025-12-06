@@ -43,6 +43,10 @@ class OutputType(psv.PhaseSubstepVariants):
     # BINARY = "bytes"
 
 
+REVERSE_MAPPING_OutputType = {
+    v.value: v for v in OutputType}
+
+
 class OutputDestinationType(psv.PhaseSubstepVariants):
     FILE_STRING = (pb_shared.PersistanceType.FILE.value,
                    OutputType.PLAIN_STRING.value)
@@ -61,6 +65,10 @@ class OutputDestinationType(psv.PhaseSubstepVariants):
     # DB_YAML
     # DB_BSON
     # DB_BINARY
+
+
+REVERSE_MAPPING_OutputDestinationType = {
+    v.value: v for v in OutputDestinationType}
 
 
 def output_destination_type(i_s: pb_shared.PersistanceType, o_t: OutputType) -> OutputDestinationType:

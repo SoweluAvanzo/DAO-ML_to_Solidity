@@ -32,6 +32,10 @@ class InputTypeSourceFormat(psv.PhaseSubstepVariants):
     # DB_BSON
     # DB_BINARY
 
+
+REVERSE_MAPPING_InputTypeSourceFormat = {
+    v.value: v for v in InputTypeSourceFormat}
+
 #
 
 

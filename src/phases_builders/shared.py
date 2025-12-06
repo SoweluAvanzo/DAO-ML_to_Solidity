@@ -12,7 +12,12 @@ class PersistanceType(psv.PhaseSubstepVariants):
     FILE = "file"
     # PROGRAMMATIC_PROVIDER = "prog" # an external / runtine source, like constants or the value returned by a provider (or in-memory DB / map/dict)
     DATABASE = "db"
+
     # API="api" # of any kind: calling an HTTP API method, a WebSocket, an RSS-Feed, etc
+
+
+REVERSE_MAPPING_PersistanceType = {
+    v.value: v for v in PersistanceType}
 
 
 class ModelPersistanceFormat(psv.PhaseSubstepVariants):
@@ -23,7 +28,11 @@ class ModelPersistanceFormat(psv.PhaseSubstepVariants):
     # BINARY = "bytes"
 
 
+REVERSE_MAPPING_ModelPersistanceFormat = {
+    v.value: v for v in ModelPersistanceFormat}
+
 #
+
 
 class PhaseVariantsAndData:
     def __init__(self, phase: phases.TranslationPhases):

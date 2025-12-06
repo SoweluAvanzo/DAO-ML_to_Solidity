@@ -36,6 +36,8 @@ def main(args: configs.TranslatorConfigs):
 #
 #
 
+# python -m src.launchers.launcher_cmd --file "asd.xml" --.... > lss.txt
+
 
 if __name__ == "__main__":
     args: configs.TranslatorConfigs = cmd_args.get_args()

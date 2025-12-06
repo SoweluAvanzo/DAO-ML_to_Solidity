@@ -41,7 +41,7 @@ def prepare_input(
 
     input_additional_data: pb_i_f.AdditionalDataInput = None
     match(input_persistance_type):
-        case pb_shared.PersistanceType.FILE.value:
+        case pb_shared.PersistanceType.FILE:
             non_none(config.input_config.file_extension,
                      "input_config.file_extension")
             fbf: str = config.input_config.file_base_folder
@@ -52,7 +52,7 @@ def prepare_input(
                 f"{source_uri}.{config.input_config.file_extension}"
             )
             match(input_format):
-                case pb_shared.ModelPersistanceFormat.XML.value:
+                case pb_shared.ModelPersistanceFormat.XML:
                     non_none(config.input_config.xml_version,
                              "input_config.xml_version")
                     input_additional_data = pb_i_f.FileXMLAdditionalDataSubPhase(
@@ -60,21 +60,21 @@ def prepare_input(
                         xml_version=config.input_config.xml_version,
                         should_strip_line=True
                     )
-                case pb_shared.ModelPersistanceFormat.JSON.value:
+                case pb_shared.ModelPersistanceFormat.JSON:
                     input_additional_data = pb_i_f.FileJSONAdditionalDataSubPhase(
                         filepath=source_fullpath,
                         should_strip_line=True
                     )
                 case _:
                     raise Exception(
-                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + ": " + input_format)
-        case pb_shared.PersistanceType.DATABASE.value:
+                        e_c.ERROR_TEXT__NOT_IMPLEMENTED + ": " + input_format.name)
+        case pb_shared.PersistanceType.DATABASE:
             # TODO: upon future developments, make use of the source_uri
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                             ": " + pb_shared.PersistanceType.DATABASE.name)
         case _:
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
-                            ": " + input_persistance_type)
+                            ": " + input_persistance_type.name)
     return translator_process.InputConfiguration(
         input_persistance_type=input_persistance_type,
         input_format=input_format,
@@ -88,7 +88,7 @@ def prepare_model(
     logger: u.PrinterDebug = None
 ) -> translator_process.ModelConfiguration:
     match(input_format):
-        case pb_shared.ModelPersistanceFormat.XML.value:
+        case pb_shared.ModelPersistanceFormat.XML:
             non_none(config.model_gen_config.xml_schema_folder,
                      "model_gen_config.xml_schema_folder")
             non_none(config.model_gen_config.xml_schema_filename,
@@ -105,14 +105,14 @@ def prepare_model(
                     file_path_xml_schema
                 )
             )
-        case pb_shared.ModelPersistanceFormat.JSON.value:
+        case pb_shared.ModelPersistanceFormat.JSON:
             return translator_process.ModelConfiguration(
                 pb_shared.ModelPersistanceFormat.JSON,
                 additional_data=pb_m_g.ModelJSONGeneratordData()
             )
         case _:
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
-                            ": " + input_format)
+                            ": " + input_format.name)
 
 
 def additional_data_from_PostProcessingTransformation(
@@ -177,11 +177,8 @@ def additional_data_from_Output(
     logger: u.PrinterDebug = None
 ) -> pb_o.AdditionalDataOutput:
     add_data: pb_o.AdditionalDataOutput = None
-
-    # TODO 05-12-2025 DO THE configs.OutputConfigs
-
     match(oc.persistance_type):
-        case pb_shared.PersistanceType.FILE.value:
+        case pb_shared.PersistanceType.FILE:
             match(oc.output_type):
                 case pb_o.OutputType.JINJA_COMPILATION:
                     non_none(oc.folder_output_path_base_file,
@@ -195,9 +192,9 @@ def additional_data_from_Output(
                     add_data = pb_o.AdditionalDataFileString(
                         folder_output_path_base=oc.folder_output_path_base_file
                     )
-        case pb_shared.PersistanceType.DATABASE.value:
+        case pb_shared.PersistanceType.DATABASE:
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
-                            ": " + oc.persistance_type)
+                            ": " + oc.persistance_type.name)
     return add_data
 
 
@@ -216,25 +213,28 @@ def prepare_ppt_o(
         translator_process.PostprocessingOutput(
             translator_process.PostprocessingConfiguration(
                 ppopc.postprocessingConfigs.post_processing_transformation,
-                additional_data_from_PostProcessingTransformation(
+                additional_data=additional_data_from_PostProcessingTransformation(
                     config,
                     ppopc.postprocessingConfigs,
+                    templates_provider,
+                    base_template_folder,
+                    folder_voting_protocols,
                     logger=logger
-                ),
-                translator_process.OutputConfiguration(
-                    ppopc.outputConfigs.persistance_type,
-                    ppopc.outputConfigs.output_type,
-                    additional_data=additional_data_from_Output(
-                        config,
-                        ppopc.postprocessingConfigs,
-                        ppopc.outputConfigs,
-                        templates_provider,
-                        base_template_folder,
-                        folder_voting_protocols,
-                        logger=logger
-                    )
                 )
-            )
+            ),
+            translator_process.OutputConfiguration(
+                ppopc.outputConfigs.persistance_type,
+                ppopc.outputConfigs.output_type,
+                additional_data=additional_data_from_Output(
+                    config,
+                    ppopc.outputConfigs,
+                    templates_provider,
+                    base_template_folder,
+                    folder_voting_protocols,
+                    logger=logger
+                )
+            ),
+            additional_data=None
         )
         for ppopc in config.all_postprocessingOutputPairConfigs
     ]
@@ -282,10 +282,6 @@ def new_translator_process(
     non_none(config.all_postprocessingOutputPairConfigs,
              "config.all_postprocessingOutputPairConfigs")
 
-    if output_folder_default is None:
-        raise Exception(f"Missing mandatory paramter: output_folder_default")
-    folder_output = output_folder_default
-
     postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = prepare_ppt_o(
         config,
         templates_provider,
@@ -296,13 +292,12 @@ def new_translator_process(
 
     # THE TRANSLATOR PROCESS
 
-    # python -m src.launchers.launcher_solidity_standard > lss.txt
-
     tp = translator_process.TranslatorProcess(
         input_configuration,
         model_configuration,
         postprocessing_output_configurations,
         #
         printer_debug=logger,
-        external_unique_key_producer=external_unique_key_producer
+        external_unique_key_producer=config.external_unique_key_producer
     )
+    return tp
