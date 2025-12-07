@@ -46,6 +46,10 @@ def main():
     # 2) model generation
     config.model_gen_config.xml_schema_filename = "XSD_DAO_ML"
     config.model_gen_config.xml_schema_extension = "xsd"
+    config.model_gen_config.xml_schema_folder = files.concat_folder_filename(
+        '.',  # 'src', 'parsers', 'xml'
+        'data'
+    )
     config.folder_voting_protocols = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
     config.base_template_folder = consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
 
@@ -72,13 +76,12 @@ def main():
     ppc_solidity.version_translation_target = "1.0.0"
     oc_solidity = configs.OutputConfigs()
     oc_solidity.output_type = pb_o.OutputType.JINJA_COMPILATION
-    # TODO: CONTINUE THE OUTPUT
     ppopc_solidity = configs.PostprocessingOutputPairConfigs(
         postprocessingConfigs=ppc_solidity,
         outputConfigs=oc_all
     )
 
-    # .. TODO solidity hardhat tests
+    # .. solidity hardhat tests
     ppc_solidity_hardhat_tests = configs.PostprocessingConfigs()
     ppc_solidity_hardhat_tests.post_processing_transformation = pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS
     ppc_solidity_hardhat_tests.version_translator = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
@@ -89,7 +92,7 @@ def main():
         outputConfigs=oc_all
     )
 
-    # .. TODO asm
+    # .. asm
     ppc_asm = configs.PostprocessingConfigs()
     ppc_asm.post_processing_transformation = pb_pp.PostProcessingTransformation.ASM
     ppc_asm.version_translator = t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value
@@ -97,6 +100,18 @@ def main():
     ppopc_asm = configs.PostprocessingOutputPairConfigs(
         postprocessingConfigs=ppc_asm,
         outputConfigs=oc_all
+    )
+    # .. JSON
+    ppc_json = configs.PostprocessingConfigs()
+    ppc_json.post_processing_transformation = pb_pp.PostProcessingTransformation.JSON
+
+    oc_json = configs.OutputConfigs()
+    oc_json.folder_output_path_base_file = output_folder_base_path
+    oc_json.output_type = pb_o.OutputType.PLAIN_STRING
+    oc_json.persistance_type = pb_shared.PersistanceType.FILE
+    ppopc_json = configs.PostprocessingOutputPairConfigs(
+        postprocessingConfigs=ppc_json,
+        outputConfigs=oc_json
     )
 
     # now, the list of PostProcessing and Output pairs

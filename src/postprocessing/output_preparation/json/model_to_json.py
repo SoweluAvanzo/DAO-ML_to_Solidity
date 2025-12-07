@@ -22,6 +22,7 @@ class JsonStringModelGenerator(pi.PipelineItem):
         if not isinstance(diagram_manager, dm.DiagramManager):
             raise Exception("Input must be of an instance of DiagramManager")
         json_ed = diagram_manager.toJSON()
+        self.print_msg(f"DUMPING JSON OF : {diagram_manager.get_name()}")
         if self.string_output_required:
             json_ed = json.dumps(json_ed, indent=self.indent)
         return json_ed
