@@ -214,7 +214,7 @@ if __name__ == "__main__":
     # 4)
 
     k_model_to_json = "k_model_to_json"
-    model_to_json = m_json.JsonStringModelGenerator(
+    model_to_json = m_json.ModelToJSON(
         pi.PIData(k_model_to_json, [k_model_generator]), True, indent="\t")
     pm.addItem(model_to_json)
     k_model_to_json_printer = "k_model_to_json_printer"

@@ -102,11 +102,15 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
         elif phase_step_variant_and_data.phase_step_variant == pb_shared.ModelPersistanceFormat.JSON:
             k_input = ModelJSONGeneratordData(
                 phase_step_variant_and_data).key_input_provider
+            k_model_gen_from_json = self.new_unique_key(
+                "k_model_gen_from_json")
             return pb.PipelineItemsGenerated(
-                [jsmg.JsonStringModelGenerator(
-                    pi.PIData(k_input)
-                )],
-                k_input
+                [
+                    jsmg.JsonStringModelGenerator(
+                        pi.PIData(phase_step_variant_and_data, [k_input])
+                    )
+                ],
+                k_model_gen_from_json
             )
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                         " : " + phase_step_variant_and_data.phase_step_variant.value)

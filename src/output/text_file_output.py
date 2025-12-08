@@ -68,7 +68,7 @@ class TextFileOutput(bo.BaseOutput):
                         return True
                     except Exception as e:
                         import traceback
-                        traceback.print_e
+                        traceback.print_exception(e)
             return True
         return False
 

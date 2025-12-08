@@ -457,14 +457,16 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             if not isinstance(phase_step_variant_and_data, AdditionalDataJSON):
                 raise Exception(
                     f"Wrong class for given phase_step_variant_and_data: expected AdditionalDataJSON, got: {type(phase_step_variant_and_data)}")
+            k_model_generator = phase_step_variant_and_data.k_model_generator
             k_translator_json = self.new_unique_key("k_translator_json")
             return pb.PipelineItemsGenerated(
                 [
                     # TODO (07-12-2025) ADD JSON VALIDATOR
-                    pp_o_json.JsonStringModelGenerator(
-                        pi.PIData(k_translator_json),
-                        string_output_required=False,
-                        indent=phase_step_variant_and_data.indent if "indent" in phase_step_variant_and_data else None
+                    pp_o_json.ModelToJSON(
+                        pi.PIData(k_translator_json, [k_model_generator]),
+                        string_output_required=True,
+                        indent=phase_step_variant_and_data.indent,
+                        printer_debug=self.printer_debug
                     )
                 ],
                 k_translator_json

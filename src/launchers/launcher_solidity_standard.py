@@ -119,7 +119,8 @@ def main():
     all_postprocessingOutputPairConfigs: list[configs.PostprocessingOutputPairConfigs] = [
         ppopc_solidity,
         ppopc_solidity_hardhat_tests,
-        ppopc_asm
+        ppopc_asm,
+        ppopc_json
     ]
     config.all_postprocessingOutputPairConfigs = all_postprocessingOutputPairConfigs
 
