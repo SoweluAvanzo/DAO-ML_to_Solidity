@@ -1,9 +1,22 @@
 import src.pipeline.pipeline_item as pi
+import src.utilities.utils as u
+
 
 class InputBase(pi.PipelineItem):
-    def __init__(self, pipeline_item_data: pi.PIData):
-        super().__init__(pipeline_item_data)
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(
+            pipeline_item_data,
+            printer_debug=printer_debug
+        )
         self.inputs_from_run = None
+
+    def get_input_as_iterable(self):
+        '''
+        Returns the input as a stream, an iterable of strings
+        '''
+        return None
 
     def get_input(self) -> list:
         '''
@@ -16,13 +29,7 @@ class InputBase(pi.PipelineItem):
             return None
         return [x for x in input_iterable]
 
-    def get_input_as_iterable(self):
-        '''
-        Returns the input as a stream, an iterable of strings
-        '''
-        return None
-        
-    def run(self, inputs:dict) -> any:
+    def run(self, inputs: dict) -> any:
         self.inputs_from_run = inputs
         input_got = self.get_input()
         self.inputs_from_run = None

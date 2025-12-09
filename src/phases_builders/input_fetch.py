@@ -8,6 +8,8 @@ import src.phases_builders.shared as pb_shared
 
 import src.input.xml_file_input as xml_f_i
 import src.input.txt_file_input as txt_f_i
+import src.input.txt_file_input_cacheable as txt_f_i_caching
+import src.input.txt_file_input_cacheable_delegating as txt_f_i_caching_d
 
 import src.utilities.utils as u
 import src.utilities.errors as e_c
@@ -85,8 +87,13 @@ def input_persistance_type_format(p_t: pb_shared.PersistanceType, m_p_f: pb_shar
 class InputFactory(pb.PipelineItemFactory):
 
     def __init__(self, key_unique_producer: pb_shared.KeyUniqueProducer,
-                 printer_debug: u.PrinterDebug = None):
-        super().__init__(key_unique_producer, printer_debug=printer_debug)
+                 printer_debug: u.PrinterDebug = None,
+                 file_input_caching: txt_f_i_caching.TextFileInputCacheable = None
+                 ):
+        super().__init__(key_unique_producer,
+                         printer_debug=printer_debug
+                         )
+        self.file_input_caching = file_input_caching
 
     def get_PhaseSubstepVariants_enum(self) -> psv.PhaseSubstepVariants:
         return InputTypeSourceFormat
@@ -112,7 +119,8 @@ class InputFactory(pb.PipelineItemFactory):
                     pi.PIData(key_input, [k_filepath_provider]),
                     filepath=phase_step_variant_and_data.filepath,
                     xml_version=phase_step_variant_and_data.xml_version,
-                    should_strip_line=phase_step_variant_and_data.should_strip_line
+                    should_strip_line=phase_step_variant_and_data.should_strip_line,
+                    txt_input_cacheable_delegator=self.file_input_caching
                 )
             ],
                 key_input
@@ -130,10 +138,12 @@ class InputFactory(pb.PipelineItemFactory):
             )
             return pb.PipelineItemsGenerated([
                 filepath_provider,
-                txt_f_i.TextFileInput(
+                txt_f_i_caching_d.TextFileInputCacheableDelegating(
                     pi.PIData(key_input, [k_filepath_provider]),
                     filepath=phase_step_variant_and_data.filepath,
-                    should_strip_line=phase_step_variant_and_data.should_strip_line
+                    should_strip_line=phase_step_variant_and_data.should_strip_line,
+                    printer_debug=self.printer_debug,
+                    txt_input_cacheable_delegator=self.file_input_caching
                 )
             ],
                 key_input
