@@ -18,7 +18,7 @@ import src.utilities.utils as u
 import src.utilities.errors as e_c
 
 
-class AdditionalDataModelGeneration(pb.AdditionalDataSubPhase):
+class AdditionalDataModelGeneration(pb_shared.AdditionalDataSubPhase):
     def __init__(self, phase_step_variant: pb_shared.ModelPersistanceFormat,
                  key_input_provider: str = None
                  ):
@@ -53,7 +53,7 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
         return pb_shared.ModelPersistanceFormat
 
     def new_pipeline_item_from_variant(self,
-                                       phase_step_variant_and_data: pb.AdditionalDataSubPhase
+                                       phase_step_variant_and_data: pb_shared.AdditionalDataSubPhase
                                        ) -> pb.PipelineItemsGenerated:
         if phase_step_variant_and_data.phase_step_variant == pb_shared.ModelPersistanceFormat.XML:
             if not isinstance(phase_step_variant_and_data, ModelXMLGeneratordData):

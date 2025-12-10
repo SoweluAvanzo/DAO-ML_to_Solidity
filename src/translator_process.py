@@ -12,6 +12,8 @@ import src.phases_builders.model_generation as pb_m_g
 import src.phases_builders.postprocessing as pb_pp
 import src.phases_builders.output as pb_o
 
+import src.input.txt_file_input_cacheable as txt_f_i_caching
+
 import src.utilities.extended_enum as ex_enum
 import src.utilities.errors as e_c
 
@@ -26,7 +28,7 @@ class SubPhaseConfiguration:
     def __init__(self,
                  phase: phases.TranslationPhases,
                  subphase: psv.PhaseSubstepVariants,
-                 additional_data: pb.AdditionalDataSubPhase
+                 additional_data: pb_shared.AdditionalDataSubPhase
                  ):
         self.phase = phase
         self.subphase = subphase
@@ -36,7 +38,8 @@ class SubPhaseConfiguration:
 
 
 class InputConfiguration(SubPhaseConfiguration):
-    def __init__(self, input_persistance_type: pb_shared.PersistanceType, input_format: pb_shared.ModelPersistanceFormat,
+    def __init__(self, input_persistance_type: pb_shared.PersistanceType,
+                 input_format: pb_shared.ModelPersistanceFormat,
                  additional_data: pb_i_f.AdditionalDataInput
                  ):
         super().__init__(
@@ -147,8 +150,13 @@ class TranslatorProcess:
         self.postprocessing_output_configurations = postprocessing_output_configurations
         #
         self.translation_pipeline: pmp.PipelineManager = None
-        self.postprocessing_data_by_transformation: dict[str, pb.AdditionalDataSubPhase] = {
+        self.postprocessing_data_by_transformation: dict[str, pb_shared.AdditionalDataSubPhase] = {
         }
+        # additional things, cases specific
+        self.txt_file_input_caching = txt_f_i_caching.TextFileInputCacheable(
+            pi.PIData("empty", dependencies=None),
+            printer_debug=printer_debug,
+        )
 
     def print_error(self, msg):
         if self.printer_debug is not None:
@@ -191,7 +199,11 @@ class TranslatorProcess:
         """
         Override-designed
         """
-        return pb_i_f.InputFactory(self.key_unique_producer, printer_debug=self.printer_debug)
+        return pb_i_f.InputFactory(
+            self.key_unique_producer,
+            printer_debug=self.printer_debug,
+            file_input_caching=self.txt_file_input_caching
+        )
 
     def build_phase_model_generation(self):
         """

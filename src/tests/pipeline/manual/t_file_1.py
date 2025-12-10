@@ -215,7 +215,10 @@ if __name__ == "__main__":
 
     k_model_to_json = "k_model_to_json"
     model_to_json = m_json.ModelToJSON(
-        pi.PIData(k_model_to_json, [k_model_generator]), True, indent="\t")
+        pi.PIData(k_model_to_json, [k_model_generator]),
+        True,
+        indent="\t"
+    )
     pm.addItem(model_to_json)
     k_model_to_json_printer = "k_model_to_json_printer"
     printer_model_jsonified = pri.PIPrinter(
@@ -225,14 +228,19 @@ if __name__ == "__main__":
     # 5)
     k_additional_output_data = "k_additional_output_data"
     additional_metadata = {
-        "mode": "w"
+        tfo.KEY_OPEN_FILE_MODE: tfo.MODE_VALUES_WRITE_array[0]
     }
     additional_output_data = pval.PIAnyValue(
         pi.PIData(k_additional_output_data, [k_model_to_json]), additional_metadata)
     pm.addItem(additional_output_data)
     k_model_text_to_file_output = "k_model_text_to_file_output"
-    model_text_to_file_output = tfo.TextFileOutput(pi.PIData(k_model_text_to_file_output, [
-                                                   k_model_to_json, k_additional_output_data]), FILE_OUTPUT_MODEL_FILEPATH)
+    model_text_to_file_output = tfo.TextFileOutput(
+        pi.PIData(
+            k_model_text_to_file_output,
+            [k_model_to_json, k_additional_output_data]
+        ),
+        FILE_OUTPUT_MODEL_FILEPATH
+    )
     pm.addItem(model_text_to_file_output)
     k_model_text_to_file_output_ok_printer = "k_model_text_to_file_output_ok_printer"
     model_text_to_file_output_ok_printer = pri.PIPrinter(pi.PIData(

@@ -7,7 +7,6 @@ import src.phases_builders.phase_builder as pb
 import src.phases_builders.shared as pb_shared
 
 import src.input.xml_file_input as xml_f_i
-import src.input.txt_file_input as txt_f_i
 import src.input.txt_file_input_cacheable as txt_f_i_caching
 import src.input.txt_file_input_cacheable_delegating as txt_f_i_caching_d
 
@@ -41,7 +40,7 @@ REVERSE_MAPPING_InputTypeSourceFormat = {
 #
 
 
-class AdditionalDataInput(pb.AdditionalDataSubPhase):
+class AdditionalDataInput(pb_shared.AdditionalDataSubPhase):
     def __init__(self, phase_step_variant: InputTypeSourceFormat, filepath: str,
                  should_strip_line: bool = False
                  ):
@@ -99,7 +98,7 @@ class InputFactory(pb.PipelineItemFactory):
         return InputTypeSourceFormat
 
     def new_pipeline_item_from_variant(self,
-                                       phase_step_variant_and_data: pb.AdditionalDataSubPhase
+                                       phase_step_variant_and_data: pb_shared.AdditionalDataSubPhase
                                        ) -> list[pi.PipelineItem]:
         # the real factory
         if phase_step_variant_and_data.phase_step_variant == InputTypeSourceFormat.FILE_XML:
@@ -113,16 +112,18 @@ class InputFactory(pb.PipelineItemFactory):
                 pi.PIData(k_filepath_provider, None),
                 val=phase_step_variant_and_data.filepath
             )
-            return pb.PipelineItemsGenerated([
-                filepath_provider,
-                xml_f_i.TextFileInputXML(
-                    pi.PIData(key_input, [k_filepath_provider]),
-                    filepath=phase_step_variant_and_data.filepath,
-                    xml_version=phase_step_variant_and_data.xml_version,
-                    should_strip_line=phase_step_variant_and_data.should_strip_line,
-                    txt_input_cacheable_delegator=self.file_input_caching
-                )
-            ],
+            pi_data_xml_input = pi.PIData(key_input, [k_filepath_provider])
+            return pb.PipelineItemsGenerated(
+                [
+                    filepath_provider,
+                    xml_f_i.TextFileInputXML(
+                        pi_data_xml_input,
+                        txt_input_cacheable_delegator=self.file_input_caching,
+                        filepath=phase_step_variant_and_data.filepath,
+                        should_strip_line=phase_step_variant_and_data.should_strip_line,
+                        xml_version=phase_step_variant_and_data.xml_version
+                    )
+                ],
                 key_input
             )
         elif phase_step_variant_and_data.phase_step_variant == InputTypeSourceFormat.FILE_JSON:
@@ -136,16 +137,17 @@ class InputFactory(pb.PipelineItemFactory):
                 pi.PIData(k_filepath_provider, None),
                 val=phase_step_variant_and_data.filepath
             )
-            return pb.PipelineItemsGenerated([
-                filepath_provider,
-                txt_f_i_caching_d.TextFileInputCacheableDelegating(
-                    pi.PIData(key_input, [k_filepath_provider]),
-                    filepath=phase_step_variant_and_data.filepath,
-                    should_strip_line=phase_step_variant_and_data.should_strip_line,
-                    printer_debug=self.printer_debug,
-                    txt_input_cacheable_delegator=self.file_input_caching
-                )
-            ],
+            return pb.PipelineItemsGenerated(
+                [
+                    filepath_provider,
+                    txt_f_i_caching_d.TextFileInputCacheableDelegating(
+                        pi.PIData(key_input, [k_filepath_provider]),
+                        filepath=phase_step_variant_and_data.filepath,
+                        should_strip_line=phase_step_variant_and_data.should_strip_line,
+                        printer_debug=self.printer_debug,
+                        txt_input_cacheable_delegator=self.file_input_caching
+                    )
+                ],
                 key_input
             )
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +

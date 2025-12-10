@@ -38,24 +38,28 @@ class TextFileInputCacheable(tfi.TextFileInput):
 
     def get_input_as_iterable(self):
         filepath = self._get_filepath_from_input()
-        if (not self.is_caching_file_content) or (filepath in self.get_cache_content_lines_by_path()):
-            self.print_msg(
-                f"get_input_as_iterable in class {type(self)} is getting the content from the super (with filename: {filepath})")
-            content_as_iter = super().get_input_as_iterable()
-            if self.is_caching_file_content:
+        if self.is_caching_file_content:
+            content_as_iter = None
+            if filepath in self.get_cache_content_lines_by_path():
+                # simply return them
+                self.print_msg(
+                    f"get_input_as_iterable in class {type(self)} is getting the content from the cache!")
+                content_as_iter = self.get_cache_content_lines_by_path()[
+                    filepath]
+                for line in content_as_iter:
+                    yield self.strip_line(line)
+            else:  # read and return it
+                content_as_iter = super().get_input_as_iterable()
+                self.print_msg(
+                    f"get_input_as_iterable in class {type(self)} is getting the content from the super (with filename: {filepath})")
                 lines = []
-                self.print_msg("cache obtained, now returning it")
                 for line in content_as_iter:
                     lines.append(line)
                     yield self.strip_line(line)
                 self.get_cache_content_lines_by_path()[filepath] = lines
-            else:  # else, simply return them
-                for line in content_as_iter:
-                    yield self.strip_line(line)
         else:
+            content_as_iter = super().get_input_as_iterable()
             self.print_msg(
-                f"get_input_as_iterable in class {type(self)} is getting the content from the cache!")
-            content_as_iter = self.get_cache_content_lines_by_path()[
-                filepath]
+                f"get_input_as_iterable in class {type(self)} is NOT CACHING and is getting the content from the super (with filename: {filepath})")
             for line in content_as_iter:
                 yield self.strip_line(line)

@@ -8,14 +8,6 @@ import src.utilities.utils as u
 import src.utilities.errors as e_c
 
 
-class AdditionalDataSubPhase:
-    def __init__(self, phase_step_variant: psv.PhaseSubstepVariants):
-        if not isinstance(phase_step_variant, psv.PhaseSubstepVariants):
-            raise Exception(
-                f"Provided phase_step_variant is not an instance of PhaseSubstepVariants: {type(phase_step_variant)}")
-        self.phase_step_variant = phase_step_variant
-
-
 class PipelineItemsGenerated:
     def __init__(self, pipeline_items: list[pi.PipelineItem], key_last_pi: str):
         self.pipeline_items = pipeline_items
@@ -52,14 +44,14 @@ class PipelineItemFactory:
         """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
-    def new_pipeline_item_from_variant(self, phase_step_variant_and_data: AdditionalDataSubPhase) -> PipelineItemsGenerated:
+    def new_pipeline_item_from_variant(self, phase_step_variant_and_data: pb_shared.AdditionalDataSubPhase) -> PipelineItemsGenerated:
         """
         Override-designed
         """
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def new_pipeline_items(self,
-                           phase_step_variant_and_data: AdditionalDataSubPhase
+                           phase_step_variant_and_data: pb_shared.AdditionalDataSubPhase
                            ) -> PipelineItemsGenerated:
         """
         Returns a list of PipelineItems, where the first one uses the given "PIData" and every one else
@@ -69,7 +61,7 @@ class PipelineItemFactory:
         if (phase_step_variant_and_data is None):
             raise Exception(
                 "Given phase_step_variant_and_data must not be None")
-        if not isinstance(phase_step_variant_and_data, AdditionalDataSubPhase):
+        if not isinstance(phase_step_variant_and_data, pb_shared.AdditionalDataSubPhase):
             raise Exception(
                 f"Provided phase_step_variant_and_data is not an instance of AdditionalDataSubPhase: {type(phase_step_variant_and_data)}")
 

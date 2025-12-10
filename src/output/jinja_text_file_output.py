@@ -19,13 +19,15 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
     def __init__(self, pipeline_item_data: pi.PIData,
                  key_compiled_diagram: str, \
                  # key_model_to_template_mapper_jinja:str,
-                 base_destination=None,
+                 key_base_destination: str = None,
                  printer_debug: u.PrinterDebug = None
                  ):
-        super().__init__(pipeline_item_data,
-                         base_destination=base_destination,
-                         printer_debug=printer_debug
-                         )
+        super().__init__(
+            pipeline_item_data,
+            printer_debug=printer_debug,
+            key_base_destination=key_base_destination,
+            key_filename_extension=None  # here, the strategy is different
+        )
         self.key_compiled_diagram = key_compiled_diagram
         # self.key_model_to_template_mapper_jinja = key_model_to_template_mapper_jinja
         self.current_inputs = None
@@ -106,14 +108,16 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                 td)
         }
 
-    def to_output(self, what, destination: str = None, additional_data=None) -> bool:
+    def to_output(self, what, additional_data=None) -> bool:
         ok = True
         compiled_diagram = what
         # set the "output mode" if absent
         if additional_data is None:
-            additional_data = {"mode": "w"}
-        elif "mode" not in additional_data:
-            additional_data["mode"] = "w"
+            additional_data = {
+                tfo.KEY_OPEN_FILE_MODE: tfo.MODE_VALUES_WRITE_array[0]
+            }
+        elif tfo.KEY_OPEN_FILE_MODE not in additional_data:
+            additional_data[tfo.KEY_OPEN_FILE_MODE] = tfo.MODE_VALUES_WRITE_array[0]
         # now, sanity checks
 
         # get the list of things to output, based on its class
@@ -123,6 +127,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         class_based_TD_translator = self.translated_diagram_to_list_output_translators(
             additional_data=additional_data)
         if class_compiled_diagram not in class_based_TD_translator:
+            # try to recover the compiled diagram class
             print(
                 f"\nERROR: unrecognized class_compiled_diagram: {class_compiled_diagram} - {type(compiled_diagram)}")
             if self.key_compiled_diagram is None:
@@ -155,8 +160,9 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
             output_to_print = output_and_filepath[0]
             filepath = output_and_filepath[1]
             try:
-                full_path = fu.concat_folder_filename(
-                    self.base_destination, filepath)
+                full_path = fu.concat_folder_filename(additional_data[self.key_base_destination], filepath) \
+                    if (additional_data is not None) and (self.key_base_destination is not None) and (self.key_base_destination in additional_data) \
+                    else filepath
                 folder = fu.extract_folder_from_full_path(full_path)
                 fu.check_and_make_folder(folder)
                 ok &= super().to_output(output_to_print, full_path, additional_data)

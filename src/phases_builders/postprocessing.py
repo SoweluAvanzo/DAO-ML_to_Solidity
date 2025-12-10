@@ -44,7 +44,7 @@ REVERSE_MAPPING_PostProcessingTransformation = {
 #
 
 
-class AdditionalDataPostProcessing(pb.AdditionalDataSubPhase):
+class AdditionalDataPostProcessing(pb_shared.AdditionalDataSubPhase):
     def __init__(self, phase_step_variant: PostProcessingTransformation,
                  k_model_generator: str = None
                  ):
@@ -171,7 +171,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
         return self.new_templates_provider_pi(subphase, templates_provider)
 
     def new_pipeline_item_from_variant(self,
-                                       phase_step_variant_and_data: pb.AdditionalDataSubPhase
+                                       phase_step_variant_and_data: pb_shared.AdditionalDataSubPhase
                                        ) -> pb.PipelineItemsGenerated:
         if phase_step_variant_and_data.phase_step_variant == PostProcessingTransformation.SOLIDITY:
             if not isinstance(phase_step_variant_and_data, AdditionalDataSolidity):
