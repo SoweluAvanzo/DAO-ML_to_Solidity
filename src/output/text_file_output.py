@@ -3,10 +3,10 @@ from collections.abc import Iterable
 
 import src.pipeline.pipeline_item as pi
 
+
 import src.output.base_output as bo
 
 import src.files.file_utils as fu
-
 import src.utilities.utils as u
 
 NEW_LINE_CHARS = ("\n", "\r")
@@ -20,9 +20,9 @@ MODE_VALUES_APPEND = set(MODE_VALUES_APPEND_array)
 class TextFileOutput(bo.BaseOutput):
     def __init__(self, pipeline_item_data: pi.PIData,
                  printer_debug: u.PrinterDebug = None,
-                 key_base_destination: str = None,
-                 key_filename_extension: str = None,
                  write_mode_key: str = None,
+                 key_base_destination: str = None,
+                 key_filename_extension: str = None
                  ):
         super().__init__(
             pipeline_item_data,

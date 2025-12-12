@@ -171,12 +171,18 @@ def additional_data_from_PostProcessingTransformation(
 def additional_data_from_Output(
     config: configs.TranslatorConfigs,
     oc: configs.OutputConfigs,
+    post_processing_transformation: pb_pp.PostProcessingTransformation,
     templates_provider: t_prov_by_name.TemplateProviderByName,
     base_template_folder: str,
     folder_voting_protocols: str,
     logger: u.PrinterDebug = None
 ) -> pb_o.AdditionalDataOutput:
     add_data: pb_o.AdditionalDataOutput = None
+    non_none(post_processing_transformation, "post_processing_transformation")
+    non_none(oc.persistance_type, "oc.persistance_type")
+    non_none(oc.output_type, "oc.output_type")
+    non_none(oc.folder_output_path_base_file,
+             "oc.folder_output_path_base_file")
     match(oc.persistance_type):
         case pb_shared.PersistanceType.FILE:
             match(oc.output_type):
@@ -184,13 +190,16 @@ def additional_data_from_Output(
                     non_none(oc.folder_output_path_base_file,
                              "folder_output_path_base_file")
                     add_data = pb_o.AdditionalDataFileJinja(
-                        folder_output_path_base=oc.folder_output_path_base_file
+                        folder_output_path_base=oc.folder_output_path_base_file,
+                        postprocessing_producing_output=post_processing_transformation
+
                     )
                 case pb_o.OutputType.PLAIN_STRING:
                     non_none(oc.folder_output_path_base_file,
                              "folder_output_path_base_file")
                     add_data = pb_o.AdditionalDataFileString(
-                        folder_output_path_base=oc.folder_output_path_base_file
+                        folder_output_path_base=oc.folder_output_path_base_file,
+                        postprocessing_producing_output=post_processing_transformation
                     )
         case pb_shared.PersistanceType.DATABASE:
             raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
@@ -205,7 +214,6 @@ def prepare_ppt_o(
     base_template_folder: str,
     folder_voting_protocols: str,
     # inherited from Output
-
     #
     logger: u.PrinterDebug = None
 ) -> list[translator_process.PostprocessingOutput]:
@@ -228,6 +236,7 @@ def prepare_ppt_o(
                 additional_data=additional_data_from_Output(
                     config,
                     ppopc.outputConfigs,
+                    ppopc.postprocessingConfigs.post_processing_transformation,
                     templates_provider,
                     base_template_folder,
                     folder_voting_protocols,
@@ -242,14 +251,20 @@ def prepare_ppt_o(
 #
 
 
+class TranslatorAndConfigurations:
+    def __init__(self,
+                 translator_process: translator_process.TranslatorProcess,
+                 translation_configuration: translator_process.TranslationConfiguration
+                 ):
+        self.translator_process = translator_process
+        self.translation_configuration = translation_configuration
+
+
 def new_translator_process(
     config: configs.TranslatorConfigs,
+    instantiate_new_translator_process=True,
     logger: u.PrinterDebug = None
-) -> translator_process.TranslatorProcess:
-    """
-    TODO: sistemare gli input
-
-    """
+) -> TranslatorAndConfigurations:
 
     folder_voting_protocols: str = config.folder_voting_protocols
     base_template_folder: str = config.base_template_folder
@@ -291,13 +306,15 @@ def new_translator_process(
     )
 
     # THE TRANSLATOR PROCESS
-
-    tp = translator_process.TranslatorProcess(
-        input_configuration,
-        model_configuration,
-        postprocessing_output_configurations,
-        #
-        printer_debug=logger,
-        external_unique_key_producer=config.external_unique_key_producer
+    return TranslatorAndConfigurations(
+        translator_process.TranslatorProcess(
+            printer_debug=logger
+        ) if instantiate_new_translator_process else None,
+        translator_process.TranslationConfiguration(
+            input_configuration,
+            model_configuration,
+            postprocessing_output_configurations,
+            external_unique_key_producer=config.external_unique_key_producer,
+            is_resetting_cache=False
+        )
     )
-    return tp

@@ -234,6 +234,9 @@ if __name__ == "__main__":
         pi.PIData(k_additional_output_data, [k_model_to_json]), additional_metadata)
     pm.addItem(additional_output_data)
     k_model_text_to_file_output = "k_model_text_to_file_output"
+
+    # TODO k_filepath_provider
+    # TODO: key_names_extractor
     model_text_to_file_output = tfo.TextFileOutput(
         pi.PIData(
             k_model_text_to_file_output,

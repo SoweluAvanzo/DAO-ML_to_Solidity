@@ -89,6 +89,7 @@ class TranslatorConfigs(s_j.StringableJsonable):
         self.model_format: pb_shared.ModelPersistanceFormat = pb_shared.ModelPersistanceFormat.XML \
             if (json_data is None) or ("model_format" not in json_data) \
             else json_data["model_format"]
+        # input
         self.input_config = InputConfigs(
             json_data=None
             if (json_data is None) or ("input_config" not in json_data)
@@ -103,7 +104,6 @@ class TranslatorConfigs(s_j.StringableJsonable):
         # output (?)
         self.all_postprocessingOutputPairConfigs: list[PostprocessingOutputPairConfigs] = [
         ]
-        self.output_persistance_type: pb_shared.PersistanceType = pb_shared.PersistanceType.FILE  # as default
         self.output_source_uri: str = None
         self.output_additional_data: dict = None
         # other

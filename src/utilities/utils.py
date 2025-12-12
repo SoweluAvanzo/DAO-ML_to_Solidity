@@ -21,8 +21,9 @@ def to_camel_case(s: str) -> str:
     )
 
 
-def to_keyword(name: str) -> str:
-    return fu.sanitize_filename(name).lower()
+def to_keyword(name: str, to_lower=True) -> str:
+    sanitized_name: str = fu.sanitize_filename(name)
+    return sanitized_name.lower() if to_lower else sanitized_name
 
 
 #

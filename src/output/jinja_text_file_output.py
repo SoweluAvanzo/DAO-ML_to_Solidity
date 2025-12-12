@@ -17,10 +17,10 @@ class AcceptedClasses_Jinja_TFO(extended_enum.ExtendedEnum):
 
 class JinjaTextFileOutput(tfo.TextFileOutput):
     def __init__(self, pipeline_item_data: pi.PIData,
-                 key_compiled_diagram: str, \
+                 key_compiled_diagram: str,
+                 printer_debug: u.PrinterDebug = None,
                  # key_model_to_template_mapper_jinja:str,
-                 key_base_destination: str = None,
-                 printer_debug: u.PrinterDebug = None
+                 key_base_destination: str = None
                  ):
         super().__init__(
             pipeline_item_data,

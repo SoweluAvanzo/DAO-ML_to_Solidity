@@ -58,7 +58,6 @@ def main():
 
     # output
 
-    persistance_type_file = pb_shared.PersistanceType.FILE
     output_folder_base_path: str = files.concat_folder_filename(
         '.', 'out')
 
@@ -124,13 +123,17 @@ def main():
     ]
     config.all_postprocessingOutputPairConfigs = all_postprocessingOutputPairConfigs
 
-    tp = launcher_config.new_translator_process(
+    tp: translator_process.TranslatorProcess = None
+    tc: launcher_config.TranslatorAndConfigurations = launcher_config.new_translator_process(
         config,
+        instantiate_new_translator_process=True,
         logger=logger
     )
-
+    tp = tc.translator_process
     logger.print_msg("START\n\n")
-    tp.translate()
+    tp.translate(
+        tc.translation_configuration
+    )
     logger.print_msg("\n\nEND")
 
 #

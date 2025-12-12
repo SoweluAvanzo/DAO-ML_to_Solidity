@@ -26,10 +26,17 @@ logger = u.PrinterDebug()  # logger_debug.LoggerDebug(class_name=__name__)
 
 
 def main(args: configs.TranslatorConfigs):
-    tp: translator_process.TranslatorProcess = launcher_config.new_translator_process(
-        args)
+    tp: translator_process.TranslatorProcess = None
     logger.print_msg("START\n\n")
-    tp.translate()
+    tc: launcher_config.TranslatorAndConfigurations = launcher_config.new_translator_process(
+        args,
+        instantiate_new_translator_process=True,
+        logger=logger,
+    )
+    tp = tc.translator_process
+    tp.translate(
+        tc.translation_configuration
+    )
     logger.print_msg("\n\nEND")
 
 #

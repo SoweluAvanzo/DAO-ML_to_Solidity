@@ -64,7 +64,6 @@ class PipelineItemFactory:
         if not isinstance(phase_step_variant_and_data, pb_shared.AdditionalDataSubPhase):
             raise Exception(
                 f"Provided phase_step_variant_and_data is not an instance of AdditionalDataSubPhase: {type(phase_step_variant_and_data)}")
-
         if not isinstance(phase_step_variant_and_data.phase_step_variant, self.get_PhaseSubstepVariants_enum()):
             raise self.not_PSV_instance_exception(
                 phase_step_variant_and_data.phase_step_variant)
