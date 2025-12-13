@@ -16,9 +16,6 @@ class InputConfigs(s_j.StringableJsonable):
             else json_data["persistance_type"]
         self.source_uri: str = None if (json_data is None) or ("source_uri" not in json_data) \
             else json_data["source_uri"]
-        # optional
-        self.additional_data: dict = None if (json_data is None) or ("additional_data" not in json_data) \
-            else json_data["additional_data"]
         # ... input-specifics
         self.file_base_folder: str = None if (json_data is None) or ("file_base_folder" not in json_data) \
             else json_data["file_base_folder"]
@@ -47,6 +44,13 @@ class PostprocessingConfigs(s_j.StringableJsonable):
         self.version_translation_target: str = None if (json_data is None) or ("version_translation_target" not in json_data) \
             else json_data["version_translation_target"]
         # specific ones
+        """
+        A case-specific ones
+        """
+        self.base_template_folder: str = None if (json_data is None) or ("base_template_folder" not in json_data) \
+            else json_data["base_template_folder"]
+        self.folder_voting_protocols_solidity: str = None if (json_data is None) or ("folder_voting_protocols_solidity" not in json_data) \
+            else json_data["folder_voting_protocols_solidity"]
         self.translator_solidity_subtype: str = None if (json_data is None) or ("translator_solidity_subtype" not in json_data) \
             else json_data["translator_solidity_subtype"]
         self.indent_json = 2 if (json_data is None) or ("indent_json" not in json_data) \
@@ -89,7 +93,6 @@ class TranslatorConfigs(s_j.StringableJsonable):
         self.model_format: pb_shared.ModelPersistanceFormat = pb_shared.ModelPersistanceFormat.XML \
             if (json_data is None) or ("model_format" not in json_data) \
             else json_data["model_format"]
-        # input
         self.input_config = InputConfigs(
             json_data=None
             if (json_data is None) or ("input_config" not in json_data)
@@ -100,15 +103,12 @@ class TranslatorConfigs(s_j.StringableJsonable):
             if (json_data is None) or ("model_gen_config" not in json_data)
             else json_data["model_gen_config"]
         )
-
         # output (?)
         self.all_postprocessingOutputPairConfigs: list[PostprocessingOutputPairConfigs] = [
-        ]
-        self.output_source_uri: str = None
-        self.output_additional_data: dict = None
-        # other
-        self.folder_voting_protocols: str = None
-        self.base_template_folder: str = None
+        ] if (json_data is None) or ("all_postprocessingOutputPairConfigs" not in json_data) \
+            else json_data["all_postprocessingOutputPairConfigs"]
+
+    #
 
     def addPostprocessingOutputPairConfigs(self, postprocessingOutputPairConfigs: PostprocessingOutputPairConfigs):
         self.all_postprocessingOutputPairConfigs.append(

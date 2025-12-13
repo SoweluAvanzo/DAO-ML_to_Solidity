@@ -26,13 +26,12 @@ import src.postprocessing.output_preparation.json.model_to_json as pp_o_json
 
 import src.postprocessing.consts_template as consts_t
 import src.utilities.utils as u
-import src.utilities.extended_enum as ee
 import src.utilities.errors as e_c
 
 
 class PostProcessingTransformation(psv.PhaseSubstepVariants):
     SOLIDITY = "sol"
-    SOLIDITY_HARDHAT_TESTS = "sol_hardhat_tests"
+    SOLIDITY_HARDHAT_TESTS = "sol_tests"  # sol_hardhat_tests
     ASM = "asm"
     JSON = "json"
     # PETRI_NETS = "petri"

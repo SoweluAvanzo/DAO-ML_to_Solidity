@@ -27,8 +27,6 @@ def non_none(what, name):
 
 def prepare_input(
     config: configs.TranslatorConfigs,
-    folder_voting_protocols: str,
-    base_template_folder: str,
     logger: u.PrinterDebug = None
 ) -> translator_process.InputConfiguration:
     # input
@@ -42,14 +40,15 @@ def prepare_input(
     input_additional_data: pb_i_f.AdditionalDataInput = None
     match(input_persistance_type):
         case pb_shared.PersistanceType.FILE:
-            non_none(config.input_config.file_extension,
-                     "input_config.file_extension")
+            file_extension: str = config.input_config.file_extension \
+                if config.input_config.file_extension is not None else \
+                input_format.value
             fbf: str = config.input_config.file_base_folder
             if fbf is None:
                 fbf = consts_t.DEFAULT_BASE_FOLDER_INPUT
             source_fullpath = files.concat_folder_filename(
                 fbf,
-                f"{source_uri}.{config.input_config.file_extension}"
+                f"{source_uri}.{file_extension}"
             )
             match(input_format):
                 case pb_shared.ModelPersistanceFormat.XML:
@@ -118,11 +117,14 @@ def prepare_model(
 def additional_data_from_PostProcessingTransformation(
     config: configs.TranslatorConfigs,
     ppc: configs.PostprocessingConfigs,
-    templates_provider,
-    base_template_folder: str,
-    folder_voting_protocols: str,
+    templates_provider: t_prov_by_name.TemplateProviderByName,
     logger: u.PrinterDebug = None
 ) -> pb_pp.AdditionalDataPostProcessing:
+    base_template_folder: str = ppc.base_template_folder
+    non_none(base_template_folder, "base_template_folder")
+    folder_voting_protocols: str = ppc.folder_voting_protocols_solidity
+    non_none(folder_voting_protocols, "folder_voting_protocols")
+
     add_data: pb_pp.AdditionalDataPostProcessing = None
     match(ppc.post_processing_transformation):
         case pb_pp.PostProcessingTransformation.SOLIDITY:
@@ -172,9 +174,6 @@ def additional_data_from_Output(
     config: configs.TranslatorConfigs,
     oc: configs.OutputConfigs,
     post_processing_transformation: pb_pp.PostProcessingTransformation,
-    templates_provider: t_prov_by_name.TemplateProviderByName,
-    base_template_folder: str,
-    folder_voting_protocols: str,
     logger: u.PrinterDebug = None
 ) -> pb_o.AdditionalDataOutput:
     add_data: pb_o.AdditionalDataOutput = None
@@ -209,14 +208,23 @@ def additional_data_from_Output(
 
 def prepare_ppt_o(
     config: configs.TranslatorConfigs,
-    # inherited from PPT
-    templates_provider: t_prov_by_name.TemplateProviderByName,
-    base_template_folder: str,
-    folder_voting_protocols: str,
-    # inherited from Output
-    #
     logger: u.PrinterDebug = None
 ) -> list[translator_process.PostprocessingOutput]:
+    # recycle the instances by base pat
+    templates_provider_by_base_path: dict[str,
+                                          t_prov_by_name.TemplateProviderByName] = {}
+
+    def new_template_provider(base_path: str):
+        if base_path is None:
+            return None
+        if base_path in templates_provider_by_base_path:
+            return templates_provider_by_base_path[base_path]
+        templates_provider = template_by_name_txt.TemplateProviderFromTxtFile(
+            base_template_folder=base_path
+        )  # TODO: find a way to  generalize it
+        templates_provider_by_base_path[base_path] = templates_provider
+        return templates_provider
+
     return [
         translator_process.PostprocessingOutput(
             translator_process.PostprocessingConfiguration(
@@ -224,9 +232,9 @@ def prepare_ppt_o(
                 additional_data=additional_data_from_PostProcessingTransformation(
                     config,
                     ppopc.postprocessingConfigs,
-                    templates_provider,
-                    base_template_folder,
-                    folder_voting_protocols,
+                    new_template_provider(
+                        ppopc.postprocessingConfigs.base_template_folder),
+                    ppopc.postprocessingConfigs.base_template_folder,
                     logger=logger
                 )
             ),
@@ -237,9 +245,6 @@ def prepare_ppt_o(
                     config,
                     ppopc.outputConfigs,
                     ppopc.postprocessingConfigs.post_processing_transformation,
-                    templates_provider,
-                    base_template_folder,
-                    folder_voting_protocols,
                     logger=logger
                 )
             ),
@@ -266,14 +271,9 @@ def new_translator_process(
     logger: u.PrinterDebug = None
 ) -> TranslatorAndConfigurations:
 
-    folder_voting_protocols: str = config.folder_voting_protocols
-    base_template_folder: str = config.base_template_folder
-
     # 1) Input
     input_configuration: translator_process.InputConfiguration = prepare_input(
         config,
-        folder_voting_protocols,
-        base_template_folder,
         logger=logger
     )
 
@@ -287,21 +287,11 @@ def new_translator_process(
 
     # 3-4) Postprocessing + Output
 
-    non_none(folder_voting_protocols, "folder_voting_protocols")
-    non_none(base_template_folder, "base_template_folder")
-
-    templates_provider: t_prov_by_name.TemplateProviderByName = template_by_name_txt.TemplateProviderFromTxtFile(
-        base_template_folder=base_template_folder
-    )  # TODO: find a way to  generalize it
-
     non_none(config.all_postprocessingOutputPairConfigs,
              "config.all_postprocessingOutputPairConfigs")
 
     postprocessing_output_configurations: list[translator_process.PostprocessingOutput] = prepare_ppt_o(
         config,
-        templates_provider,
-        base_template_folder,
-        folder_voting_protocols,
         logger=logger
     )
 

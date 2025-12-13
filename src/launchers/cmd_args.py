@@ -13,6 +13,31 @@ import src.utilities.utils as u
 import src.utilities.errors as e_c
 
 
+def __tbf_combos():
+    # leads to 16 combinations
+    t_f_b = ["base", "template", "folder"]
+    t_f_b_extended = [*t_f_b, "templates"]  # the plural
+    seps = ["-", "_"]
+    # the result was pre-computed, so the lenght is known in advance
+    tbfc = [None] * (8 * len(seps))
+    i = 0
+    for a in t_f_b_extended:
+        for b in t_f_b:
+            for c in t_f_b:
+                if (a != b) and (a != c) and (b != c) \
+                        and (not a.startswith(b)) and (not a.startswith(c)):
+                    combination = [a, b, c]
+                    for sep in seps:
+                        tbfc[i] = f"--{sep.join(combination)}"
+                        i += 1
+    tbfc.sort()
+    return tbfc
+
+
+global templates_base_folder_combinations
+templates_base_folder_combinations = __tbf_combos()
+
+
 def __enum_case_insensitive_list(e: type[ex_enum.ExtendedEnum]):
     s = set(e.list())
     for k in list(map(lambda c: c.name, e)):
@@ -35,12 +60,20 @@ def get_args(logger: u.PrinterDebug = None):
         description="CLI Parser for DAO-ML Translator"
     )
 
+    # input
+
     parser.add_argument(
         "-f", "--file",
         "--file-name", "--file_name",
         "--file-path", "--file_path",
         type=str,
         help="file name/path of the (XML?) DAO (Diagram, actually) You need to process",
+        required=False
+    )
+    parser.add_argument(
+        "-if", "--input_base_folder", "--input-base-folder", "--input-folder", "--input_folder",
+        type=str,
+        help="folder path acting as the starting point for all inputs",
         required=False
     )
     l_if = __enum_case_insensitive_list(pb_shared.ModelPersistanceFormat)
@@ -53,9 +86,9 @@ def get_args(logger: u.PrinterDebug = None):
         required=False
     )
     parser.add_argument(
-        "-xml_v", "--xml_version",
+        "-fie", "--file_input_extension", "--file-input-extension",
         type=str,
-        help="Version of the XML standard",
+        help="Extension of the input file",
         required=False
     )
     l_pt = __enum_case_insensitive_list(pb_shared.PersistanceType)
@@ -66,19 +99,96 @@ def get_args(logger: u.PrinterDebug = None):
         choices=l_pt,
         required=False
     )
+    # ... xml
+    parser.add_argument(
+        "-xml_v", "--xml_version", "--xml-version",
+        type=str,
+        help="Version of the XML standard (as input)",
+        required=False
+    )
     # TODO: add Databse URI / API endpoint parameters
+
+    # model generation
+    # ... xml, currently (2025-12-12) no other formats have some configurations
+    parser.add_argument(
+        "--xml_schema_folder", "--xml-schema-folder",
+        type=str,
+        help="Folder path holding the XML schema file",
+        required=False
+    )
+    parser.add_argument(
+        "--xml_schema_filename", "--xml-schema-filename",
+        type=str,
+        help="Folder path holding the XML schema file",
+        required=False
+    )
+    parser.add_argument(
+        "--xml_schema_extension", "--xml-schema-extension",
+        type=str,
+        help="Extension of the XML schema file",
+        required=False
+    )
+
+    # postprocessing
+
+    ppt_options = pb_pp.PostProcessingTransformation.list()
+    parser.add_argument(
+        "-pp", "-ppt",
+        "--post_processing", "--post_processing_transformation",
+        "--post-processing", "--post-processing-transformation",
+        type=str,
+        help=f"Post-processing phase, one(+) of the following: [{', '.join(ppt_options)}]",
+        required=True,
+        choices=ppt_options,
+        action="append"
+    )
+    parser.add_argument(
+        "-vt", "-vtr", "--version_translator", "--version-translator",
+        type=str,
+        help="Version of the translator. Defaults to '1.0.0'",
+        default="1.0.0",
+        required=False
+    )
+    parser.add_argument(
+        "-vta", "-vtt",
+        "--version_translation_target",  "--version-translation-target",
+        "--version_translation",  "--version-translation",
+        "--version_target",  "--version-target",
+        type=str,
+        help="Version of what is being produced as output; multiple evolutions might co-exists (in futrher developments). Defaults to '1.0.0'",
+        default="1.0.0",
+        required=False
+    )
+    parser.add_argument(
+        "-tf", "--templates-folder", "--templates_folder", "--template-folder", "--template_folder",
+        "-ft", "--folder_templates", "--folder-templates", "--folder_template", "--folder-template",
+        "-tfb", "-btf", "-ftb",
+        *templates_base_folder_combinations,
+        type=str,
+        help="folder (base) path for all template files; could be an absolute path or a relative path.",
+        required=False
+    )
+    # json
+    parser.add_argument(
+        "-tss", "--translator_solidity_subtype", "--translator-solidity-subtype",
+        help="Indentation",
+        default="1.0.0",
+        required=False
+    )
+    # ... solidity
+    parser.add_argument(
+        "-ij", "--indent_json", "--indent-json",
+        help="Indentation for JSON dumping",
+        default=None,
+        required=False
+    )
+
+    # output
 
     parser.add_argument(
         "-of", "--output", "--output-folder", "--output_folder",
         type=str,
         help="folder path for all ouputs",
-        required=False
-    )
-    parser.add_argument(
-        "-tf", "--templates-folder", "--templates_folder", "--template-folder", "--template_sfolder",
-        "-tfb", "--templates-folder-base", "--templates_folder_base", "--template-folder-base", "--template_sfolder_base",
-        type=str,
-        help="folder (base) path for all template files; could be an absolute path or a relative path.",
         required=False
     )
     parser.add_argument(
@@ -88,9 +198,14 @@ def get_args(logger: u.PrinterDebug = None):
         required=False
     )
 
+    # ---------
+
     args = parser.parse_args()
 
     cmd_configs = configs.TranslatorConfigs()
+
+    # input
+
     if args.persistance_type:
         match(args.persistance_type):
             case pb_shared.PersistanceType.DATABASE.value:
@@ -104,12 +219,40 @@ def get_args(logger: u.PrinterDebug = None):
     if args.file:
         cmd_configs.input_config.source_uri = args.file
         cmd_configs.input_config.persistance_type = pb_shared.PersistanceType.FILE
-        if args.input_format:
-            match(args.input_format):
-                case pb_shared.ModelPersistanceFormat.JSON.value:
-                    cmd_configs.input_config.format = pb_shared.ModelPersistanceFormat.JSON
-                case _:  # every other cases
-                    cmd_configs.input_config.format = pb_shared.ModelPersistanceFormat.XML
+        if args.input_base_folder:
+            cmd_configs.input_config.file_base_folder = args.input_base_folder
+    if args.input_format:
+        match(args.input_format):
+            case pb_shared.ModelPersistanceFormat.JSON.value:
+                cmd_configs.model_format = pb_shared.ModelPersistanceFormat.JSON
+                cmd_configs.input_config.file_extension = pb_shared.ModelPersistanceFormat.JSON.value \
+                    if args.file_input_extension is None else args.file_input_extension
+            case _:  # every other cases
+                cmd_configs.model_format = pb_shared.ModelPersistanceFormat.XML
+                cmd_configs.input_config.file_extension = pb_shared.ModelPersistanceFormat.XML.value \
+                    if args.file_input_extension is None else args.file_input_extension
+                if args.xml_version:
+                    cmd_configs.input_config.xml_version = args.xml_version
+
+    # model
+    if cmd_configs.model_format == pb_shared.ModelPersistanceFormat.XML:
+        if args.xml_schema_folder:
+            cmd_configs.model_gen_config.xml_schema_folder = args.xml_schema_folder
+        else:
+            raise Exception(
+                f"XML has been choosen as the input / model generation format, but no xml_schema_folder has been set")
+        if args.xml_schema_filename:
+            cmd_configs.model_gen_config.xml_schema_filename = args.xml_schema_filename
+        else:
+            raise Exception(
+                f"XML has been choosen as the input / model generation format, but no xml_schema_filename has been set")
+        if args.xml_schema_extension:
+            cmd_configs.model_gen_config.xml_schema_extension = args.xml_schema_extension
+        else:
+            raise Exception(
+                f"XML has been choosen as the input / model generation format, but no xml_schema_extension has been set")
+
+    # postprocessing & output
 
     if args.output:
         cmd_configs.output_source_uri = args.output

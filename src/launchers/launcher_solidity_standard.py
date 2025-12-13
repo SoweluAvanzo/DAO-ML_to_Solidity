@@ -35,6 +35,7 @@ def main():
         external_unique_key_producer=external_unique_key_producer
     )
 
+    base_template_folder = consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
     # TODO : sistemare gli input
     config.model_format = pb_shared.ModelPersistanceFormat.XML
 
@@ -50,8 +51,6 @@ def main():
         '.',  # 'src', 'parsers', 'xml'
         'data'
     )
-    config.folder_voting_protocols = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
-    config.base_template_folder = consts_t.DEFAULT_BASE_FOLDER_TEMPLATES
 
     #
     # 3&4) preprocessing & output
@@ -71,6 +70,8 @@ def main():
     ppc_solidity.post_processing_transformation = pb_pp.PostProcessingTransformation.SOLIDITY
     ppc_solidity.version_translator = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
     ppc_solidity.translator_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
+    ppc_solidity.base_template_folder = base_template_folder
+    ppc_solidity.folder_voting_protocols_solidity = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
     # TODO: is there a way to generalize the following?
     ppc_solidity.version_translation_target = "1.0.0"
     oc_solidity = configs.OutputConfigs()
@@ -84,6 +85,8 @@ def main():
     ppc_solidity_hardhat_tests = configs.PostprocessingConfigs()
     ppc_solidity_hardhat_tests.post_processing_transformation = pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS
     ppc_solidity_hardhat_tests.version_translator = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
+    ppc_solidity_hardhat_tests.base_template_folder = base_template_folder
+    ppc_solidity_hardhat_tests.folder_voting_protocols_solidity = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
     # TODO: is there a way to generalize the following?
     ppc_solidity_hardhat_tests.version_translation_target = "1.0.0"
     ppopc_solidity_hardhat_tests = configs.PostprocessingOutputPairConfigs(
@@ -96,6 +99,7 @@ def main():
     ppc_asm.post_processing_transformation = pb_pp.PostProcessingTransformation.ASM
     ppc_asm.version_translator = t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value
     ppc_asm.version_translation_target = t_j_asm_1_0_0.TARGET_VERSION
+    ppc_asm.base_template_folder = base_template_folder
     ppopc_asm = configs.PostprocessingOutputPairConfigs(
         postprocessingConfigs=ppc_asm,
         outputConfigs=oc_all

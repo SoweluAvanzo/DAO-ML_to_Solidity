@@ -5,7 +5,8 @@ DEFAULT_BASE_FOLDER_INPUT = file_utils.concat_folder_filename(
     ".", DEFAULT_BASE_FOLDER_INPUT_NAME)
 
 NAME_FOLDER_TEMPLATES = "Templates"
-DEFAULT_BASE_FOLDER_TEMPLATES = file_utils.concat_folder_filename(
+global DEFAULT_BASE_FOLDER_TEMPLATES
+DEFAULT_BASE_FOLDER_TEMPLATES: str = file_utils.concat_folder_filename(
     ".", NAME_FOLDER_TEMPLATES)
 KEY__ALL_VOTING_PROTOCOLS__ON_ADDITIONAL_DATA = "key_all_voting_protocols"
 JINJA_FILE_EXTENSION = "jinja"
