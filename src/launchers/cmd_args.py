@@ -2,6 +2,8 @@ import argparse
 
 import src.configurations as configs
 
+import src.postprocessing.model_translation.solidity.translation_types_solidity as trans_type_sol
+
 import src.phases_builders.shared as pb_shared
 import src.phases_builders.input_fetch as pb_i_f
 import src.phases_builders.model_generation as pb_m_g
@@ -95,7 +97,7 @@ def get_args(logger: u.PrinterDebug = None):
     parser.add_argument(
         "-pt", "--persistance_type", "--persistance-type",
         type=str,
-        help=f"Types of persistance units to read the model from or to save the produced output; currently it accepts: {__enum_comma_list(pb_shared.PersistanceType)}",
+        help=f"Types of persistance units to read the model from or to save the produced output; currently it accepts: {__cj(l_pt)}",
         choices=l_pt,
         required=False
     )
@@ -130,14 +132,13 @@ def get_args(logger: u.PrinterDebug = None):
     )
 
     # postprocessing
-
-    ppt_options = pb_pp.PostProcessingTransformation.list()
+    ppt_options = __enum_case_insensitive_list(PostProcessingTransformation)
     parser.add_argument(
         "-pp", "-ppt",
         "--post_processing", "--post_processing_transformation",
         "--post-processing", "--post-processing-transformation",
         type=str,
-        help=f"Post-processing phase, one(+) of the following: [{', '.join(ppt_options)}]",
+        help=f"Post-processing phase, one(+) of the following: [{__cj(ppt_options)}]",
         required=True,
         choices=ppt_options,
         action="append"
@@ -168,14 +169,16 @@ def get_args(logger: u.PrinterDebug = None):
         help="folder (base) path for all template files; could be an absolute path or a relative path.",
         required=False
     )
-    # json
-    parser.add_argument(
-        "-tss", "--translator_solidity_subtype", "--translator-solidity-subtype",
-        help="Indentation",
-        default="1.0.0",
-        required=False
-    )
     # ... solidity
+    # tt_sol = trans_type_sol.TranslationTypesSolidity.list()
+    # parser.add_argument(
+    #     "-tss", "--translator_solidity_subtype", "--translator-solidity-subtype",
+    #     help=f"Types of Solidity-specific translations; available values: [{', '.join(tt_sol)}]",
+    #     default=trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value,
+    #     choices=tt_sol,
+    #     required=False
+    # )
+    # json
     parser.add_argument(
         "-ij", "--indent_json", "--indent-json",
         help="Indentation for JSON dumping",
@@ -185,12 +188,34 @@ def get_args(logger: u.PrinterDebug = None):
 
     # output
 
+    ot_options = pb_o.OutputType.list()
+    parser.add_argument(
+        "-ot", "--output_type", "--output-type",
+        type=str,
+        help=f"Output type, which depends upon the related Post Processing Translation: either a plain text (used for JSON) or a Jinja-based template (currently used for Solidity, Solidity Hardhat Test or ASM); current available options: [{__cj(ot_options)}]",
+        required=True,
+        choices=ot_options,
+        action="append"
+    )
+
+    l_pt = __enum_case_insensitive_list(pb_shared.PersistanceType)
+    parser.add_argument(
+        "-op", "-opt",
+        "--output_persistance", "--output-persistance",
+        "--output_persistance_type", "--output-persistance-type",
+        type=str,
+        help=f"Types of persistance ends to output the result of the related Post Processing Translation; currently it accepts: {__cj(l_pt)}",
+        choices=l_pt,
+        required=True
+    )
+
     parser.add_argument(
         "-of", "--output", "--output-folder", "--output_folder",
         type=str,
-        help="folder path for all ouputs",
+        help="Folder path for the File-based ouputs; if it's specified once, then it's applied to all File-based outpts",
         required=False
     )
+
     parser.add_argument(
         "-fvp", "--folder-voting", "--folder-voting-protocols", "--folder_voting", "--folder_voting_protocols",
         type=str,
@@ -253,6 +278,8 @@ def get_args(logger: u.PrinterDebug = None):
                 f"XML has been choosen as the input / model generation format, but no xml_schema_extension has been set")
 
     # postprocessing & output
+
+    # trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value
 
     if args.output:
         cmd_configs.output_source_uri = args.output

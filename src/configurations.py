@@ -1,3 +1,4 @@
+import src.postprocessing.model_translation.solidity.translation_types_solidity as trans_type_sol
 
 import src.phases_builders.shared as pb_shared
 import src.phases_builders.input_fetch as pb_i_f
@@ -51,7 +52,8 @@ class PostprocessingConfigs(s_j.StringableJsonable):
             else json_data["base_template_folder"]
         self.folder_voting_protocols_solidity: str = None if (json_data is None) or ("folder_voting_protocols_solidity" not in json_data) \
             else json_data["folder_voting_protocols_solidity"]
-        self.translator_solidity_subtype: str = None if (json_data is None) or ("translator_solidity_subtype" not in json_data) \
+        self.translator_solidity_subtype: trans_type_sol.TranslationTypesSolidity = trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value \
+            if (json_data is None) or ("translator_solidity_subtype" not in json_data) \
             else json_data["translator_solidity_subtype"]
         self.indent_json = 2 if (json_data is None) or ("indent_json" not in json_data) \
             else json_data["indent_json"]
@@ -65,6 +67,8 @@ class OutputConfigs(s_j.StringableJsonable):
         self.persistance_type: pb_shared.PersistanceType = \
             pb_shared.PersistanceType.FILE if (json_data is None) or ("persistance_type" not in json_data) \
             else json_data["persistance_type"]
+        self.output_uri: str = None if (json_data is None) or ("output_uri" not in json_data) \
+            else json_data["output_uri"]
         # file-specific info
         self.folder_output_path_base_file: str = None if (json_data is None) or ("folder_output_path_base_file" not in json_data) \
             else json_data["folder_output_path_base_file"]
