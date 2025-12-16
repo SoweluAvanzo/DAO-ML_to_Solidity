@@ -42,7 +42,7 @@ class PostprocessingConfigs(s_j.StringableJsonable):
             else json_data["post_processing_transformation"]
         self.version_translator: str = "1.0.0" if (json_data is None) or ("version_translator" not in json_data) \
             else json_data["version_translator"]
-        self.version_translation_target: str = None if (json_data is None) or ("version_translation_target" not in json_data) \
+        self.version_translation_target: str = "1.0.0" if (json_data is None) or ("version_translation_target" not in json_data) \
             else json_data["version_translation_target"]
         # specific ones
         """
