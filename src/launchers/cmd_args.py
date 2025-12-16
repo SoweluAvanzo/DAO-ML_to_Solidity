@@ -132,7 +132,8 @@ def get_args(logger: u.PrinterDebug = None):
     )
 
     # postprocessing
-    ppt_options = __enum_case_insensitive_list(PostProcessingTransformation)
+    ppt_options = __enum_case_insensitive_list(
+        pb_pp.PostProcessingTransformation)
     parser.add_argument(
         "-pp", "-ppt",
         "--post_processing", "--post_processing_transformation",
@@ -148,7 +149,8 @@ def get_args(logger: u.PrinterDebug = None):
         type=str,
         help="Version of the translator. Defaults to '1.0.0'",
         default="1.0.0",
-        required=False
+        required=False,
+        action="append"
     )
     parser.add_argument(
         "-vta", "-vtt",
@@ -158,7 +160,8 @@ def get_args(logger: u.PrinterDebug = None):
         type=str,
         help="Version of what is being produced as output; multiple evolutions might co-exists (in futrher developments). Defaults to '1.0.0'",
         default="1.0.0",
-        required=False
+        required=False,
+        action="append"
     )
     parser.add_argument(
         "-tf", "--templates-folder", "--templates_folder", "--template-folder", "--template_folder",
@@ -167,7 +170,8 @@ def get_args(logger: u.PrinterDebug = None):
         *templates_base_folder_combinations,
         type=str,
         help="folder (base) path for all template files; could be an absolute path or a relative path.",
-        required=False
+        required=False,
+        action="append"
     )
     # ... solidity
     # tt_sol = trans_type_sol.TranslationTypesSolidity.list()
@@ -183,7 +187,8 @@ def get_args(logger: u.PrinterDebug = None):
         "-ij", "--indent_json", "--indent-json",
         help="Indentation for JSON dumping",
         default=None,
-        required=False
+        required=False,
+        action="append"
     )
 
     # output
@@ -206,21 +211,24 @@ def get_args(logger: u.PrinterDebug = None):
         type=str,
         help=f"Types of persistance ends to output the result of the related Post Processing Translation; currently it accepts: {__cj(l_pt)}",
         choices=l_pt,
-        required=True
+        required=True,
+        action="append"
     )
 
     parser.add_argument(
-        "-of", "--output", "--output-folder", "--output_folder",
+        "-ouri", "--output", "--output-uri", "--output_uri",
         type=str,
-        help="Folder path for the File-based ouputs; if it's specified once, then it's applied to all File-based outpts",
-        required=False
+        help="URI for the output (a folder path for the File-based ones, a onnection string for); if it's specified once, then it's applied to all outpts. If multiple postprocessing are defined and some (but not all) of them requires a file-based output, then You can shortcut the outputs entries: at first, define the first postprocessing with the file output and the folder path as this flag value, then define all non-file-outputting postprocessing, then define the last postprocessing omitting the output-uri, so that they will inherit the value.",
+        required=False,
+        action="append"
     )
 
     parser.add_argument(
         "-fvp", "--folder-voting", "--folder-voting-protocols", "--folder_voting", "--folder_voting_protocols",
         type=str,
         help="folder (base) path for all template files; could be an absolute path or a relative path.",
-        required=False
+        required=False,
+        action="append"
     )
 
     # ---------
@@ -279,6 +287,35 @@ def get_args(logger: u.PrinterDebug = None):
 
     # postprocessing & output
 
+    # ... first, checks the mandatory fields
+    if (not args.post_processing_transformation) or (len(args.post_processing_transformation) <= 0):
+        raise Exception(
+            f"post_processing_transformation (multi)flag is required")
+    if (not args.output_type) or (len(args.output_type) <= 0):
+        raise Exception(
+            f"output_type (multi)flag is required")
+    if (not args.persistance_type) or (len(args.persistance_type) <= 0):
+        raise Exception(
+            f"persistance_type (multi)flag is required")
+
+    if len(args.output_type) != len(args.persistance_type):
+        raise Exception(
+            f"output_type amount of entries ({args.output_type}) is different than the persistance_type ones ({args.persistance_type})")
+
+    output_folder_default: str = None  # see the "help" section for output_uri
+    index_output_uri = 0
+    index_output_persistance_types = 0  # both output_type and persistance_type
+    pairs_ppt_o: list[configs.PostprocessingOutputPairConfigs] = []
+
+    ppts = args.post_processing_transformation
+    for index_post_processing_transformation in range(len(ppts)):
+        ppt_c: configs.PostprocessingConfigs = None
+        o_c: configs.OutputConfigs = None
+
+        ppt_c = configs.PostprocessingConfigs()
+        ppt_c.post_processing_transformation = pb_pp.REVERSE_MAPPING_PostProcessingTransformation[
+            ppts[index_post_processing_transformation]
+        ]
     # trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value
 
     if args.output:
