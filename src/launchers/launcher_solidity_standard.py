@@ -61,7 +61,7 @@ def main():
         '.', 'out')
 
     oc_all = configs.OutputConfigs()
-    oc_all.folder_output_path_base_file = output_folder_base_path
+    oc_all.output_uri = output_folder_base_path
     oc_all.output_type = pb_o.OutputType.JINJA_COMPILATION
     oc_all.persistance_type = pb_shared.PersistanceType.FILE
 
@@ -109,7 +109,7 @@ def main():
     ppc_json.post_processing_transformation = pb_pp.PostProcessingTransformation.JSON
 
     oc_json = configs.OutputConfigs()
-    oc_json.folder_output_path_base_file = output_folder_base_path
+    oc_json.output_uri = output_folder_base_path
     oc_json.output_type = pb_o.OutputType.PLAIN_STRING
     oc_json.persistance_type = pb_shared.PersistanceType.FILE
     ppopc_json = configs.PostprocessingOutputPairConfigs(

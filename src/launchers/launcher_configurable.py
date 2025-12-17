@@ -180,24 +180,24 @@ def additional_data_from_Output(
     non_none(post_processing_transformation, "post_processing_transformation")
     non_none(oc.persistance_type, "oc.persistance_type")
     non_none(oc.output_type, "oc.output_type")
-    non_none(oc.folder_output_path_base_file,
-             "oc.folder_output_path_base_file")
+    non_none(oc.output_uri,
+             "oc.output_uri")
     match(oc.persistance_type):
         case pb_shared.PersistanceType.FILE:
             match(oc.output_type):
                 case pb_o.OutputType.JINJA_COMPILATION:
-                    non_none(oc.folder_output_path_base_file,
-                             "folder_output_path_base_file")
+                    non_none(oc.output_uri,
+                             "output_uri")
                     add_data = pb_o.AdditionalDataFileJinja(
-                        folder_output_path_base=oc.folder_output_path_base_file,
+                        folder_output_path_base=oc.output_uri,
                         postprocessing_producing_output=post_processing_transformation
 
                     )
                 case pb_o.OutputType.PLAIN_STRING:
-                    non_none(oc.folder_output_path_base_file,
-                             "folder_output_path_base_file")
+                    non_none(oc.output_uri,
+                             "output_uri")
                     add_data = pb_o.AdditionalDataFileString(
-                        folder_output_path_base=oc.folder_output_path_base_file,
+                        folder_output_path_base=oc.output_uri,
                         postprocessing_producing_output=post_processing_transformation
                     )
         case pb_shared.PersistanceType.DATABASE:

@@ -44,7 +44,8 @@ class OutputType(psv.PhaseSubstepVariants):
 
 
 REVERSE_MAPPING_OutputType = {
-    v.value: v for v in OutputType}
+    v.value: v for v in OutputType
+}
 
 
 class OutputDestinationType(psv.PhaseSubstepVariants):

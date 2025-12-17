@@ -45,9 +45,7 @@ class PostprocessingConfigs(s_j.StringableJsonable):
         self.version_translation_target: str = "1.0.0" if (json_data is None) or ("version_translation_target" not in json_data) \
             else json_data["version_translation_target"]
         # specific ones
-        """
-        A case-specific ones
-        """
+        # ... JINJA
         self.base_template_folder: str = None if (json_data is None) or ("base_template_folder" not in json_data) \
             else json_data["base_template_folder"]
         self.folder_voting_protocols_solidity: str = None if (json_data is None) or ("folder_voting_protocols_solidity" not in json_data) \
@@ -55,6 +53,7 @@ class PostprocessingConfigs(s_j.StringableJsonable):
         self.translator_solidity_subtype: trans_type_sol.TranslationTypesSolidity = trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value \
             if (json_data is None) or ("translator_solidity_subtype" not in json_data) \
             else json_data["translator_solidity_subtype"]
+        # ... JSON
         self.indent_json = 2 if (json_data is None) or ("indent_json" not in json_data) \
             else json_data["indent_json"]
 
@@ -69,10 +68,6 @@ class OutputConfigs(s_j.StringableJsonable):
             else json_data["persistance_type"]
         self.output_uri: str = None if (json_data is None) or ("output_uri" not in json_data) \
             else json_data["output_uri"]
-        # file-specific info
-        self.folder_output_path_base_file: str = None if (json_data is None) or ("folder_output_path_base_file" not in json_data) \
-            else json_data["folder_output_path_base_file"]
-
 #
 
 

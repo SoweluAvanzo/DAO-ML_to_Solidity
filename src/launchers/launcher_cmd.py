@@ -25,7 +25,9 @@ import src.files.file_utils as files
 logger = u.PrinterDebug()  # logger_debug.LoggerDebug(class_name=__name__)
 
 
-def main(args: configs.TranslatorConfigs):
+def main(args: configs.TranslatorConfigs = None):
+    if args is None:
+        args = cmd_args.get_args()
     tp: translator_process.TranslatorProcess = None
     logger.print_msg("START\n\n")
     tc: launcher_config.TranslatorAndConfigurations = launcher_config.new_translator_process(
@@ -47,5 +49,4 @@ def main(args: configs.TranslatorConfigs):
 
 
 if __name__ == "__main__":
-    args: configs.TranslatorConfigs = cmd_args.get_args()
-    main(args)
+    main(None)

@@ -38,7 +38,8 @@ class PostProcessingTransformation(psv.PhaseSubstepVariants):
 
 
 REVERSE_MAPPING_PostProcessingTransformation = {
-    v.value: v for v in PostProcessingTransformation}
+    v.value: v for v in PostProcessingTransformation
+}
 
 #
 

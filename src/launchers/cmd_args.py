@@ -19,19 +19,23 @@ def __tbf_combos():
     # leads to 16 combinations
     t_f_b = ["base", "template", "folder"]
     t_f_b_extended = [*t_f_b, "templates"]  # the plural
-    seps = ["-", "_"]
+    seps = ["_", "-"]
     # the result was pre-computed, so the lenght is known in advance
     tbfc = [None] * (8 * len(seps))
+    combination = [None] * len(t_f_b)
     i = 0
     for a in t_f_b_extended:
+        combination[0] = a
         for b in t_f_b:
-            for c in t_f_b:
-                if (a != b) and (a != c) and (b != c) \
-                        and (not a.startswith(b)) and (not a.startswith(c)):
-                    combination = [a, b, c]
-                    for sep in seps:
-                        tbfc[i] = f"--{sep.join(combination)}"
-                        i += 1
+            if (a != b) and (not a.startswith(b)):
+                combination[1] = b
+                for c in t_f_b:
+                    if (a != c) and (b != c) \
+                            and (not a.startswith(c)):
+                        combination[2] = c
+                        for sep in seps:
+                            tbfc[i] = f"--{sep.join(combination)}"
+                            i += 1
     tbfc.sort()
     return tbfc
 
@@ -68,6 +72,7 @@ def get_args(logger: u.PrinterDebug = None):
         "-f", "--file",
         "--file-name", "--file_name",
         "--file-path", "--file_path",
+        "-i", "--input", "--input_uri", "--input-uri",
         type=str,
         help="file name/path of the (XML?) DAO (Diagram, actually) You need to process",
         required=False
@@ -163,11 +168,14 @@ def get_args(logger: u.PrinterDebug = None):
         required=False,
         action="append"
     )
-    parser.add_argument(
-        "-tf", "--templates-folder", "--templates_folder", "--template-folder", "--template_folder",
-        "-ft", "--folder_templates", "--folder-templates", "--folder_template", "--folder-template",
+    folder_templates_options = list(set([
         "-tfb", "-btf", "-ftb",
         *templates_base_folder_combinations,
+        "-tf", "--templates-folder", "--templates_folder", "--template-folder", "--template_folder",
+        "-ft", "--folder_templates", "--folder-templates", "--folder_template", "--folder-template"
+    ]))
+    parser.add_argument(
+        *folder_templates_options,
         type=str,
         help="folder (base) path for all template files; could be an absolute path or a relative path.",
         required=False,
@@ -182,6 +190,16 @@ def get_args(logger: u.PrinterDebug = None):
     #     choices=tt_sol,
     #     required=False
     # )
+    parser.add_argument(
+        "-fvps", "--folder_voting_protocols_solidity", "--folder-voting-protocols-solidity",
+        "-sfvp", "--solidity_folder_voting_protocols", "--solidity-folder-voting-protocols",
+        "-fps", "--folder_voting_solidity", "--folder-voting-solidity",
+        "-sfp", "--solidity_folder_voting", "--solidity-folder-voting",
+        type=str,
+        help="folder (base) path for all voting protocol template files; could be an absolute path or a relative path.",
+        required=False,
+        action="append"
+    )
     # json
     parser.add_argument(
         "-ij", "--indent_json", "--indent-json",
@@ -239,17 +257,18 @@ def get_args(logger: u.PrinterDebug = None):
 
     # input
 
+    is_input_file = False
     if args.persistance_type:
         match(args.persistance_type):
             case pb_shared.PersistanceType.DATABASE.value:
                 raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED + ": Database")
             case pb_shared.PersistanceType.FILE.value:
-                pass  # see below
+                is_input_file = True  # see below the "file" part to recycle that part
             case _:
                 raise Exception(
                     f"{e_c.ERROR_TEXT__NOT_IMPLEMENTED} : {args.persistance_type}")
 
-    if args.file:
+    if is_input_file or args.file:
         cmd_configs.input_config.source_uri = args.file
         cmd_configs.input_config.persistance_type = pb_shared.PersistanceType.FILE
         if args.input_base_folder:
@@ -260,17 +279,20 @@ def get_args(logger: u.PrinterDebug = None):
                 cmd_configs.model_format = pb_shared.ModelPersistanceFormat.JSON
                 cmd_configs.input_config.file_extension = pb_shared.ModelPersistanceFormat.JSON.value \
                     if args.file_input_extension is None else args.file_input_extension
-            case _:  # every other cases
+            case pb_shared.ModelPersistanceFormat.XML.value:
                 cmd_configs.model_format = pb_shared.ModelPersistanceFormat.XML
                 cmd_configs.input_config.file_extension = pb_shared.ModelPersistanceFormat.XML.value \
                     if args.file_input_extension is None else args.file_input_extension
                 if args.xml_version:
                     cmd_configs.input_config.xml_version = args.xml_version
-
+            case _:
+                raise Exception(
+                    f"{e_c.ERROR_TEXT__NOT_IMPLEMENTED} : {args.input_format}")
     # model
     if cmd_configs.model_format == pb_shared.ModelPersistanceFormat.XML:
-        if args.xml_schema_folder:
-            cmd_configs.model_gen_config.xml_schema_folder = args.xml_schema_folder
+        if args.xml_schema_folder or args.input_base_folder:
+            cmd_configs.model_gen_config.xml_schema_folder = args.input_base_folder \
+                if args.xml_schema_folder is None else args.xml_schema_folder
         else:
             raise Exception(
                 f"XML has been choosen as the input / model generation format, but no xml_schema_folder has been set")
@@ -294,38 +316,133 @@ def get_args(logger: u.PrinterDebug = None):
     if (not args.output_type) or (len(args.output_type) <= 0):
         raise Exception(
             f"output_type (multi)flag is required")
-    if (not args.persistance_type) or (len(args.persistance_type) <= 0):
+    if (not args.output_persistance) or (len(args.output_persistance) <= 0):
         raise Exception(
-            f"persistance_type (multi)flag is required")
-
-    if len(args.output_type) != len(args.persistance_type):
+            f"output_persistance (multi)flag is required")
+    if (not args.output) or (len(args.outputoutput_uri) <= 0):
         raise Exception(
-            f"output_type amount of entries ({args.output_type}) is different than the persistance_type ones ({args.persistance_type})")
+            f"output (or output_uri) (multi)flag is required")
 
-    output_folder_default: str = None  # see the "help" section for output_uri
+    if len(args.output_type) != len(args.output_persistance):
+        raise Exception(
+            f"output_type amount of entries ({len(args.output_type)}) is different than the output_persistance ones ({len(args.output_persistance)})")
+
+    # (see the "help" section for output_uri)
+    output_folder_default: str = None
+    index_ppt_version_translator = 0  # solidity
+    index_ppt_translation_target = 0  # solidity
+    index_ppt_indent_json = 0  # json
     index_output_uri = 0
-    index_output_persistance_types = 0  # both output_type and persistance_type
+    index_output_persistance_types = 0  # both output_type and output_persistance
+    index_folder_voting_protocols_solidity = 0
     pairs_ppt_o: list[configs.PostprocessingOutputPairConfigs] = []
 
-    ppts = args.post_processing_transformation
-    for index_post_processing_transformation in range(len(ppts)):
-        ppt_c: configs.PostprocessingConfigs = None
-        o_c: configs.OutputConfigs = None
+    # ... if this is the first entry, then store it if it's FILE (see the "help" section for output_uri)
+    if args.output_persistance[0] == pb_shared.PersistanceType.FILE.value:
+        output_folder_default = args.output[0]
+    elif len(args.output_type) != len(args.post_processing):
+        raise Exception(
+            f"post_processing amount of entries ({args.post_processing}) must be equal to the output ones (both output_type and persistance_type: {len(args.persistance_type)}) because there is no default configuration for non-defined output entries")
 
+    ppts: list[str] = args.post_processing
+    for index_post_processing_transformation in range(len(ppts)):
         ppt_c = configs.PostprocessingConfigs()
-        ppt_c.post_processing_transformation = pb_pp.REVERSE_MAPPING_PostProcessingTransformation[
+        o_c = configs.OutputConfigs()
+        # get the most important fields
+        ppt = pb_pp.REVERSE_MAPPING_PostProcessingTransformation[
             ppts[index_post_processing_transformation]
         ]
-    # trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value
+        version_translator_str: str = args.version_translator[index_ppt_version_translator] \
+            if index_ppt_version_translator < len(args.version_translator) \
+            else None
+        translation_target_str: str = args.version_translation_target[index_ppt_translation_target] \
+            if index_ppt_translation_target < len(args.version_translation_target) \
+            else None
+        output_persistance_type_str: str = args.output_persistance[index_output_persistance_types] \
+            if index_output_persistance_types < len(args.output_persistance) \
+            else None
+        output_type_str: str = args.output_type[index_output_persistance_types] \
+            if index_output_persistance_types < len(args.output_type) \
+            else None
+        output_uri_str: str = args.output[index_output_uri] \
+            if index_output_uri < len(args.output) \
+            else None
+        # set the most important and mandatory fields
+        # ... post processing transformation
+        ppt_c.post_processing_transformation = ppt
+        if version_translator_str is not None:
+            ppt_c.version_translator = version_translator_str
+            index_ppt_version_translator += 1
+        if translation_target_str is not None:
+            ppt_c.version_translation_target = translation_target_str
+            index_ppt_translation_target += 1
+        # ... output
+        if output_type_str is not None:
+            o_c.output_type = pb_o.REVERSE_MAPPING_OutputType[output_type_str]
+            index_output_persistance_types += 1
+        if output_persistance_type_str is not None:
+            o_c.persistance_type = pb_shared.REVERSE_MAPPING_PersistanceType[
+                output_persistance_type_str]
+        o_c.output_uri = output_folder_default if output_uri_str is None else output_uri_str
 
-    if args.output:
-        cmd_configs.output_source_uri = args.output
-    if args.templates_folder:
-        cmd_configs.base_template_folder = args.templates_folder
-    if "folder_voting_protocols" in args and args.folder_voting_protocols:
-        cmd_configs.folder_voting_protocols = args.folder_voting_protocols
-    elif args.folder_voting:
-        cmd_configs.folder_voting_protocols = args.folder_voting
+        # now, the complex part
+        index_output_uri += 1
+        match(ppt):
+            case pb_pp.PostProcessingTransformation.SOLIDITY.value \
+                | pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS.value \
+                    | pb_pp.PostProcessingTransformation.ASM.value:
+                # | pb_pp.PostProcessingTransformation.PETRI_NETS.value \
+                base_template_folder = output_folder_default if \
+                    output_uri_str is None else output_uri_str
+                ppt_c.base_template_folder = base_template_folder
+                if ppt == pb_pp.PostProcessingTransformation.SOLIDITY.value \
+                        or ppt == pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS.value:
+                    ppt_c.folder_voting_protocols_solidity = \
+                        args.folder_voting_protocols_solidity[index_folder_voting_protocols_solidity] \
+                        if index_folder_voting_protocols_solidity < len(args.folder_voting_protocols_solidity) \
+                        else base_template_folder
+                    index_folder_voting_protocols_solidity += 1
+                    ppt_c.translator_solidity_subtype = trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value  # by default
+
+            case pb_pp.PostProcessingTransformation.JSON.value:
+                ppt_c.indent_json = args.indent_json[index_ppt_indent_json] \
+                    if index_ppt_indent_json < len(args.indent_json) \
+                    else None
+                if ppt_c.indent_json is not None:
+                    if str.isdigit(ppt_c.indent_json):
+                        ppt_c.indent_json = int(ppt_c.indent_json)
+                index_ppt_indent_json += 1
+            case _:
+                raise Exception(
+                    f"On postprocessing #{index_post_processing_transformation}, unrecognized / unmanageable PostProcessingTransformation: {ppt}")
+        #
+        """
+        # TODO: fill with future (2025-12-17) developments
+        match(output_type_str):
+            case pb_o.OutputType.JINJA_COMPILATION.value:
+                match(output_persistance_type_str):
+                    case(pb_shared.PersistanceType.FILE.value):
+                    case _:
+                        raise Exception(
+                            f"On postprocessing #{index_post_processing_transformation}, unrecognized / unmanageable output_persistance_type_str: {output_persistance_type_str}")
+            case pb_o.OutputType.PLAIN_STRING.value:
+                match(output_persistance_type_str):
+                    case(pb_shared.PersistanceType.FILE.value):
+                    case _:
+                        raise Exception(
+                            f"On postprocessing #{index_post_processing_transformation}, unrecognized / unmanageable output_persistance_type_str: {output_persistance_type_str}")
+            case _:
+                raise Exception(
+                    f"On output #{index_post_processing_transformation}, unrecognized / unmanageable output_type: {output_type_str}")
+        """
+        # ... then ...
+        pairs_ppt_o.append(
+            configs.PostprocessingOutputPairConfigs(
+                postprocessingConfigs=ppt_c,
+                outputConfigs=o_c
+            )
+        )
+    cmd_configs.all_postprocessingOutputPairConfigs = pairs_ppt_o
 
     if logger:
         logger.print_msg(cmd_configs.to_string())
