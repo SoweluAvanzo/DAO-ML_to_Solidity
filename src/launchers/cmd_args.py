@@ -307,9 +307,15 @@ def get_args(logger: u.PrinterDebug = None):
     index_output_persistance_types = 0  # both output_type and persistance_type
     pairs_ppt_o: list[configs.PostprocessingOutputPairConfigs] = []
 
-    for index_post_processing_transformation in range(len(args.post_processing_transformation)):
-        ppt_c: configs.OutputConfigs = None
+    ppts = args.post_processing_transformation
+    for index_post_processing_transformation in range(len(ppts)):
+        ppt_c: configs.PostprocessingConfigs = None
         o_c: configs.OutputConfigs = None
+
+        ppt_c = configs.PostprocessingConfigs()
+        ppt_c.post_processing_transformation = pb_pp.REVERSE_MAPPING_PostProcessingTransformation[
+            ppts[index_post_processing_transformation]
+        ]
     # trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value
 
     if args.output:
