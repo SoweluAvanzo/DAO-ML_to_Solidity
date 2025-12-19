@@ -2,35 +2,40 @@
 import src.files.file_utils as files
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
-import src.input.txt_file_input as tfi
 import src.input.xml_file_input as xfi
 import src.output.text_file_output as tfo
 import src.output.jinja_text_file_output as jtfo
-import src.cli.cli_executor as clie
-import src.validators.xml_dao_validator as xvi
-import src.model_generators.json_string_model_generator as jg
+# import src.cli.cli_executor as clie
+import src.validators.xml.xml_dao_validator as xvi
+import src.validators.validation_result_to_errors as vete
+# import src.model_generators.json_string_model_generator as jg
 import src.model_generators.xml_string_model_generator as xsmg
-import src.postprocessing.output_preparation.model_to_json as m_json
+import src.postprocessing.model_translation.translation_types as ct
 import src.postprocessing.model_translation.model_translator_configurable as mcc
+import src.postprocessing.model_translation.solidity.voting_protocols_list_loader as pi_vpll
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
 import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
-import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as sol_test_t
+import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
+import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
 
-import src.postprocessing.consts_template as consts_t
-import src.postprocessing.model_translation.translation_types as ct
+import src.postprocessing.output_preparation.json.model_to_json as m_json
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_sol_t_j_1_0_0 as c_sol_t_j_1_0_0
 import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j
 import src.postprocessing.output_preparation.compilers.solidity.tests.templates.jinja.c_sol_tests_t_j as c_sol_tests_t_j
 
+import src.postprocessing.consts_template as consts_t
+
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr
 import src.pipeline.utilities.pi_any_value as pval
 import src.pipeline.utilities.pi_inputs_to_array as parr
+import src.pipeline.utilities.pi_exception_raiser as perrr
 import src.tests.pipeline.manual.t_file_1_process_pts as tf1_p_pts
 
 import src.utilities.extended_enum as ex_enum
+import src.utilities.utils as u
 
 DAO_TESTS_FOLDER = "tests"
 
@@ -44,16 +49,17 @@ class DAO_TESTS(ex_enum.ExtendedEnum):
 FILE_NAME_TXT_TEST = "dao_test_1"
 EXTENSION_JSON = "json"
 FOLDER_PATH_TXT_TEST = files.concat_folder_filename(
-    ".", "data", "tests", "pipeline")
+    consts_t.DEFAULT_BASE_FOLDER_INPUT, "tests", "pipeline")
 
 FILE_NAME_XML_1 = DAO_TESTS.TRAVELWARE.value  # T_DAO_1.value
 EXTENSION_XML = "xml"
 FILE_PATH_XML = files.concat_folder_filename(
-    '.', 'data', f"{FILE_NAME_XML_1}.{EXTENSION_XML}")
+    consts_t.DEFAULT_BASE_FOLDER_INPUT, f"{FILE_NAME_XML_1}.{EXTENSION_XML}")
 print(f"FILE_PATH_XML: {FILE_PATH_XML}")
 FILE_NAME_XML_SCHEMA = "XSD_DAO_ML"
 EXTENSION_XML_SCHEMA = "xsd"
-FILE_PATH_XML_SCHEMA = f"{files.concat_folder_filename('.', 'data', FILE_NAME_XML_SCHEMA)}.{EXTENSION_XML_SCHEMA}"
+FILE_PATH_XML_SCHEMA = files.concat_folder_filename(
+    consts_t.DEFAULT_BASE_FOLDER_INPUT, f"{FILE_NAME_XML_SCHEMA}.{EXTENSION_XML_SCHEMA}")
 
 XML_DAO_GRAMMAR_FILENAME = "XMLParser"
 XML_DAO_GRAMMAR_EXTENSION = "g4"
@@ -73,7 +79,10 @@ FILE_OUTPUT_MODEL_FILEPATH = files.concat_folder_filename(
 if __name__ == "__main__":
     print("START")
 
-    pm = pmp.PipelineManager()
+    printer_debug = u.PrinterDebug()
+    pm = pmp.PipelineManager(
+        printer_debug=printer_debug
+    )
 
     """
     # TEST JSON
@@ -122,7 +131,8 @@ if __name__ == "__main__":
 
     k_xml_file_input_pi = "k_xml_file_input_pi_1"
     xml_file_input_pi = xfi.TextFileInputXML(
-        pi.PIData(k_xml_file_input_pi, [k_xml_filepath_provider]), xml_version="1.0")
+        pi.PIData(k_xml_file_input_pi, [k_xml_filepath_provider]),
+        xml_version="1.0")
     pm.addItem(xml_file_input_pi)
 
     k_printer_echo_xml = "k_printer_echo_xml"
@@ -141,8 +151,14 @@ if __name__ == "__main__":
     # 2)
 
     k_xml_validator = "k_xml_validator"
-    xml_validator = xvi.XMLDaoValidator(pi.PIData(k_xml_validator, [
-                                        k_xml_file_input_pi]), FILE_PATH_XML_SCHEMA)  # , k_grammar_generator
+    xml_validator = xvi.XMLDaoValidator(
+        pi.PIData(
+            k_xml_validator,
+            [k_xml_file_input_pi]
+        ),
+        FILE_PATH_XML_SCHEMA,
+        printer_debug=printer_debug
+    )  # , k_grammar_generator
     pm.addItem(xml_validator)
 
     k_tf1_p_pts = "k_tf1_p_pts"
@@ -154,13 +170,31 @@ if __name__ == "__main__":
         pi.PIData(k_printer_p_pts, [k_tf1_p_pts]), None, True)
     pm.addItem(p_pts_printer)
 
+    k_p_validator_errors_extractor = "k_p_validator_errors_extractor"
+    p_validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
+        pi.PIData(k_p_validator_errors_extractor, [k_xml_validator]),
+        key_validation_result=k_xml_validator,
+        printer_debug=printer_debug
+    )
+    pm.addItem(p_validator_errors_extractor)
+
+    k_v_exc_raiser = "k_v_exc_raiser"
+    v_exc_raiser = perrr.PIExceptionRaiser(
+        pi.PIData(k_v_exc_raiser, [k_p_validator_errors_extractor]),
+        key_error_input=k_p_validator_errors_extractor,
+        printer_debug=printer_debug
+    )
+    pm.addItem(v_exc_raiser)
+
     # 3)
 
     k_xml_generator = "k_xml_generator"
     # just an alias, to standardize a bit more everything else
     k_model_generator = k_xml_generator
     xml_generator = xsmg.XmlStringModelGenerator(
-        pi.PIData(k_xml_generator, [k_xml_validator]))
+        pi.PIData(k_xml_generator, [k_xml_validator]),
+        printer_debug=printer_debug
+    )
     pm.addItem(xml_generator)
 
     k_string_model_printdebug = "k_string_model_printdebug"
@@ -180,8 +214,11 @@ if __name__ == "__main__":
     # 4)
 
     k_model_to_json = "k_model_to_json"
-    model_to_json = m_json.JsonStringModelGenerator(
-        pi.PIData(k_model_to_json, [k_model_generator]), True, indent="\t")
+    model_to_json = m_json.ModelToJSON(
+        pi.PIData(k_model_to_json, [k_model_generator]),
+        True,
+        indent="\t"
+    )
     pm.addItem(model_to_json)
     k_model_to_json_printer = "k_model_to_json_printer"
     printer_model_jsonified = pri.PIPrinter(
@@ -191,14 +228,22 @@ if __name__ == "__main__":
     # 5)
     k_additional_output_data = "k_additional_output_data"
     additional_metadata = {
-        "mode": "w"
+        tfo.KEY_OPEN_FILE_MODE: tfo.MODE_VALUES_WRITE_array[0]
     }
     additional_output_data = pval.PIAnyValue(
         pi.PIData(k_additional_output_data, [k_model_to_json]), additional_metadata)
     pm.addItem(additional_output_data)
     k_model_text_to_file_output = "k_model_text_to_file_output"
-    model_text_to_file_output = tfo.TextFileOutput(pi.PIData(k_model_text_to_file_output, [
-                                                   k_model_to_json, k_additional_output_data]), FILE_OUTPUT_MODEL_FILEPATH)
+
+    # TODO k_filepath_provider
+    # TODO: key_names_extractor
+    model_text_to_file_output = tfo.TextFileOutput(
+        pi.PIData(
+            k_model_text_to_file_output,
+            [k_model_to_json, k_additional_output_data]
+        ),
+        FILE_OUTPUT_MODEL_FILEPATH
+    )
     pm.addItem(model_text_to_file_output)
     k_model_text_to_file_output_ok_printer = "k_model_text_to_file_output_ok_printer"
     model_text_to_file_output_ok_printer = pri.PIPrinter(pi.PIData(
@@ -232,10 +277,10 @@ if __name__ == "__main__":
 
     # TODO generare gli inputs (per le key_ROBE del costruttore)
 
-    converter_type = ct.TranslationTypes.SOLIDITY.value
+    translator_type = ct.TranslationTypes.SOLIDITY.value
     k_translator_type = "k_translator_type"
     pi_translator_type = pstr.PIStr(
-        pi.PIData(k_translator_type, None), converter_type)
+        pi.PIData(k_translator_type, None), translator_type)
     pm.addItem(pi_translator_type)
 
     jinja_translator_version = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
@@ -249,14 +294,23 @@ if __name__ == "__main__":
         pi.PIData(k_translator_target, None), "1.0.0")
     pm.addItem(pi_translator_target)
 
-    converter_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
-    k_converter_solidity_subtype = "k_converter_solidity_subtype"
-    pi_converter_solidity_subtype = pstr.PIStr(
-        pi.PIData(k_converter_solidity_subtype, None), converter_solidity_subtype)
-    pm.addItem(pi_converter_solidity_subtype)
+    translator_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
+    k_translator_solidity_subtype = "k_translator_solidity_subtype"
+    pi_translator_solidity_subtype = pstr.PIStr(
+        pi.PIData(k_translator_solidity_subtype, None), translator_solidity_subtype)
+    pm.addItem(pi_translator_solidity_subtype)
 
-    k_all_voting_protocols_submitter = "k_all_voting_protocols_submitter"
     all_voting_protocols_folder = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
+    # k_all_voting_protocols_submitter = "k_all_voting_protocols_submitter"
+    k_all_voting_protocols_submitter = consts_t.KEY__ALL_VOTING_PROTOCOLS__ON_ADDITIONAL_DATA
+    p_voting_protocol_list_loader = pi_vpll.VotingProtocolListLoader(
+        pi.PIData(k_all_voting_protocols_submitter, None),
+        printer_debug=printer_debug,
+        folder_voting_protocols=all_voting_protocols_folder
+    )
+    pm.addItem(p_voting_protocol_list_loader)
+
+    """
     files_vp = files.list_files_in(all_voting_protocols_folder)
     # just the filename
     files_vp = set([
@@ -269,20 +323,22 @@ if __name__ == "__main__":
     files_vp = None
     pm.addItem(all_voting_protocols_submitter)
 
-    k_translator = "k_translator"
+    additional_metadata_model_translator = {
+        consts_t.KEY__ALL_VOTING_PROTOCOLS__ON_ADDITIONAL_DATA: k_all_voting_protocols_submitter
+    }
+    """
     # translator = translator_sol_opt.SolidityTranslatorOptimized( \
     # translator = to_sol_j_1_0_0.SolidityTranslatorOptimizedJinja_1_0_0( \
-    additional_metadata_model_converter = {
-        "key_all_voting_protocols": k_all_voting_protocols_submitter
-    }
+    k_translator = "k_translator"
     translator = mcc.ModelTranslatorConfigurable(
         pi.PIData(k_translator, [k_model_generator, k_translator_type, k_version_translator,
-                  k_translator_target, k_converter_solidity_subtype, k_all_voting_protocols_submitter]),
+                  k_translator_target, k_translator_solidity_subtype, k_all_voting_protocols_submitter]),
         key_model=k_model_generator,
-        key_converter_type=k_translator_type,
-        key_converter_version=k_version_translator,
-        key_converter_target=k_translator_target,
-        additional_data=additional_metadata_model_converter
+        key_translator_type=k_translator_type,
+        key_translator_version=k_version_translator,
+        key_translator_target=k_translator_target,
+        # additional_data=additional_metadata_model_translator,
+        printer_debug=printer_debug
     )
     pm.addItem(translator)
 
@@ -318,25 +374,25 @@ if __name__ == "__main__":
     tjs = template_jinja_solidity.CompilerSolidityTemplateJinja(... TODO ...)
     """
 
-    k_template_provider = "k_template_provider"
-    template_provider = template_by_name_txt.TemplateProviderFromTxtFile(
+    templates_provider = template_by_name_txt.TemplateProviderFromTxtFile(
         base_template_folder=consts_t.DEFAULT_BASE_FOLDER_TEMPLATES)
-    k_PI_template_provider = "k_PI_template_provider"
+    k_PI_templates_provider = "k_PI_templates_provider"
     # the template provider must be added to the chain so that the template compiler could retrieve it and use it
-    PI_template_provider = pval.PIAnyValue(
-        pi.PIData(k_PI_template_provider, None), template_provider)
-    pm.addItem(PI_template_provider)
+    PI_templates_provider = pval.PIAnyValue(
+        pi.PIData(k_PI_templates_provider, None), templates_provider)
+    pm.addItem(PI_templates_provider)
 
-    # TODO: (2025-08-23) NOTE: EVEN THE COMPILER SHOULD BE "configurable" IN THE SAME WAY AS THE CONVERTER DOES
+    # TODO: (2025-08-23) NOTE: EVEN THE COMPILER SHOULD BE "configurable" IN THE SAME WAY AS THE TRANSLATOR DOES
     k_template_compiler = "k_template_compiler"
     template_compiler = c_sol_t_j_1_0_0.CompilerSolidityTemplateJinja_1_0_0(pi.PIData(k_template_compiler, [
         k_translator,
         k_model_generator,
-        k_PI_template_provider
+        k_PI_templates_provider
     ]),
         key_diagram_instance_data=k_translator,
         key_diagram_model=k_model_generator,
-        key_template_skeleton_provider_by_name=k_PI_template_provider
+        key_template_skeleton_provider_by_name=k_PI_templates_provider,
+        printer_debug=printer_debug
     )
     pm.addItem(template_compiler)
     # TODO: 2025-07-26 FARE L'OUTPUT E LA TRADUZIONE
@@ -345,7 +401,7 @@ if __name__ == "__main__":
     k_compiled_output_txt = "k_compiled_output_txt"
     compiled_base_destination = "out"
     compiled_output_txt = jtfo.JinjaTextFileOutput(pi.PIData(k_compiled_output_txt, [k_template_compiler]),
-                                                   key_translated_diagram=k_template_compiler,
+                                                   key_compiled_diagram=k_template_compiler,
                                                    base_destination=compiled_base_destination
                                                    )
     pm.addItem(compiled_output_txt)
@@ -357,20 +413,52 @@ if __name__ == "__main__":
         pi.PIData(k_is_result_as_list, None), True)
     pm.addItem(pi_is_result_as_list)
 
+#
+
     # ASM
 
+#
+
+    translator_type_asm = ct.TranslationTypes.ASM.value
+    k_translator_type_asm = "k_translator_type_asm"
+    pi_translator_type_asm = pstr.PIStr(
+        pi.PIData(k_translator_type_asm, None), translator_type_asm)
+    pm.addItem(pi_translator_type_asm)
+
+    asm_translator_version = t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value
+    k_version_translator_asm = "k_version_translator_asm"
+    pi_version_translator_asm = pstr.PIStr(
+        pi.PIData(k_version_translator_asm, None), asm_translator_version)
+    pm.addItem(pi_version_translator_asm)
+
+    k_translator_target_asm = "k_translator_target_asm"
+    pi_translator_target = pstr.PIStr(
+        pi.PIData(k_translator_target_asm, None), t_j_asm_1_0_0.TARGET_VERSION)
+    pm.addItem(pi_translator_target)
     k_translator_asm = "k_translator_asm"
+    translator_asm = mcc.ModelTranslatorConfigurable(
+        pi.PIData(k_translator_asm, [
+            k_model_generator, k_translator_type_asm, k_version_translator_asm, k_translator_target_asm
+        ]),
+        key_model=k_model_generator,
+        key_translator_type=k_translator_type_asm,
+        key_translator_version=k_version_translator_asm,
+        key_translator_target=k_translator_target_asm,
+        printer_debug=printer_debug
+    )
+    """
     translator_asm = t_j_asm_1_0_0.TranslatorJinjaASM_1_0_0(pi.PIData(k_translator_asm, [k_model_generator]),
                                                             optional_external_data=None,
                                                             key_model=k_model_generator
                                                             )
+    """
     pm.addItem(translator_asm)
 
     k_compiler_asm = "k_compiler_asm"
-    compiler_asm = c_asm_t_j.CompilerASMTemplateJinja(pi.PIData(k_compiler_asm, [k_translator_asm, k_PI_template_provider, k_model_generator, k_is_result_as_list]),
+    compiler_asm = c_asm_t_j.CompilerASMTemplateJinja(pi.PIData(k_compiler_asm, [k_translator_asm, k_PI_templates_provider, k_model_generator, k_is_result_as_list]),
                                                       optional_external_data=None,
                                                       key_diagram_instance_data=k_translator_asm,
-                                                      key_template_skeleton_provider_by_name=k_PI_template_provider,
+                                                      key_template_skeleton_provider_by_name=k_PI_templates_provider,
                                                       key_diagram_model=k_model_generator,
                                                       key_is_result_as_list=k_is_result_as_list
                                                       )
@@ -385,7 +473,7 @@ if __name__ == "__main__":
 
     k_asm_compiled_output_txt = "k_asm_compiled_output_txt"
     compiled_output_txt_asm = jtfo.JinjaTextFileOutput(pi.PIData(k_asm_compiled_output_txt, [k_compiler_asm, k_asm_compilation_announcer_printer]),
-                                                       key_translated_diagram=k_compiler_asm,
+                                                       key_compiled_diagram=k_compiler_asm,
                                                        base_destination=compiled_base_destination
                                                        )
     pm.addItem(compiled_output_txt_asm)
@@ -401,10 +489,10 @@ if __name__ == "__main__":
     pm.addItem(translator_sol_test)
 
     k_compiler_sol_test = "k_compiler_sol_test"
-    compiler_sol_test = c_sol_tests_t_j.CompilerSolidityTestsTemplateJinja(pi.PIData(k_compiler_sol_test, [k_translator_sol_test, k_PI_template_provider, k_model_generator, k_is_result_as_list]),
+    compiler_sol_test = c_sol_tests_t_j.CompilerSolidityTestsTemplateJinja(pi.PIData(k_compiler_sol_test, [k_translator_sol_test, k_PI_templates_provider, k_model_generator, k_is_result_as_list]),
                                                                            optional_external_data=None,
                                                                            key_diagram_instance_data=k_translator_sol_test,
-                                                                           key_template_skeleton_provider_by_name=k_PI_template_provider,
+                                                                           key_template_skeleton_provider_by_name=k_PI_templates_provider,
                                                                            key_diagram_model=k_model_generator,
                                                                            key_is_result_as_list=k_is_result_as_list
                                                                            )
@@ -419,7 +507,7 @@ if __name__ == "__main__":
 
     k_sol_test_compiled_output_txt = "k_sol_test_compiled_output_txt"
     compiled_output_txt_sol_test = jtfo.JinjaTextFileOutput(pi.PIData(k_sol_test_compiled_output_txt, [k_compiler_sol_test, k_sol_test_compilation_announcer_printer]),
-                                                            key_translated_diagram=k_compiler_sol_test,
+                                                            key_compiled_diagram=k_compiler_sol_test,
                                                             base_destination=compiled_base_destination
                                                             )
     pm.addItem(compiled_output_txt_sol_test)
@@ -438,5 +526,7 @@ if __name__ == "__main__":
     import json
     print(
         f"outputs:\n\t {json.dumps({k: str(v) for k, v in outputs.items()}, indent=2)}")
+
+        python -m src.tests.pipeline.manual.t_file_1 > AAAAA.txt
     """
     print("\n\n\nEND")

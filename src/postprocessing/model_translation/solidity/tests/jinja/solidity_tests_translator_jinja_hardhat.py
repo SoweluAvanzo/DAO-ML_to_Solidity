@@ -52,7 +52,7 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
         """
         return shared_utils_sol.get_control_bitflags(dao, role_or_committee, group_size, functionalities_ids)
 
-    def compute_states_variables__roles_committee_computed_data(self, dao: d.DAO, functionalities_ids: dict[str, int], group_size: int):
+    def compute_states_variables__roles_committee_computed_data(self, dao: d.DAO, functionalities_ids: dict[str, int], group_size: user_functionalities_group_size_module.UserFunctionalitiesGroupSize):
         """
         Override-designed
         """
@@ -111,7 +111,7 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
     def get_test_name_simple(self, diagram: dm.DiagramManager, dao: d.DAO, additional_data=None):
         return "standard_test_script_template"
 
-    def translate_DAO(self, diagram: dm.DiagramManager, dao: d.DAO, additional_data=None) -> st_t.TranslatedDAO_SolidityTest:
+    def translate_dao(self, diagram: dm.DiagramManager, dao: d.DAO, additional_data=None) -> st_t.TranslatedDAO_SolidityTest:
         dao_translated_data = {}
         dao_translated = st_t.TranslatedDAO_SolidityTest(
             dao, dao_translated_data, is_convertible=True)
@@ -159,5 +159,5 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
         #
         return dao_translated
 
-    def translate_Diagram(self, diagram: dm.DiagramManager, additional_data=None) -> st_t.TranslatedDiagram_SolidityTest:
+    def translate_diagram(self, diagram: dm.DiagramManager, additional_data=None) -> st_t.TranslatedDiagram_SolidityTest:
         return st_t.TranslatedDiagram_SolidityTest(diagram, additional_data, is_convertible=False)

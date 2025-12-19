@@ -1,13 +1,14 @@
 import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_base as tjb
 
+import src.utilities.utils as u
+
 
 """
 No differences at the moment from the super (Jinja Base) class.
 """
 
 
-# CompilerStandardModelMultipart_TemplateJinja
 class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase):
     """
     It fundamentally relies on an instance of ModelToTemplateMapperBase
@@ -17,7 +18,8 @@ class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase):
                  optional_external_data=None,
                  key_template_instance_data: str = None,
                  key_template_skeleton: str = None,
-                 key_diagram_model: str = None
+                 key_diagram_model: str = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
         if not isinstance(pipeline_item_data, pi.PIData):
             raise Exception(
@@ -26,7 +28,8 @@ class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase):
                                                pipeline_item_data,
                                                optional_external_data=optional_external_data,
                                                key_template_instance_data=key_template_instance_data,
-                                               key_template_skeleton=key_template_skeleton
+                                               key_template_skeleton=key_template_skeleton,
+                                               printer_debug=printer_debug
                                                )
         self.key_diagram_model = key_diagram_model
 

@@ -1,6 +1,5 @@
 import src.pipeline.pipeline_item as pi
 
-
 import src.postprocessing.model_translation.shared.model_translator_base as mcb
 import src.postprocessing.model_translation.shared.model_translator_subparts as mts
 import src.postprocessing.model_translation.shared.translation_result_base as crb
@@ -10,6 +9,8 @@ import src.postprocessing.consts_template as c_t
 
 import src.model.dao as dao_m
 import src.model.diagram_manager as diagram_manager_m
+
+import src.utilities.utils as u
 
 
 class TranslatedDAO_ASM_Jinja(trmt.TranslatedDAOTemplated):
@@ -41,11 +42,17 @@ class TranslatedDiagram_ASM_Jinja(trmt.TranslatedDiagramTemplated):
 
 
 class TranslatorJinjaASM(mts.ModelTranslatorSubparts):
+    """
+    Base class for all ASM Translators (all of them are templates[Jinja]-based).
+    """
+
     def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
-                 key_model: str = None
+                 key_model: str = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
         super().__init__(pipeline_item_data,
-                         key_model=key_model
+                         key_model=key_model,
+                         printer_debug=printer_debug
                          )
         self.optional_external_data = optional_external_data
 
@@ -63,14 +70,14 @@ class TranslatorJinjaASM(mts.ModelTranslatorSubparts):
 
     #
 
-    def translate_DAO(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO, additional_data=None) -> TranslatedDAO_ASM_Jinja:
+    def translate_dao(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO, additional_data=None) -> TranslatedDAO_ASM_Jinja:
         """
         Override-designed
         """
         raise NotImplementedError(
             f"Current class ({type(self)}) still do not implement the DAO translation")
 
-    def translate_Diagram(self, diagram: diagram_manager_m.DiagramManager, additional_data=None) -> TranslatedDiagram_ASM_Jinja:
+    def translate_diagram(self, diagram: diagram_manager_m.DiagramManager, additional_data=None) -> TranslatedDiagram_ASM_Jinja:
         """
         Override-designed
         """

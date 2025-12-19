@@ -1,13 +1,16 @@
 
 from io import StringIO
+import src.utilities.utils as u
+import src.utilities.stringable_jsonable as s_j
 
-class BaseEntity:
+
+class BaseEntity(s_j.StringableJsonable):
     def __init__(self, id) -> None:
         self.id = id
 
     def get_id(self):
         return self.id
-    
+
     def get_name(self) -> str:
         """
         To be Overridden
@@ -35,13 +38,16 @@ class BaseEntity:
                     string_builder.write(ms)
         string_builder.write(')')
         return string_builder.getvalue()
-    
+
     def __tojson__(self):
         return self.toJSON()
+
     def __to_json__(self):
         return self.__tojson__()
+
     def to_json(self):
         return self.__to_json__()
+
     def __repr__(self):
         import json
         return json.dumps(self.toJSON())

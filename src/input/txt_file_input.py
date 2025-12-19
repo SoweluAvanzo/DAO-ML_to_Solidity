@@ -2,10 +2,20 @@
 from src.input.file_input import FileInput
 import src.pipeline.pipeline_item as pi
 
+import src.utilities.utils as u
+
 
 class TextFileInput(FileInput):
-    def __init__(self, pipeline_item_data: pi.PIData, filepath=None, should_strip_line=False):
-        super().__init__(pipeline_item_data, filepath)
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 printer_debug: u.PrinterDebug = None,
+                 filepath=None,
+                 should_strip_line=False
+                 ):
+        super().__init__(
+            pipeline_item_data,
+            printer_debug=printer_debug,
+            filepath=filepath
+        )
         self.should_strip_line = should_strip_line
 
     def get_input_as_iterable(self):

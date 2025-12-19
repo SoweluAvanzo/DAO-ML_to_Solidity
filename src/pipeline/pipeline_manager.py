@@ -2,6 +2,7 @@ from enum import Enum
 from collections import deque
 
 import src.pipeline.pipeline_item as pi
+import src.utilities.utils as u
 
 
 class NodeRunStatus(Enum):
@@ -17,8 +18,10 @@ def newEmptyDependencyOutputData(done=False, data=None):  # -> list[bool, any]:
 
 
 class PipelineNode(pi.PipelineItem):
-    def __init__(self, pipelineManager, item: pi.PipelineItem):
-        super().__init__(pi.PIData(item.get_key(), None))
+    def __init__(self, pipelineManager, item: pi.PipelineItem,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(pi.PIData(item.get_key(), None), printer_debug=printer_debug)
         self.pipelineManager = pipelineManager
         self.item = item
         self.status_run = NodeRunStatus.NEVER_RUN
@@ -89,8 +92,21 @@ class PipelineNode(pi.PipelineItem):
 
 
 class PipelineManager:
-    def __init__(self):
+    def __init__(self, printer_debug: u.PrinterDebug = None):
         self.items: dict[str, pi.PipelineItem] = {}
+        self.printer_debug = printer_debug
+
+    def print_error(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_error(msg)
+        else:
+            print(msg)
+
+    def print_msg(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_msg(msg)
+
+    #
 
     def addItem(self, item: pi.PipelineItem):
         self.items[item.get_key()] = item
@@ -103,10 +119,10 @@ class PipelineManager:
     def getItem(self, key: str) -> pi.PipelineItem:
         return self.items[key]
 
-    def runPipeline(self) -> any:
+    def runPipeline(self):
         # setup the data structures
         items_as_list = list(self.items.values())
-        nodes = {item.get_key(): PipelineNode(self, item)
+        nodes = {item.get_key(): PipelineNode(self, item, printer_debug=self.printer_debug)
                  for item in items_as_list}
         roots = []
         # setup dependendants
@@ -116,7 +132,9 @@ class PipelineManager:
             if item.get_dependencies() != None and (len(item.get_dependencies()) > 0):
                 for d in item.get_dependencies():
                     if d not in nodes:
-                        print(f"ERROR: dependency {d} does not exist")
+                        self.print_error(
+                            f"ERROR: dependency {d} in node '{key}' does not exist")
+
                     else:
                         n = nodes[d]
                         n.addDependant(current_node)
@@ -134,6 +152,7 @@ class PipelineManager:
             job.status_run = NodeRunStatus.RUNNING
             input = job.getInputForRun()
             try:
+                self.print_msg(f"Running item with key: {job.item.get_key()}")
                 output = job.item.run(input)
                 job.status_run = NodeRunStatus.DONE
                 # update dependants

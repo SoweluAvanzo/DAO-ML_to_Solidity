@@ -18,7 +18,7 @@ def get_base_folder(folder_base):
         return os.getcwd()
 
 
-def concat_folder_filename(*parts) -> str:
+def concat_folder_filename(*parts: tuple[str]) -> str:
     return os.path.join(*parts)
 
 
@@ -36,7 +36,7 @@ def delete_file(file_path: str):
 
 def extract_folder_from_full_path(full_path: str):
     index_start_filename = full_path.rfind(os.sep)
-    if index_start_filename <= 0:
+    if (index_start_filename < 0) or (full_path[index_start_filename + 1:].rfind(".") < 0):
         return full_path
     return full_path[:index_start_filename]
 

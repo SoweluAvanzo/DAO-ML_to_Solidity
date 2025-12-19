@@ -1,13 +1,15 @@
 
 from antlr4 import CommonTokenStream, InputStream
 from antlr4.tree.Tree import TerminalNodeImpl
+
+import src.pipeline.pipeline_item as pi
+
 import src.parsers.xml.XMLLexer as xmlL
 import src.parsers.xml.XMLParser as xmlP
 import src.parsers.xml.XMLParserVisitor as xmlPV
+import src.validators.validation_result as validation_res
 
-import src.pipeline.pipeline_item as pi
 import src.model_generators.base_generator as bg
-# import src.utilities.utils as u
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.governance_area as ga
@@ -16,16 +18,29 @@ import src.model.committee as c
 import src.model.permission as p
 import src.model.enums.relation_type as r_t
 
+import src.utilities.utils as u
+
 
 class XmlStringModelGenerator(bg.BaseGenerator):
-    def __init__(self, pipeline_item_data: pi.PIData):
-        super().__init__(pipeline_item_data)
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(pipeline_item_data,
+                         printer_debug=printer_debug
+                         )
+
+    def new_XMLDAOVisitor(self):
+        return XMLDAOVisitor(printer_debug=self.printer_debug)
 
     def generate(self, validation_result):
         try:
+            if not isinstance(validation_result, validation_res.ValidationResult):
+                raise Exception(
+                    f"Unrecognized validation result type: expected ValidationResult, got: {type(validation_result)}.")
+
             # errors=validation_result["errors"]
             # tree_parsed=validation_result["tree_parsed"]
-            input = validation_result["input"]
+            input = validation_result.input
             # input_string_list=validation_result["input_string_list"]
 
             # setup of the parser
@@ -37,28 +52,35 @@ class XmlStringModelGenerator(bg.BaseGenerator):
             tree = parser.document()
 
             # actual transformation
-            visitor = XMLDAOVisitor()
+            visitor = self.new_XMLDAOVisitor()
             diagram_manager = dm.DiagramManager()
             visitor.parseDiagramTree(tree, diagram_manager)
-            print("diagram manager generated")
             return diagram_manager
         except Exception as e:
-            print("\nERROR while generating Model")
-            print(e)
-            print("\n")
+            self.print_error("\nERROR while generating Model")
+            self.print_error(e)
+            self.print_error("\n")
             return None
 
 
 class XMLDAOVisitor(xmlPV.XMLParserVisitor):
-    def __init__(self):
+    def __init__(self, printer_debug: u.PrinterDebug = None):
         self.current_dao = None
         self.translation_results = []
         self.diagramManager: dm.DiagramManager = None
+        self.printer_debug = printer_debug
 
-    def parseDiagramTree(self, tree, diagramManager: dm.DiagramManager, reset=False):
+    def print_error(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_error(msg)
+
+    def print_msg(self, msg):
+        if self.printer_debug is not None:
+            self.printer_debug.print_msg(msg)
+
+    def parseDiagramTree(self, tree, diagramManager: dm.DiagramManager):
         self.diagramManager = diagramManager
-        if reset:
-            diagramManager.reset()
+        self.print_msg("starting parsing diagram tree")
         # at first, gather all the data (raw instances) through the "visitABC" methods into the "diagramManager" ...
         self.visit(tree)
         # ... then, process and "link" all the raw data
@@ -66,11 +88,10 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         self.diagramManager = None  # just to clean the memory
 
     def visitDiagram(self, ctx: xmlP.XMLParser.DiagramContext):
-        print("..........visitDiagram ^^ ")
+        self.printer_debug.print_msg("..........visitDiagram ^^ ")
         uniqueID = ctx.diagram_uniqueID()[0].STRING().getText().strip('"')
         self.diagramManager.id = uniqueID
-        self.diagramManager.uniqueID = uniqueID
-        print(f"Diagram uniqueID: {uniqueID}")
+        self.printer_debug.print_msg(f"Diagram uniqueID: {uniqueID}")
         return super().visitDiagram(ctx)
 
     def visitRole(self, ctx: xmlP.XMLParser.RoleContext):
@@ -165,11 +186,11 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
                     hierarchical_inheritance)
         # self.daos[dao_id] = dao
         self.diagramManager.addDao(dao)
-        print(f'DAO created with ID: {dao_id}')
+        self.printer_debug.print_msg(f'DAO created with ID: {dao_id}')
         # recursively visits the children of the dao
         self.current_dao = dao
         self.visitChildren(ctx)
-        print("visitDao completed")
+        self.printer_debug.print_msg("visitDao completed")
         self.current_dao = None
         return dao
 
@@ -179,7 +200,7 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             0].STRING().getText().strip('"')
         gov_area_implementation = ctx.gov_area_implementation()[
             0].STRING().getText().strip('"')
-        print(
+        self.printer_debug.print_msg(
             f"visitGov: gov_area_ID: {gov_area_ID} --- gov_area_description: {gov_area_description}")
         governance_area = ga.GovernanceArea(
             gov_area_ID, gov_area_description, gov_area_implementation)
@@ -196,13 +217,20 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
     def get_translation_summary(self):
         return str(self)
 
-
-def traverse(tree, rule_names, indent=0):
-    if tree.getText() == "<EOF>":
-        return
-    elif isinstance(tree, TerminalNodeImpl):
-        print("{0}TOKEN='{1}'".format("\t" * indent, tree.getText()))
-    else:
-        print("{0}{1}".format("\t" * indent, rule_names[tree.getRuleIndex()]))
-        for child in tree.children:
-            traverse(child, rule_names, indent + 1)
+    def traverse_parsing_tree_debug(self, tree, rule_names, indent=0):
+        """
+        Originally used  to just debug the parsed tree, now unused
+        """
+        if self.printer_debug is None:
+            # print("ERROR: CAN'T DEBUG using the method \"traverse_parsing_tree_debug\" because no printer_debug is found")
+            self.printer_debug = u.PrinterDebug()
+        if tree.getText() == "<EOF>":
+            return
+        elif isinstance(tree, TerminalNodeImpl):
+            self.printer_debug.print_msg(
+                "{0}TOKEN='{1}'".format("\t" * indent, tree.getText()))
+        else:
+            self.printer_debug.print_msg("{0}{1}".format(
+                "\t" * indent, rule_names[tree.getRuleIndex()]))
+            for child in tree.children:
+                self.traverse_parsing_tree_debug(child, rule_names, indent + 1)

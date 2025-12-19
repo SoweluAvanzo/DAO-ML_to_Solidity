@@ -19,7 +19,7 @@ class DAOMetadata:
 
     def toJSON(self):
         return {
-            "user_functionalities_group_size": self.user_functionalities_group_size,
+            "user_functionalities_group_size": self.user_functionalities_group_size.name,
             "size_user_functionalities_group": self.size_user_functionalities_group
         }
 
@@ -46,8 +46,8 @@ class DAO(base_entity_module.BaseEntity):
         self.proposal_conditions: dict[str, str] = {}  # Committee
         self.decision_making_methods: dict[str, str] = {}  # Committee
         self.conditions: list[str] = []
-        self.role_and_committee_voting_right_dict = {}
-        self.role_and_committee_proposal_right_dict = {}
+        self.role_and_committee_voting_right_dict: dict[str, str] = {}
+        self.role_and_committee_proposal_right_dict: dict[str, str] = {}
 
     def get_name(self) -> str:
         return self.dao_name
@@ -69,6 +69,7 @@ class DAO(base_entity_module.BaseEntity):
         obj["dao_name"] = self.dao_name
         obj["mission_statement"] = self.mission_statement
         obj["hierarchical_inheritance"] = self.hierarchical_inheritance
+        obj["owner_role"] = "null" if self.owner_role is None else self.owner_role.get_id()
         obj["roles"] = {n: self.roles[n].toJSON() for n in self.roles}
         obj["committees"] = {n: self.committees[n].toJSON()
                              for n in self.committees}
@@ -77,7 +78,7 @@ class DAO(base_entity_module.BaseEntity):
         obj["governance_areas"] = {
             n: self.governance_areas[n].toJSON() for n in self.governance_areas},
         obj["dao_control_graph"] = f"DAO Graph, but not serializable, of type: {self.dao_control_graph.__class__.__name__ if self.dao_control_graph is not None else 'NONE'}"
-        # obj["metadata"] = self.metadata.toJSON()
+        obj["metadata"] = self.metadata.toJSON()
         obj["assignment_conditions"] = {
             r: self.assignment_conditions[r] for r in self.assignment_conditions}
         obj["voting_conditions"] = {
@@ -87,6 +88,8 @@ class DAO(base_entity_module.BaseEntity):
         obj["decision_making_methods"] = {
             n: self.decision_making_methods[n] for n in self.decision_making_methods}
         obj["conditions"] = self.conditions
+        obj["role_and_committee_voting_right_dict"] = self.role_and_committee_voting_right_dict
+        obj["role_and_committee_proposal_right_dict"] = self.role_and_committee_proposal_right_dict
         return obj
 
     def __str__(self):

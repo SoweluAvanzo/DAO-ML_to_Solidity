@@ -10,17 +10,16 @@ import src.control_graph.control_graph_basic as cgb
 
 
 class DiagramManager(base_entity_module.BaseEntity):
-    def __init__(self, controGraphGenerator=None):
+    def __init__(self, controlGraphGenerator=None):
         super().__init__("DiagramManager_ID")
-        self.uniqueID = "DiagramManager_ID"
         self.rowDataOnly = True
         self.daoByID: dict[str, dao_module.DAO] = {}
         self.relations_by_dao: dict[str,
                                     list[tuple[rt.RelationType, str, str]]] = {}
-        self.controGraphGenerator = controGraphGenerator
+        self.controlGraphGenerator = controlGraphGenerator
 
     def get_name(self) -> str:
-        return self.uniqueID
+        return self.id
 
     def get_dao_by(self, daoOrID):
         dao = None
@@ -70,7 +69,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                 raise Exception(
                     "Can't create Control Graph with no provided DAO")
         cg = cgb.ControlGraphBasic(
-            dao) if self.controGraphGenerator is None else self.controGraphGenerator(dao)
+            dao) if self.controlGraphGenerator is None else self.controlGraphGenerator(dao)
         dao.dao_control_graph = cg
         return cg
 
@@ -250,7 +249,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         dao.conditions = conditions
 
     def __str__(self):
-        result = ["DiagramManager", f"\t uniqueID: {self.uniqueID}", "DAOs:"]
+        result = ["DiagramManager", f"\t uniqueID: {self.get_id()}", "DAOs:"]
         try:
             for dao in self.daoByID.values():
                 result.append("Dao")
@@ -268,14 +267,7 @@ class DiagramManager(base_entity_module.BaseEntity):
             return f"ERROR in DiagramManager to-string:\n{e}"
 
     def toJSON(self):
-        """ 
-        self.uniqueID = "DiagramManager_ID"
-        self.rowDataOnly = True
-        self.daoByID: map[str, dao_module.DAO] = {}
-        self.relations_by_dao: map[str, list[tuple[rt.RelationType, str, str]]] = {}
-         """
-        # self.controGraphGenerator
-
+        # TODO: self.controlGraphGenerator
         relations_by_dao = {
             dao_id: [
                 {
@@ -292,10 +284,10 @@ class DiagramManager(base_entity_module.BaseEntity):
             for dao_id, dao in self.daoByID.items()
         }
         return {
-            "id": self.id,
-            "uniqueID": self.uniqueID,
+            "id": self.get_id(),
+            "uniqueID": self.get_id(),
             "rowDataOnly": self.rowDataOnly,
             "relations_by_dao": relations_by_dao,
             "daoByID": daoByID,
-            "controGraphGenerator": None
+            "controlGraphGenerator": None
         }

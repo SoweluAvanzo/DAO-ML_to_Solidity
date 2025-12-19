@@ -21,5 +21,54 @@ def to_camel_case(s: str) -> str:
     )
 
 
-def to_keyword(name: str) -> str:
-    return fu.sanitize_filename(name).lower()
+def to_keyword(name: str, to_lower=True) -> str:
+    sanitized_name: str = fu.sanitize_filename(name)
+    return sanitized_name.lower() if to_lower else sanitized_name
+
+
+#
+
+ERRORS_KEYS = [
+    "errors",
+    "is_error",
+    "is_exception",
+    "exception"
+]
+
+
+class PrinterDebug:
+
+    def print_msg(self, msg: str):
+        """
+        Overridable
+        """
+        print(msg)
+
+    def print_error(self, msg):
+        """
+        Overridable
+        """
+        print(msg)
+
+    def __call__(self, *args, **kwds):
+        for err_keyword in ERRORS_KEYS:
+            if err_keyword in kwds:
+                self.print_error(args[0])
+                return
+        self.print_msg(args[0])
+
+
+class MultiPrinterDebug(PrinterDebug):
+    def __init__(self, delegators: list[PrinterDebug]):
+        super().__init__()
+        if (delegators is None) or (len(delegators) <= 0):
+            raise Exception("No delegators provided")
+        self.__delegators = delegators
+
+    def print_msg(self, msg: str):
+        for d in self.__delegators:
+            d.print_msg(msg)
+
+    def print_error(self, msg):
+        for d in self.__delegators:
+            d.print_error(msg)

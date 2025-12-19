@@ -1,20 +1,29 @@
 import os
 import src.pipeline.pipeline_item as pi
 
+import src.utilities.utils as u
+
+
 class CLIExecutor(pi.PipelineItem):
-    def __init__(self, pipeline_item_data: pi.PIData, inputs_as_separated_commands=False):
-        super().__init__(pipeline_item_data)
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 inputs_as_separated_commands=False,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(
+            pipeline_item_data,
+            printer_debug=printer_debug,
+        )
         self.inputs_as_separated_commands = inputs_as_separated_commands
 
-
-    def execute_command(self, command:str, inputs:dict, index:int=None):
+    def execute_command(self, command: str, inputs: dict, index: int = None):
         o = None
         done = False
         try:
             o = os.system(command)
             done = True
         except Exception as e:
-            print(f"Exception at executing command {'' if index is None else '# ' + index} : {command}")
+            print(
+                f"Exception at executing command {'' if index is None else '# ' + index} : {command}")
             print(e)
         return done, o
 
@@ -39,11 +48,11 @@ class CLIExecutor(pi.PipelineItem):
         command = self.commands_froms_inputs(inputs)
         done, o = self.execute_command(command, inputs, None)
         return o if done else None
-        
+
     def repr_inner(self):
         return \
             """
                 "inputs_as_separated_commands": {0}
-            """.format( \
+            """.format(
                 'true' if self.inputs_as_separated_commands else 'false'
             )

@@ -4,21 +4,26 @@ import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.compilers.shared.templates.template_base as tb
 import src.postprocessing.consts_template as const_t
 
+import src.utilities.utils as u
+
 
 class CompilerTemplateJinjaBase(tb.TemplateBase):
     """
     Compiles a template using the Jinja package by populating it with the provided data and producing as output the lines of the compiled template
     """
 
-    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 optional_external_data=None,
                  key_template_instance_data: str = None,
-                 key_template_skeleton: str = None
+                 key_template_skeleton: str = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
         # super().__init__( \
         tb.TemplateBase.__init__(self,
                                  pipeline_item_data,
                                  optional_external_data=optional_external_data,
-                                 key_template_instance_data=key_template_instance_data
+                                 key_template_instance_data=key_template_instance_data,
+                                 printer_debug=printer_debug
                                  )
         self.key_template_skeleton = key_template_skeleton
         self.jinja_extension: str = const_t.JINJA_FILE_EXTENSION

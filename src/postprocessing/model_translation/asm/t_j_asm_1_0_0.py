@@ -10,6 +10,8 @@ import src.model.aggregable_entity as aggregable_e
 import src.files.file_utils as fu
 import src.utilities.utils as u
 
+TARGET_VERSION = "1.0.0"
+
 
 class TranslatedDAO_ASM_Jinja_1_0_0(t_j_asm_base.TranslatedDAO_ASM_Jinja):
     def __init__(self, dao: dao_m.DAO, dao_specific_data: dict,
@@ -28,12 +30,15 @@ class TranslatedDiagram_ASM_Jinja_1_0_0(t_j_asm_base.TranslatedDiagram_ASM_Jinja
 
 
 class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
-    def __init__(self, pipeline_item_data: pi.PIData, optional_external_data=None,
-                 key_model: str = None
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 optional_external_data=None,
+                 key_model: str = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
         super().__init__(pipeline_item_data,
                          optional_external_data=optional_external_data,
-                         key_model=key_model
+                         key_model=key_model,
+                         printer_debug=printer_debug
                          )
 
     def new_translated_diagram(self, diagram: diagram_manager_m.DiagramManager, other_data=None) -> t_j_asm_base.TranslatedDiagram_ASM_Jinja:
@@ -42,7 +47,7 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
     def new_translated_dao(self, diagram: diagram_manager_m.DiagramManager, dao: dao_m.DAO, other_data=None) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
         return TranslatedDAO_ASM_Jinja_1_0_0(dao, other_data)
 
-    def translate_DAO(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO, additional_data=None) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
+    def translate_dao(self, diagram: diagram_manager_m.DiagramManager,  dao: dao_m.DAO, additional_data=None) -> t_j_asm_base.TranslatedDAO_ASM_Jinja:
         asm_data = {}
         converted_dao = self.new_translated_dao(
             diagram, dao, other_data=asm_data)
@@ -93,14 +98,6 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
             }
             for p in dao.permissions.values()
         ]
-        """
-        print(f"\n debug {len(dao.permissions)} permissions")
-        for p in dao.permissions.values():
-            print(f"p {p.get_name()} -> {p.ref_gov_area}")
-        print(f"debug {len(dao.governance_areas)} governanceArea")
-        for p in dao.governance_areas.values():
-            print(f"g.a. -> {str(p)}")
-        """
         asm_data["governanceAreas"] = [u.to_keyword(
             g.get_name()) for g in dao.governance_areas.values()]
         # no user pre-defined (apart from the Owner) at this stage of development
