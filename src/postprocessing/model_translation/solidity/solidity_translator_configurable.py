@@ -50,8 +50,14 @@ class SolidityTranslatorConfigurable(mcc.ModelTranslatorConfigurable):
 
     def new_solidity_translator_optimized(self, additional_data=None):
         import src.postprocessing.model_translation.solidity.optimized.solidity_translator_optimized_configurable as sol_conv_opt_c
-        return sol_conv_opt_c.SolidityTranslatorOptimizedConfigurable(self.pipeline_item_data, self.key_model,
-                                                                      self.key_translator_type, self.key_translator_version, self.key_translator_target)
+        return sol_conv_opt_c.SolidityTranslatorOptimizedConfigurable(
+            self.pipeline_item_data,
+            key_model=self.key_model,
+            key_translator_type=self.key_translator_type,
+            key_translator_version=self.key_translator_version,
+            key_translator_target=self.key_translator_target,
+            printer_debug=self.printer_debug
+        )
 
     def get_default_translator_version(self, translator_type: str, additional_data: dict = None) -> str:
         translator_solidity_subtype = self.get_default_translator_solidity_subtype(
@@ -80,13 +86,21 @@ class SolidityTranslatorConfigurable(mcc.ModelTranslatorConfigurable):
                 import src.postprocessing.model_translation.solidity.optimized.solidity_translator_optimized_configurable as sol_conv_opt_c
                 sco_instance: sol_conv_opt_c.SolidityTranslatorOptimizedConfigurable = None
                 if additional_data is not None and SolidityTranslatorConfigurable.__KEY__SOLIDITY_TRANSLATOR_OPTIMIZED in additional_data:
+                    self.print_msg(
+                        "recycling the solidity translator optimized instance")
                     sco_instance = additional_data[SolidityTranslatorConfigurable.__KEY__SOLIDITY_TRANSLATOR_OPTIMIZED]
                 else:
                     sco_instance = self.new_solidity_translator_optimized(
                         additional_data)
+                self.print_error(
+                    f"solidity translator optimized invoking select_implementation of sco_instance type: {type(sco_instance)}, with : translator_type: {translator_type}, translator_version: {translator_version}, translator_target: {translator_target}, ")
                 impl = sco_instance.select_implementation(
                     diagram, translator_type, translator_version, translator_target, additional_data)
+                if impl is None:
+                    self.print_error(
+                        f"solidity translator optimized implementation is still None! sco_instance type: {type(sco_instance)}")
         # TODO
         if impl is None:
-            raise Exception("TODO : still to be implemented 2025-08-06")
+            raise Exception(
+                f"TODO : {translator_solidity_subtype} still to be implemented 2025-08-06")
         return impl

@@ -220,8 +220,6 @@ class PostProcessingFactory(pb.PipelineItemFactory):
         translator_deps = [
             k_model_generator, k_translator_type_sol, k_version_translator_sol, k_translator_target_sol, k_translator_solidity_subtype_sol, k_all_voting_protocols_submitter
         ]
-        self.print_msg(f"transl deps: {translator_deps}")
-        encountered_transl_deps = set(translator_deps)
         translator_sol = mcc.ModelTranslatorConfigurable(
             pi.PIData(k_translator_sol, translator_deps),
             key_model=k_model_generator,

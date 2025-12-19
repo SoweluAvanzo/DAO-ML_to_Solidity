@@ -82,7 +82,7 @@ class TextFileOutput(bo.BaseOutput):
                     or (wm in MODE_VALUES_WRITE)
                 break
         self.print_msg(
-            f"creating base folder for output (of {type(self)} with key: {self.get_key()}) -> {base_destination}")
+            f"creating base folder for output (of {type(self)} with key: {self.get_key()}) ---> {base_destination}")
         fu.check_and_make_folder(base_destination)
         full_path_file = self.compose_full_path_destination(
             base_destination, filename_extension)

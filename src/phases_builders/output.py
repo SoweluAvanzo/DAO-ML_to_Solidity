@@ -135,7 +135,7 @@ class NamesExtractorJSON(names_extr.NamesExtractor):
 class AdditionalDataFileString(AdditionalDataFile):
     def __init__(self,
                  folder_output_path_base: str,
-                 names_etraction_type: NamesExtractorMethod = None,
+                 names_extraction_type: NamesExtractorMethod = None,
                  postprocessing_producing_output: pb_pp.PostProcessingTransformation = None,
                  key_output_holder: str = None,
                  key_diagram_model_producer: str = None
@@ -145,8 +145,8 @@ class AdditionalDataFileString(AdditionalDataFile):
                          key_output_holder=key_output_holder,
                          key_diagram_model_producer=key_diagram_model_producer
                          )
-        self.names_etraction_type = NamesExtractorMethod.ENTITY_NAME \
-            if names_etraction_type is None else names_etraction_type
+        self.names_extraction_type = NamesExtractorMethod.ENTITY_NAME \
+            if names_extraction_type is None else names_extraction_type
 
 
 class AdditionalDataFileJinja(AdditionalDataFile):
@@ -215,6 +215,7 @@ class OutputFactory(pb.PipelineItemFactory):
         model_jinja_to_file_output = jtfo.JinjaTextFileOutput(
             pi.PIData(k_model_jinja_to_file_output, [
                       key_output_holder, key_base_folder_output_provider]),
+            printer_debug=self.printer_debug,
             key_compiled_diagram=key_output_holder,
             key_base_destination=key_base_folder_output_provider
         )
@@ -249,8 +250,8 @@ class OutputFactory(pb.PipelineItemFactory):
         # names_extractor
         names_extractor: names_extr.NamesExtractor = None
         k_names_extractor: str = None
-        if (phase_step_variant_and_data.names_etraction_type is None) or \
-                (phase_step_variant_and_data.names_etraction_type == NamesExtractorMethod.ENTITY_NAME):
+        if (phase_step_variant_and_data.names_extraction_type is None) or \
+                (phase_step_variant_and_data.names_extraction_type == NamesExtractorMethod.ENTITY_NAME):
             k_names_extractor = self.new_unique_key("k_names_extractor")
             pi_data_n_e = pi.PIData(
                 k_names_extractor,
@@ -269,11 +270,15 @@ class OutputFactory(pb.PipelineItemFactory):
                         printer_debug=self.printer_debug,
                         key_diagram_model=phase_step_variant_and_data.key_diagram_model_producer
                     )
+        else:
+            raise Exception(
+                f"Unrecognized names_extraction_type: {phase_step_variant_and_data.names_extraction_type}")
         k_model_text_to_file_output = self.new_unique_key(
             "k_model_text_to_file_output")
         if names_extractor is None:
             raise Exception(
                 f"ERROR: a Names Extractor must be defined to output a text file (k_model_text_to_file_output key: {k_model_text_to_file_output})")
+        self.print_msg(f"k_names_extractor ------> {k_names_extractor}")
         k_base_destination_provider = self.new_unique_key(
             "k_base_destination_provider")
         base_destination_provider = pstr.PIStr(

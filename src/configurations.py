@@ -1,8 +1,8 @@
 import src.postprocessing.model_translation.solidity.translation_types_solidity as trans_type_sol
 
 import src.phases_builders.shared as pb_shared
-import src.phases_builders.input_fetch as pb_i_f
-import src.phases_builders.model_generation as pb_m_g
+# import src.phases_builders.input_fetch as pb_i_f
+# import src.phases_builders.model_generation as pb_m_g
 import src.phases_builders.postprocessing as pb_pp
 import src.phases_builders.output as pb_o
 

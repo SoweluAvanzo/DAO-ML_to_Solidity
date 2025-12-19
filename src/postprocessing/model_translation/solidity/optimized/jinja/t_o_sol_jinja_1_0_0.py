@@ -18,7 +18,7 @@ import src.model.committee as c
 import src.model.enums.relation_type as rt
 
 import src.postprocessing.consts_template as consts_t
-import src.utilities.utils as utils
+import src.utilities.utils as u
 import src.utilities.constants as consts
 import src.files.file_utils as fu
 
@@ -82,14 +82,16 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                  key_translator_version: str = None,
                  key_translator_target: str = None,
                  all_voting_protocols: set = None,
-                 key_all_voting_protocols: str = None
+                 key_all_voting_protocols: str = None,
+                 printer_debug: u.PrinterDebug = None
                  ):
         super().__init__(
             pipeline_item_data,
             key_model,
             key_translator_type,
             key_translator_version,
-            key_translator_target
+            key_translator_target,
+            printer_debug=printer_debug
         )
         self.key_all_voting_protocols = key_all_voting_protocols
         self.all_voting_protocols: set = all_voting_protocols
@@ -472,7 +474,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
                                          ):
         condition_template_input_standard = f"ConditionImplementation_{version_for_file}.{consts.SOLIDITY_EXTENSION_OUTPUT}.{consts_t.JINJA_FILE_EXTENSION}"
         for condition in dao.conditions:
-            condition_name = utils.to_camel_case(condition)
+            condition_name = u.to_camel_case(condition)
             condition_related_data = {}
             condition_converted = crt.TranslatedSubpartTemplated(
                 None, condition_related_data)
@@ -513,7 +515,7 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
             decision_making_method = decision_making_method.strip()
             is_custom = decision_making_method == ""
         committee_specific_data = committee_conversion.entity_specific_data
-        contract_name = utils.to_camel_case(committee_name)
+        contract_name = u.to_camel_case(committee_name)
         committee_specific_data["contract_name"] = contract_name
         template_name = contract_name  # decision_making_method
         if not (template_name in self.all_voting_protocols):

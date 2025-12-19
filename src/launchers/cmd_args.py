@@ -10,6 +10,14 @@ import src.phases_builders.model_generation as pb_m_g
 import src.phases_builders.postprocessing as pb_pp
 import src.phases_builders.output as pb_o
 
+import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
+import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
+import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
+import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as t_prov_by_name
+import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
+
+
 import src.utilities.extended_enum as ex_enum
 import src.utilities.utils as u
 import src.utilities.errors as e_c
@@ -141,8 +149,8 @@ def get_args(logger: u.PrinterDebug = None):
         pb_pp.PostProcessingTransformation)
     parser.add_argument(
         "-pp", "-ppt",
-        "--post_processing", "--post_processing_transformation",
-        "--post-processing", "--post-processing-transformation",
+        "--post_processing_transformation", "--post-processing-transformation",
+        "--post_processing", "--post-processing",
         type=str,
         help=f"Post-processing phase, one(+) of the following: [{__cj(ppt_options)}]",
         required=True,
@@ -153,18 +161,17 @@ def get_args(logger: u.PrinterDebug = None):
         "-vt", "-vtr", "--version_translator", "--version-translator",
         type=str,
         help="Version of the translator. Defaults to '1.0.0'",
-        default="1.0.0",
+        default=[],
         required=False,
         action="append"
     )
     parser.add_argument(
-        "-vta", "-vtt",
         "--version_translation_target",  "--version-translation-target",
         "--version_translation",  "--version-translation",
         "--version_target",  "--version-target",
         type=str,
         help="Version of what is being produced as output; multiple evolutions might co-exists (in futrher developments). Defaults to '1.0.0'",
-        default="1.0.0",
+        default=[],
         required=False,
         action="append"
     )
@@ -174,7 +181,9 @@ def get_args(logger: u.PrinterDebug = None):
         "-tf", "--templates-folder", "--templates_folder", "--template-folder", "--template_folder",
         "-ft", "--folder_templates", "--folder-templates", "--folder_template", "--folder-template"
     ]))
+    print(f"folder_templates_options: {folder_templates_options}")
     parser.add_argument(
+        "--base_template_folder",
         *folder_templates_options,
         type=str,
         help="folder (base) path for all template files; could be an absolute path or a relative path.",
@@ -237,14 +246,6 @@ def get_args(logger: u.PrinterDebug = None):
         "-ouri", "--output", "--output-uri", "--output_uri",
         type=str,
         help="URI for the output (a folder path for the File-based ones, a onnection string for); if it's specified once, then it's applied to all outpts. If multiple postprocessing are defined and some (but not all) of them requires a file-based output, then You can shortcut the outputs entries: at first, define the first postprocessing with the file output and the folder path as this flag value, then define all non-file-outputting postprocessing, then define the last postprocessing omitting the output-uri, so that they will inherit the value.",
-        required=False,
-        action="append"
-    )
-
-    parser.add_argument(
-        "-fvp", "--folder-voting", "--folder-voting-protocols", "--folder_voting", "--folder_voting_protocols",
-        type=str,
-        help="folder (base) path for all template files; could be an absolute path or a relative path.",
         required=False,
         action="append"
     )
@@ -319,7 +320,7 @@ def get_args(logger: u.PrinterDebug = None):
     if (not args.output_persistance) or (len(args.output_persistance) <= 0):
         raise Exception(
             f"output_persistance (multi)flag is required")
-    if (not args.output) or (len(args.outputoutput_uri) <= 0):
+    if (not args.output) or (len(args.output) <= 0):
         raise Exception(
             f"output (or output_uri) (multi)flag is required")
 
@@ -335,16 +336,35 @@ def get_args(logger: u.PrinterDebug = None):
     index_output_uri = 0
     index_output_persistance_types = 0  # both output_type and output_persistance
     index_folder_voting_protocols_solidity = 0
+    index_base_template_folder = 0
     pairs_ppt_o: list[configs.PostprocessingOutputPairConfigs] = []
 
     # ... if this is the first entry, then store it if it's FILE (see the "help" section for output_uri)
     if args.output_persistance[0] == pb_shared.PersistanceType.FILE.value:
         output_folder_default = args.output[0]
-    elif len(args.output_type) != len(args.post_processing):
+    elif len(args.output_type) != len(args.post_processing_transformation):
         raise Exception(
-            f"post_processing amount of entries ({args.post_processing}) must be equal to the output ones (both output_type and persistance_type: {len(args.persistance_type)}) because there is no default configuration for non-defined output entries")
+            f"post_processing_transformation amount of entries ({args.post_processing_transformation}) must be equal to the output ones (both output_type and persistance_type: {len(args.persistance_type)}) because there is no default configuration for non-defined output entries")
 
-    ppts: list[str] = args.post_processing
+    logger.print_msg(f"output_folder_default -> {output_folder_default}")
+    logger.print_msg(
+        f"args.post_processing_transformation -> {args.post_processing_transformation}")
+    logger.print_msg(
+        f"args.base_template_folder -> {args.base_template_folder}")
+    logger.print_msg(
+        f"args.version_translator -> {args.version_translator}")
+    logger.print_msg(
+        f"args.version_translation_target -> {args.version_translation_target}")
+    logger.print_msg(
+        f"args.output_persistance -> {args.output_persistance}")
+    logger.print_msg(
+        f"args.output_type -> {args.output_type}")
+    logger.print_msg(
+        f"args.output -> {args.output}")
+    logger.print_msg(
+        f"args.folder_voting_protocols_solidity -> {args.folder_voting_protocols_solidity}")
+
+    ppts: list[str] = args.post_processing_transformation
     for index_post_processing_transformation in range(len(ppts)):
         ppt_c = configs.PostprocessingConfigs()
         o_c = configs.OutputConfigs()
@@ -367,15 +387,23 @@ def get_args(logger: u.PrinterDebug = None):
         output_uri_str: str = args.output[index_output_uri] \
             if index_output_uri < len(args.output) \
             else None
+        base_template_folder_str: str = args.base_template_folder[index_base_template_folder] \
+            if index_base_template_folder < len(args.base_template_folder) \
+            else None
         # set the most important and mandatory fields
         # ... post processing transformation
         ppt_c.post_processing_transformation = ppt
         if version_translator_str is not None:
             ppt_c.version_translator = version_translator_str
             index_ppt_version_translator += 1
+        print(
+            f"\n\n DEBUG: translation_target_str : {translation_target_str}, type: {type(translation_target_str)} \n\n")
         if translation_target_str is not None:
             ppt_c.version_translation_target = translation_target_str
             index_ppt_translation_target += 1
+
+        print(
+            f"\n\n DEBUG: ppt_c.version_translation_target : {ppt_c.version_translation_target}, type: {type(ppt_c.version_translation_target)} \n\n")
         # ... output
         if output_type_str is not None:
             o_c.output_type = pb_o.REVERSE_MAPPING_OutputType[output_type_str]
@@ -387,22 +415,39 @@ def get_args(logger: u.PrinterDebug = None):
 
         # now, the complex part
         index_output_uri += 1
-        match(ppt):
+        match(ppt.value):
             case pb_pp.PostProcessingTransformation.SOLIDITY.value \
                 | pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS.value \
                     | pb_pp.PostProcessingTransformation.ASM.value:
                 # | pb_pp.PostProcessingTransformation.PETRI_NETS.value \
                 base_template_folder = output_folder_default if \
-                    output_uri_str is None else output_uri_str
+                    base_template_folder_str is None else base_template_folder_str
+                print(
+                    f"AJAJJAJAJJA DEBUUUUUUUU        base_template_folder: {base_template_folder} ,,, output_uri_str: {output_uri_str}")
                 ppt_c.base_template_folder = base_template_folder
-                if ppt == pb_pp.PostProcessingTransformation.SOLIDITY.value \
-                        or ppt == pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS.value:
+                if ppt == pb_pp.PostProcessingTransformation.SOLIDITY \
+                        or ppt == pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS:
                     ppt_c.folder_voting_protocols_solidity = \
                         args.folder_voting_protocols_solidity[index_folder_voting_protocols_solidity] \
                         if index_folder_voting_protocols_solidity < len(args.folder_voting_protocols_solidity) \
                         else base_template_folder
+                    print(
+                        f"folder_voting_protocols_solidity .... len: {len(args.folder_voting_protocols_solidity)}, args.folder_voting_protocols_solidity: {args.folder_voting_protocols_solidity}")
+                    print(
+                        f"... ... index_folder_voting_protocols_solidity: {index_folder_voting_protocols_solidity} ,,, base_template_folder: {base_template_folder}")
                     index_folder_voting_protocols_solidity += 1
                     ppt_c.translator_solidity_subtype = trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value  # by default
+                match(ppt.value):
+                    case pb_pp.PostProcessingTransformation.SOLIDITY.value:
+                        if (ppt_c.version_translator is None) or (ppt_c.version_translator not in jinja_opt_versions.JinjaOptimizedVersions):
+                            ppt_c.version_translator = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
+                    case pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS.value:
+                        if (ppt_c.version_translator is None):
+                            # currently (2025-12-18) it's not generalized (and there's just one version)
+                            ppt_c.version_translator = "1.0.0"
+                    case pb_pp.PostProcessingTransformation.ASM.value:
+                        if (ppt_c.version_translator is None) or (ppt_c.version_translator not in t_asm_versions.ASMTranslatorVersions):
+                            ppt_c.version_translator = t_asm_versions.ASMTranslatorVersions.ASM_1_0_0.value
 
             case pb_pp.PostProcessingTransformation.JSON.value:
                 ppt_c.indent_json = args.indent_json[index_ppt_indent_json] \
@@ -445,6 +490,6 @@ def get_args(logger: u.PrinterDebug = None):
     cmd_configs.all_postprocessingOutputPairConfigs = pairs_ppt_o
 
     if logger:
-        logger.print_msg(cmd_configs.to_string())
+        logger.print_msg(cmd_configs.to_string(indent="\t\t"))
 
     return cmd_configs

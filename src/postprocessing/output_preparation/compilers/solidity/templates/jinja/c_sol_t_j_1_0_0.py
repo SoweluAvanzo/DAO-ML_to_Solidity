@@ -26,21 +26,23 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
         @param key_template_skeleton_provider_by_name: key of a function that, provided a template name, returns its skeleton.
         Must be an instance of "TemplateProviderByName"
         """
-        tjs.CompilerSolidityTemplateJinja.__init__(self, pipeline_item_data,
-                                                   optional_external_data=optional_external_data,
-                                                   key_template_instance_data=key_diagram_instance_data,
-                                                   key_template_skeleton=None,
-                                                   key_diagram_model=key_diagram_model,
-                                                   printer_debug=printer_debug
-                                                   )
-        ctj_m.CompilerTemplateJinjaMultipart.__init__(self, pipeline_item_data,
-                                                      optional_external_data=optional_external_data,
-                                                      key_diagram_instance_data=key_diagram_instance_data,
-                                                      key_diagram_model=key_diagram_model,
-                                                      key_template_skeleton_provider_by_name=key_template_skeleton_provider_by_name,
-                                                      key_is_result_as_list=key_is_result_as_list,
-                                                      printer_debug=printer_debug
-                                                      )
+        tjs.CompilerSolidityTemplateJinja.__init__(
+            self, pipeline_item_data,
+            optional_external_data=optional_external_data,
+            key_template_instance_data=key_diagram_instance_data,
+            key_template_skeleton=None,
+            key_diagram_model=key_diagram_model,
+            printer_debug=printer_debug
+        )
+        ctj_m.CompilerTemplateJinjaMultipart.__init__(
+            self, pipeline_item_data,
+            optional_external_data=optional_external_data,
+            key_diagram_instance_data=key_diagram_instance_data,
+            key_diagram_model=key_diagram_model,
+            key_template_skeleton_provider_by_name=key_template_skeleton_provider_by_name,
+            key_is_result_as_list=key_is_result_as_list,
+            printer_debug=printer_debug
+        )
 
     #
 
@@ -62,14 +64,22 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
         diagram_instance_data: conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0 = instance_data  # alias
         name = diagram_instance_data.get_name()
         # we don't compile the Diagram: only the DAOs (and Committes ... and GovernanceAreas?)
-        diagram_compiled = ""
+        diagram_compiled = f"N/A: in current implementation (2025-12-18) of the Solidity Converter ({type(self)}), there's no implementation of the Diagram"
         # so, currently (2025-08-13) there's no use of : diagram_instance_data.entity_specific_data
         # neither of: tpbn
+        template_filename_diagram_out = file_utils.sanitize_filename(name)
+        template_filename_diagram_out_ext = f"{template_filename_diagram_out}.{consts.SOLIDITY_EXTENSION_OUTPUT}"
+        diagram_folder_output_path = file_utils.concat_folder_filename(
+            diagram_instance_data.suggested_input_template_folders_path_from_base, consts_t.FOLDERS_PATH_OUTPUT_SOLIDITY, template_filename_diagram_out
+        )
+        compiled_diagram_filename = file_utils.concat_folder_filename(
+            diagram_folder_output_path, template_filename_diagram_out_ext)
+
         compilated = csd.CompiledSolidityDiagram(
             diagram_instance_data.get_id(),
-            name,
+            compiled_diagram_filename,
             compiled=diagram_compiled,
-            can_diagram_be_compiled=False
+            can_diagram_be_compiled=False  # might change in the future
         )
         # ... and ? let's start the DAO part
         dao_templates_loaded_by_filename = {}
@@ -96,13 +106,23 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                     template_skeleton_dao = dao_templates_loaded_by_filename[template_filename_dao_in]
                 else:
                     template_filename_dao_extension = f"{template_filename_dao_in}.{self.jinja_extension}"
+                    self.print_msg(
+                        f"in {type(self)}, compiling all parts as generator, .... -> template_folder_path_base: ::{template_folder_path_base}## , template_filename_dao_extension: ::{template_filename_dao_extension}##")
                     template_skeleton_dao = tpbn.provide_template_skeleton_by_name(
                         template_name=[template_folder_path_base, template_filename_dao_extension])
                     # join the template into a single string
                     if template_skeleton_dao is None:
                         raise Exception(
                             f"CAN'T FIND TEMPLATE {file_utils.concat_folder_filename(template_folder_path_base, template_filename_dao_extension)}")
-                    if isinstance(template_skeleton_dao, list):
+                    elif isinstance(template_skeleton_dao, list):
+                        self.print_msg(
+                            f"template_skeleton_dao (in type: {type(self)})")
+                        self.print_msg(template_skeleton_dao)
+                        filtered_tsd = [
+                            line for line in template_skeleton_dao if line is not None]
+                        if len(template_skeleton_dao) != len(filtered_tsd):
+                            raise Exception(
+                                f"In class ({type(self)}), the template at '{file_utils.concat_folder_filename(template_folder_path_base, template_filename_dao_extension)}' is reading some None lines ({len(template_skeleton_dao) - len(filtered_tsd)} out of {len(template_skeleton_dao)} are None)")
                         template_skeleton_dao = "\n".join(
                             template_skeleton_dao)
                     dao_templates_loaded_by_filename[template_filename_dao_in] = template_skeleton_dao

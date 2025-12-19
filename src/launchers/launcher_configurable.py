@@ -12,7 +12,7 @@ import src.postprocessing.output_preparation.compilers.shared.templates.template
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.consts_template as consts_t
 
-import src.launchers.cmd_args as cmd_args
+# import src.launchers.cmd_args as cmd_args
 import src.configurations as configs
 
 import src.files.file_utils as files
@@ -121,13 +121,13 @@ def additional_data_from_PostProcessingTransformation(
     logger: u.PrinterDebug = None
 ) -> pb_pp.AdditionalDataPostProcessing:
     base_template_folder: str = ppc.base_template_folder
-    non_none(base_template_folder, "base_template_folder")
-    folder_voting_protocols: str = ppc.folder_voting_protocols_solidity
-    non_none(folder_voting_protocols, "folder_voting_protocols")
 
     add_data: pb_pp.AdditionalDataPostProcessing = None
     match(ppc.post_processing_transformation):
         case pb_pp.PostProcessingTransformation.SOLIDITY:
+            non_none(base_template_folder, "base_template_folder")
+            folder_voting_protocols: str = ppc.folder_voting_protocols_solidity
+            non_none(folder_voting_protocols, "folder_voting_protocols")
             non_none(ppc.version_translator, "ppc.version_translator")
             non_none(ppc.translator_solidity_subtype,
                      "ppc.translator_solidity_subtype")
@@ -142,6 +142,7 @@ def additional_data_from_PostProcessingTransformation(
                 version_translation_target=ppc.version_translation_target
             )
         case pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS:
+            non_none(base_template_folder, "base_template_folder")
             non_none(ppc.version_translator, "ppc.version_translator")
             non_none(ppc.version_translation_target,
                      "ppc.version_translation_target")
@@ -152,6 +153,7 @@ def additional_data_from_PostProcessingTransformation(
                 version_translation_target=ppc.version_translation_target
             )
         case pb_pp.PostProcessingTransformation.ASM:
+            non_none(base_template_folder, "base_template_folder")
             non_none(ppc.version_translator, "ppc.version_translator")
             non_none(ppc.version_translation_target,
                      "ppc.version_translation_target")
@@ -234,7 +236,6 @@ def prepare_ppt_o(
                     ppopc.postprocessingConfigs,
                     new_template_provider(
                         ppopc.postprocessingConfigs.base_template_folder),
-                    ppopc.postprocessingConfigs.base_template_folder,
                     logger=logger
                 )
             ),

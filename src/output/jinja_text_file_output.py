@@ -46,8 +46,9 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         elif isinstance(template_filename, list):
             array.extend([(compiled_thing, tf) for tf in template_filename])
         elif isinstance(template_filename, dict) or isinstance(template_filename, map):
-            array.extend([(compiled_thing, template_filename[ktf])
-                         for ktf in template_filename.keys()])
+            array.extend([
+                (compiled_thing, template_filename[ktf]) for ktf in template_filename.keys()
+            ])
         return array
 
     def __td_t_list_o_solidity(self, translated_diagram: compiled_sol.CompiledSolidityDiagram):
@@ -156,16 +157,33 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         # produce the output
         print(
             f"\n\n\n PRODUCING {len(content_and_filepath_to_output)} outputs in total")
+        k_fn_e: str = self.key_filename_extension  # keep the previous value
+        is_k_fn_unset = k_fn_e is None
+        # add a dummy key _that just need to work_
+        if is_k_fn_unset:
+            # that's intentionally a string, not its value
+            self.key_filename_extension = "key_filename_extension"
+
         for output_and_filepath in content_and_filepath_to_output:
             output_to_print = output_and_filepath[0]
             filepath = output_and_filepath[1]
             try:
-                full_path = fu.concat_folder_filename(additional_data[self.key_base_destination], filepath) \
-                    if (additional_data is not None) and (self.key_base_destination is not None) and (self.key_base_destination in additional_data) \
+                provided_base_destination: str = additional_data[self.key_base_destination]
+                full_path = fu.concat_folder_filename(provided_base_destination, filepath) \
+                    if (self.key_base_destination is not None) and (self.key_base_destination in additional_data) \
                     else filepath
                 folder = fu.extract_folder_from_full_path(full_path)
+                self.print_msg(
+                    f"creating folder ({folder}), extracted from full_path: {full_path}")
                 fu.check_and_make_folder(folder)
-                ok &= super().to_output(output_to_print, full_path, additional_data)
+                # update the "key_base_destination" because the superclass needs the full path "up to the filename" ...
+                additional_data[self.key_base_destination] = folder
+                # ... and the filename in a separate way
+                additional_data[self.key_filename_extension] = full_path[len(
+                    folder) + 1:]  # "+1" because of the path separator
+                ok &= super().to_output(output_to_print, additional_data)
+                # revert the modification to key_base_destination
+                additional_data[self.key_base_destination] = provided_base_destination
             except Exception as e:
                 print(
                     f"ERROR while outputting some Jinja compiled thing into: {filepath}")
