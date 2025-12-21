@@ -32,7 +32,7 @@ class XmlStringModelGenerator(bg.BaseGenerator):
     def new_XMLDAOVisitor(self):
         return XMLDAOVisitor(printer_debug=self.printer_debug)
 
-    def generate(self, validation_result):
+    def generate(self, validation_result, additional_data=None):
         try:
             if not isinstance(validation_result, validation_res.ValidationResult):
                 raise Exception(

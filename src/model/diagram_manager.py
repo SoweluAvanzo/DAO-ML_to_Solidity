@@ -4,18 +4,20 @@ import src.model.role as role_module
 import src.model.committee as committee_module
 import src.model.permission as permission_module
 import src.model.governance_area as governance_area_module
+import src.model.relation as relation_module
+
 import src.model.enums.relation_type as rt
 import src.model.enums.governance_permission as gp
+
 import src.control_graph.control_graph_basic as cgb
 
 
 class DiagramManager(base_entity_module.BaseEntity):
     def __init__(self, controlGraphGenerator=None):
         super().__init__("DiagramManager_ID")
-        self.rowDataOnly = True
         self.daoByID: dict[str, dao_module.DAO] = {}
         self.relations_by_dao: dict[str,
-                                    list[tuple[rt.RelationType, str, str]]] = {}
+                                    list[relation_module.Relation]] = {}
         self.controlGraphGenerator = controlGraphGenerator
 
     def get_name(self) -> str:
@@ -32,8 +34,8 @@ class DiagramManager(base_entity_module.BaseEntity):
         return dao
 
     def addDao(self, dao: dao_module.DAO):
-        self.daoByID[dao.get_id()] = dao
         dao_id = dao.get_id()
+        self.daoByID[dao_id] = dao
         self.relations_by_dao[dao_id] = []
 
     def addRole(self, daoOrID, role: role_module.Role):
@@ -51,7 +53,8 @@ class DiagramManager(base_entity_module.BaseEntity):
     def addRelation(self, daoOrID, relationType: rt.RelationType, fromID: str, content: str):
         dao = self.get_dao_by(daoOrID)
         dao_id = dao.get_id()
-        self.relations_by_dao[dao_id].append((relationType, fromID, content))
+        rel = relation_module.Relation(dao_id, relationType, fromID, content)
+        self.relations_by_dao[dao_id].append(rel)
 
     def addGovernanceArea(self, daoOrID, governance_area: governance_area_module.GovernanceArea):
         dao = self.get_dao_by(daoOrID)
@@ -104,9 +107,9 @@ class DiagramManager(base_entity_module.BaseEntity):
             dao: dao_module.DAO = daooo
             dao_id: str = dao.get_id()
             for relation in self.relations_by_dao[dao_id]:
-                fromID = relation[1]
-                content = relation[2]
-                if relation[0] == rt.RelationType.CONTROL:
+                fromID = relation.from_id
+                content = relation.content
+                if relation.relation_type == rt.RelationType.CONTROL:
                     the_controller_ID = content
                     controlled_ID = fromID
 
@@ -119,7 +122,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                     else:
                         print(
                             f"ERROR: the controller __{the_controller_ID}__ should control __{controlled_ID}__, but this last one has not been found")
-                elif relation[0] == rt.RelationType.ASSOCIATION:
+                elif relation.relation_type == rt.RelationType.ASSOCIATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
                         if content in dao.permissions:
@@ -128,7 +131,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                         committee = dao.committees[fromID]
                         if content in dao.permissions:
                             committee.add_permission(dao.permissions[content])
-                elif relation[0] == rt.RelationType.AGGREGATION:
+                elif relation.relation_type == rt.RelationType.AGGREGATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
                         if content in dao.roles:
@@ -141,7 +144,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                             committee.add_aggregated(dao.committees[content])
                         elif content in dao.roles:
                             committee.add_aggregated(dao.roles[content])
-                elif relation[0] == rt.RelationType.FEDERATION:
+                elif relation.relation_type == rt.RelationType.FEDERATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
                         if content in dao.committees:
@@ -270,11 +273,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         # TODO: self.controlGraphGenerator
         relations_by_dao = {
             dao_id: [
-                {
-                    "relationType": rel_data[0].name,
-                    "fromID": rel_data[1],
-                    "content": rel_data[2],
-                }
+                rel_data.toJSON()
                 for rel_data in relations
             ]
             for dao_id, relations in self.relations_by_dao.items()
@@ -286,7 +285,6 @@ class DiagramManager(base_entity_module.BaseEntity):
         return {
             "id": self.get_id(),
             "uniqueID": self.get_id(),
-            "rowDataOnly": self.rowDataOnly,
             "relations_by_dao": relations_by_dao,
             "daoByID": daoByID,
             "controlGraphGenerator": None
