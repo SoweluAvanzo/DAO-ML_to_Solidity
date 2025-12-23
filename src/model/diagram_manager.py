@@ -252,7 +252,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         dao.conditions = conditions
 
     def __str__(self):
-        result = ["DiagramManager", f"\t uniqueID: {self.get_id()}", "DAOs:"]
+        result = ["DiagramManager", f"\t id: {self.get_id()}", "DAOs:"]
         try:
             for dao in self.daoByID.values():
                 result.append("Dao")
@@ -284,7 +284,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         }
         return {
             "id": self.get_id(),
-            "uniqueID": self.get_id(),
+            # "uniqueID": self.get_id(),
             "relations_by_dao": relations_by_dao,
             "daoByID": daoByID,
             "controlGraphGenerator": None
