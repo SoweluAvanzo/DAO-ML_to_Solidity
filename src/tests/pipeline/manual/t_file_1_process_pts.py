@@ -21,14 +21,14 @@ class TestFile1_Processor_ParsedTreeStringer(pi.PipelineItem):
         errors = validation_data.errors
         tree_parsed = validation_data.additional_data["tree_parsed"]
         input_string_list = validation_data.input_string_list
-        input = validation_data.input
+        input_consumed = validation_data.input_consumed
         if errors is not None and len(errors) > 0:
             print("\n\nTestFile1_Processor_ParsedTreeStringer HAS ERRORS!!!")
             for e in errors:
                 print(e)
         else:
             print(f"TestFile1_Processor_ParsedTreeStringer")
-            print(f"\t{input}")
+            print(f"\t{input_consumed}")
             print(f"\n\nPREPROCESSOR TO STRING")
             try:
                 daos = tree_parsed.xpath('//DAO')

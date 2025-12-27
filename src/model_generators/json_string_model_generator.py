@@ -55,14 +55,11 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         raise Exception(
             f"Missing {what} field(s) in class {where}!{'' if add_msg is None else add_msg}")
 
-
-
-    def _check_get_is_primitive(self, what, clazz:type, field_name: str, primitive_type):
+    def _check_get_is_primitive(self, what, clazz: type, field_name: str, primitive_type):
         if not isinstance(what, primitive_type):
             raise Exception(
                 f"While parsing JSON {clazz.__name__}, the supposed {field_name} is not a {str(primitive_type)}: {type(what)}")
         return what
-    
 
     def _check_is_dict(self, what, entity: be.BaseEntity, field_name: str):
         if not isinstance(what, dict):
@@ -242,7 +239,7 @@ class JsonStringModelGenerator(bg.BaseGenerator):
             "voting_right": None,
             "proposal_right": None
         }
-    
+
     def _fields_of_governance_area(self):
         """
         Override-designed
@@ -257,8 +254,6 @@ class JsonStringModelGenerator(bg.BaseGenerator):
 
     # ... PARSING
 
-
-
     def _resolve_cross_references(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, dao_data_obj: dict):
         # the "AggregableEntities", like Roles and Committees, has 2 lists of pointers (aggregated & federated_committees)
         # and also all Committees' "committee.member_entities"
@@ -266,54 +261,55 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         for aggregable_entities_dict in [dao.roles, dao.committees]:
             for ae_id, ae in aggregable_entities_dict.items():
                 #
-                permissions_ids:list[str] = ae.permissions
+                permissions_ids: list[str] = ae.permissions
                 ae.permissions = [
                     dao.permissions[permission_id]
                     for permission_id in permissions_ids
                 ]
                 #
-                aggregated_ids:list[str] = ae.aggregated
+                aggregated_ids: list[str] = ae.aggregated
                 ae.aggregated = [
                     dao.roles[ag_id] if ag_id in dao.roles else dao.committees[ag_id]
                     for ag_id in aggregated_ids
                 ]
                 #
-                federated_committees_ids:list[str] = ae.federated_committees
+                federated_committees_ids: list[str] = ae.federated_committees
                 ae.aggregated = [
                     dao.roles[fc_id] if fc_id in dao.roles else dao.committees[fc_id]
                     for fc_id in federated_committees_ids
                 ]
             if is_committee:
-                com:c.Committee = ae
-                member_entities_ids:list[str] = com.member_entities
-                com.member_entities =  [
+                com: c.Committee = ae
+                member_entities_ids: list[str] = com.member_entities
+                com.member_entities = [
                     dao.committees[committee_id]
                     for committee_id in member_entities_ids
                 ]
             is_committee = not is_committee
 
-    def parse_governance_area(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, governance_area_data_obj: dict) ->ga.GovernanceArea:
+    def parse_governance_area(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, governance_area_data_obj: dict) -> ga.GovernanceArea:
         governance_area_fields = self._fields_of(ga.GovernanceArea)
-        self.check_fields(governance_area_data_obj, governance_area_fields, ga.GovernanceArea.__name__)
+        self.check_fields(governance_area_data_obj,
+                          governance_area_fields, ga.GovernanceArea.__name__)
         governance_area = ga.GovernanceArea(
             self._check_get_is_primitive(
                 governance_area_data_obj["id"],
                 ga.GovernanceArea,
                 "id",
                 str
-                ),
+            ),
             self._check_get_is_primitive(
                 governance_area_data_obj["gov_area_description"],
                 ga.GovernanceArea,
                 "gov_area_description",
                 str
-                ),
+            ),
             self._check_get_is_primitive(
                 governance_area_data_obj["implementation"],
                 ga.GovernanceArea,
                 "implementation",
                 str
-                )
+            )
         )
         return governance_area
 
@@ -410,16 +406,18 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         # ... roles
         roles_data: dict = dao_data_obj["roles"]
         self._check_is_dict(roles_data, dao, "roles")
-        roles_dict:dict[str, r.Role] = {}
+        roles_dict: dict[str, r.Role] = {}
         for role_id, role_data in roles_data.items():
-            roles_dict[role_id] = self.parse_role(diagram, dao_id, dao, role_data)
+            roles_dict[role_id] = self.parse_role(
+                diagram, dao_id, dao, role_data)
         dao.roles = roles_dict
         # ... committees
         committees_data: dict = dao_data_obj["committees"]
         self._check_is_dict(committees_data, dao, "committees")
-        committees_dict:dict[str, c.Committee] = {}
+        committees_dict: dict[str, c.Committee] = {}
         for committee_id, committee_data in committees_data.items():
-            committees_dict[committee_id] = self.parse_committee(diagram, dao_id, dao, committee_data)
+            committees_dict[committee_id] = self.parse_committee(
+                diagram, dao_id, dao, committee_data)
         dao.committees = committees_dict
         # ... owner_role
         owner_role_id: str = dao_data_obj["owner_role"]
@@ -433,12 +431,14 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         # ... governance_areas
         governance_areas_data: dict = dao_data_obj["governance_areas"]
         self._check_is_dict(governance_areas_data, dao, "governance_areas")
-        governance_areas_dict:dict[str, ga.GovernanceArea] = {}
+        governance_areas_dict: dict[str, ga.GovernanceArea] = {}
         for governance_area_id, governance_area_data in governance_areas_data.items():
-            governance_areas_dict[governance_area_id] = self.parse_governance_area(diagram, dao_id, dao, governance_area_data)
+            governance_areas_dict[governance_area_id] = self.parse_governance_area(
+                diagram, dao_id, dao, governance_area_data)
         dao.governance_areas = governance_areas_dict
 
-        dao.metadata.save_user_functionalities_group_size(dao.roles, dao.committees)
+        dao.metadata.save_user_functionalities_group_size(
+            dao.roles, dao.committees)
         # ... dao_control_graph
         dao.dao_control_graph = None
         # ... conditions
@@ -448,22 +448,29 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         dao.conditions = conditions_list
         # ... other things (dictionaries of primitive types)
         assignment_conditions_data: dict = dao_data_obj["assignment_conditions"]
-        self._check_is_dict(assignment_conditions_data, dao, "assignment_conditions")
+        self._check_is_dict(assignment_conditions_data,
+                            dao, "assignment_conditions")
         dao.assignment_conditions = assignment_conditions_data
         voting_conditions_data: dict = dao_data_obj["voting_conditions"]
         self._check_is_dict(voting_conditions_data, dao, "voting_conditions")
         dao.voting_conditions = voting_conditions_data
         proposal_conditions_data: dict = dao_data_obj["proposal_conditions"]
-        self._check_is_dict(proposal_conditions_data, dao, "proposal_conditions")
+        self._check_is_dict(proposal_conditions_data,
+                            dao, "proposal_conditions")
         dao.proposal_conditions = proposal_conditions_data
         decision_making_methods_data: dict = dao_data_obj["decision_making_methods"]
-        self._check_is_dict(decision_making_methods_data, dao, "decision_making_methods")
+        self._check_is_dict(decision_making_methods_data,
+                            dao, "decision_making_methods")
         dao.decision_making_methods = decision_making_methods_data
-        role_and_committee_voting_right_dict_data: dict = dao_data_obj["role_and_committee_voting_right_dict"]
-        self._check_is_dict(role_and_committee_voting_right_dict_data, dao, "role_and_committee_voting_right_dict")
+        role_and_committee_voting_right_dict_data: dict = dao_data_obj[
+            "role_and_committee_voting_right_dict"]
+        self._check_is_dict(role_and_committee_voting_right_dict_data,
+                            dao, "role_and_committee_voting_right_dict")
         dao.role_and_committee_voting_right_dict = role_and_committee_voting_right_dict_data
-        role_and_committee_proposal_right_dict_data: dict = dao_data_obj["role_and_committee_proposal_right_dict"]
-        self._check_is_dict(role_and_committee_proposal_right_dict_data, dao, "role_and_committee_proposal_right_dict")
+        role_and_committee_proposal_right_dict_data: dict = dao_data_obj[
+            "role_and_committee_proposal_right_dict"]
+        self._check_is_dict(role_and_committee_proposal_right_dict_data,
+                            dao, "role_and_committee_proposal_right_dict")
         dao.role_and_committee_proposal_right_dict = role_and_committee_proposal_right_dict_data
         # DONE
         self._resolve_cross_references(diagram, dao_id, dao)
@@ -508,8 +515,8 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         # the parsing
         # TODO: is there a way to generalize the controlGraphGenerator ?
         diagram = dm.DiagramManager(
-             # the whole class itself can act as a generator (since its constructor exactly require a DAO as a mandatory field)
-            controlGraphGenerator= cgb.ControlGraphBasic
+            # the whole class itself can act as a generator (since its constructor exactly require a DAO as a mandatory field)
+            controlGraphGenerator=cgb.ControlGraphBasic
         )
         diagram.id = data_obj["id"]
         # ... daos
@@ -520,7 +527,7 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         for dao_id, dao_data in daos_by_id_data.items():
             self._check_is_dict(dao_data, diagram,
                                 f"dao (# {index_dao}, ID: {dao_id})")
-            dao:d.DAO = self.parse_dao(diagram, dao_id, dao_data)
+            dao: d.DAO = self.parse_dao(diagram, dao_id, dao_data)
             diagram.createControlGraph(dao_id, dao=dao)
             daos_by_id[dao_id] = dao
             index_dao += 1

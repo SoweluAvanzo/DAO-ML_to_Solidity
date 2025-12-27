@@ -119,7 +119,7 @@ class PipelineManager:
     def getItem(self, key: str) -> pi.PipelineItem:
         return self.items[key]
 
-    def runPipeline(self):
+    def runPipeline(self) -> dict[str,]:
         # setup the data structures
         items_as_list = list(self.items.values())
         nodes = {item.get_key(): PipelineNode(self, item, printer_debug=self.printer_debug)
@@ -134,7 +134,6 @@ class PipelineManager:
                     if d not in nodes:
                         self.print_error(
                             f"ERROR: dependency {d} in node '{key}' does not exist")
-
                     else:
                         n = nodes[d]
                         n.addDependant(current_node)
@@ -150,10 +149,10 @@ class PipelineManager:
         while len(job_queues) > 0:
             job: PipelineNode = job_queues.popleft()
             job.status_run = NodeRunStatus.RUNNING
-            input = job.getInputForRun()
+            input_to_run = job.getInputForRun()
             try:
                 self.print_msg(f"Running item with key: {job.item.get_key()}")
-                output = job.item.run(input)
+                output = job.item.run(input_to_run)
                 job.status_run = NodeRunStatus.DONE
                 # update dependants
                 if len(job.getDependants()) > 0:

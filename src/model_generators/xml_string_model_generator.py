@@ -40,12 +40,12 @@ class XmlStringModelGenerator(bg.BaseGenerator):
 
             # errors=validation_result["errors"]
             # tree_parsed=validation_result["tree_parsed"]
-            input = validation_result.input
+            input_consumed = validation_result.input_consumed
             # input_string_list=validation_result["input_string_list"]
 
             # setup of the parser
             # buffer # StringIO(text_wrapper.read())
-            xml_content_as_stream = InputStream(input)
+            xml_content_as_stream = InputStream(input_consumed)
             lexer = xmlL.XMLLexer(xml_content_as_stream)
             stream = CommonTokenStream(lexer)
             parser = xmlP.XMLParser(stream)

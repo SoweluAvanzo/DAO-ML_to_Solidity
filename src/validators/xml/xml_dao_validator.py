@@ -22,41 +22,41 @@ class XMLDaoValidator(bv.BaseValidator):
         self.xml_schema_filepath = xml_schema_filepath
         self.constraint_validator = constraint_validator
 
-    def validate(self, input: str) -> bool:
+    def validate(self, input_to_validate: str) -> bool:
         # if the input is a list/array, then collapse it to form a single string
         input_string_list = None
-        if isinstance(input, list):
-            input_string_list = input
-            input = "\n".join(input)
+        if isinstance(input_to_validate, list) and not isinstance(input_to_validate, str):
+            input_string_list = input_to_validate
+            input_to_validate = "\n".join(input_to_validate)
         # check if the input is a file or a string-of-already-read-file
-        if not isinstance(input, str):
-            error_text = f"input is not a string: {input.__class__.__name__}"
+        if not isinstance(input_to_validate, str):
+            error_text = f"input is not a string: {input_to_validate.__class__.__name__}"
             self.print_error(error_text)
             raise Exception(error_text)
         tree_root = None
         # try to obtain a parsed object of the XML file from the input:
         # is the input the file path, a File or the actual already-read content?
-        if os.path.isfile(input):
-            with open(input, 'r') as file_xml:
+        if os.path.isfile(input_to_validate):
+            with open(input_to_validate, 'r') as file_xml:
                 tree_root = etree.parse(StringIO(file_xml))
                 input_string_list = tree_root.itertext()
-        elif (isinstance(input, TextIOBase) or
-              isinstance(input, BufferedIOBase) or
-              isinstance(input, RawIOBase) or
-              isinstance(input, IOBase)
+        elif (isinstance(input_to_validate, TextIOBase) or
+              isinstance(input_to_validate, BufferedIOBase) or
+              isinstance(input_to_validate, RawIOBase) or
+              isinstance(input_to_validate, IOBase)
               ):
-            tree_root = etree.parse(input)
+            tree_root = etree.parse(input_to_validate)
             input_string_list = tree_root.itertext()
         else:
-            input_string_list = input.split('\n')
+            input_string_list = input_to_validate.split('\n')
             parser = etree.XMLParser(
                 ns_clean=True, remove_comments=True, remove_blank_text=True)
-            tree_root = etree.fromstring(input, parser)
+            tree_root = etree.fromstring(input_to_validate, parser)
 
         xml_schema_fp = DEFAULT_XML_SCHEMA if self.xml_schema_filepath is None else self.xml_schema_filepath
         cv = ConstraintValidator(
             xml_schema_fp,
-            input,
+            input_to_validate,
             self.printer_debug
         ) if self.constraint_validator is None else self.constraint_validator
 
@@ -67,7 +67,7 @@ class XMLDaoValidator(bv.BaseValidator):
         return validation_res.ValidationResult(
             validation_result=ok,
             errors=errors,
-            input=input,
+            input_consumed=input_to_validate,
             input_string_list=input_string_list,
             additional_data={
                 "tree_parsed": tree_root,
