@@ -132,6 +132,7 @@ class InputFactory(pb.PipelineItemFactory):
                     f"Additional Data is expected to be a (sub)class of FileXMLAdditionalDataSubPhase, but is: {type(phase_step_variant_and_data)}")
             key_input = self.new_unique_key(
                 f"key_input_{phase_step_variant_and_data.phase_step_variant.name}")
+            self.print_msg(f"key_input of JSON input: {key_input}")
             k_filepath_provider = self.new_unique_key("k_filepath_provider")
             filepath_provider = pstr.PIStr(
                 pi.PIData(k_filepath_provider, None),

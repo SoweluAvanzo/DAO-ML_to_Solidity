@@ -133,7 +133,7 @@ class PipelineManager:
                 for d in item.get_dependencies():
                     if d not in nodes:
                         self.print_error(
-                            f"ERROR: dependency {d} in node '{key}' does not exist")
+                            f"ERROR: dependency {d} in node '{key}' (of type: {type(current_node.getItem())}) does not exist")
                     else:
                         n = nodes[d]
                         n.addDependant(current_node)
@@ -151,7 +151,8 @@ class PipelineManager:
             job.status_run = NodeRunStatus.RUNNING
             input_to_run = job.getInputForRun()
             try:
-                self.print_msg(f"Running item with key: {job.item.get_key()}")
+                self.print_msg(
+                    f"Running item with key: {job.item.get_key()} (and type: {type(job.item)})")
                 output = job.item.run(input_to_run)
                 job.status_run = NodeRunStatus.DONE
                 # update dependants
@@ -173,6 +174,7 @@ class PipelineManager:
                 print(e)
                 import traceback
                 traceback.print_exception(e)
+                self.print_error(e)
 
             except TypeError as e:
                 job.status_run = NodeRunStatus.CRASHED
@@ -181,4 +183,5 @@ class PipelineManager:
                 print(e)
                 import traceback
                 traceback.print_exception(e)
+                self.print_error(e)
         return final_outputs_by_key

@@ -28,6 +28,8 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         super().__init__(pipeline_item_data,
                          printer_debug=printer_debug
                          )
+        self.print_msg(f"print_msg -> creating JsonStringModelGenerator")
+        print(f"print -> creating JsonStringModelGenerator")
         # self._diagram_fields_optionality: dict[str, bool] = None  # lazy
         # self._dao_fields_optionality: dict[str, bool] = None  # lazy
         # self._committee_fields_optionality: dict[str, bool] = None  # lazy
@@ -37,8 +39,19 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         # lazy
         self._fields_mandatority_by_classname: dict[str, dict[str, bool]] = {}
 
-    def generate(self, data, additional_input=None):
+    def run(self, inputs):
+        self.print_msg("print_msg -> PORCO DI QUEL DIO MAIALE")
+        print("print -> PORCO DI QUEL DIO MAIALE")
+        return super().run(inputs)
+
+    def generate(self, data, additional_data=None):
+        self.print_msg(
+            f"\n\n\n JsonStringModelGenerator IS GENERATING (with data of type: {type(data)}) \n\n")
         try:
+            self.print_msg(
+                f"{self.__class__.__name__} is generating JSON with these keys in data: {list(data.__dict__.keys()) if isinstance(data, dict) else len(data)}")
+            self.print_msg(
+                f"{self.__class__.__name__} is generating JSON with these keys in additional_data: {list((additional_data.__dict__ if not isinstance(additional_data, dict) else additional_data).keys()) if additional_data is not None else 'NO-KEYS'}")
             data_obj: dict = data
             is_string = u.is_string_or_list(data)
             if is_string:
@@ -48,7 +61,7 @@ class JsonStringModelGenerator(bg.BaseGenerator):
                 data_obj = json.loads("".join(data))
             return self.parse_diagram(data_obj)
         except Exception as e:
-            print(e)
+            self.print_error(e)
         return None
 
     def _exception_missing_data(self, what, where, add_msg: str = None):

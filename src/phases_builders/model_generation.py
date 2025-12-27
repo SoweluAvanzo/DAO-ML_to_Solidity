@@ -100,14 +100,17 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 k_model_generator
             )
         elif phase_step_variant_and_data.phase_step_variant == pb_shared.ModelPersistanceFormat.JSON:
-            k_input = ModelJSONGeneratordData(
-                phase_step_variant_and_data).key_input_provider
+            if not isinstance(phase_step_variant_and_data, ModelJSONGeneratordData):
+                raise Exception(
+                    f"Wrong class for given phase_step_variant_and_data: expected ModelJSONGeneratordData, got: {type(phase_step_variant_and_data)}")
+            k_input = phase_step_variant_and_data.key_input_provider
             k_model_gen_from_json = self.new_unique_key(
                 "k_model_gen_from_json")
             return pb.PipelineItemsGenerated(
                 [
                     jsmg.JsonStringModelGenerator(
-                        pi.PIData(phase_step_variant_and_data, [k_input])
+                        pi.PIData(k_model_gen_from_json, [k_input]),
+                        printer_debug=self.printer_debug
                     )
                 ],
                 k_model_gen_from_json

@@ -16,8 +16,13 @@ class BaseGenerator(pi.PipelineItem):
             printer_debug=printer_debug
         )
 
-    def generate(self, data, additional_input=None):
+    def generate(self, data, additional_data=None):
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def run(self, inputs):
-        return self.generate(self.get_ith_input(inputs, 0), inputs)
+        self.print_msg(
+            f"running generator of key ({self.get_key()}) and type: {type(self)} ")
+        return self.generate(
+            self.get_ith_input(inputs, 0),
+            additional_data=inputs
+        )
