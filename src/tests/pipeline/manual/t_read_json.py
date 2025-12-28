@@ -155,4 +155,5 @@ if not isinstance(model_json, dm.DiagramManager):
         f"Model JSON is not a DiagramManager but: {type(model_json)}")
 
 printer_debug.print_msg("\n\n\n now comparing...")
+
 # python -m src.tests.pipeline.manual.t_read_json > OUT_t_read_json.txt

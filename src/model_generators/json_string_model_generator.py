@@ -40,8 +40,6 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         self._fields_mandatority_by_classname: dict[str, dict[str, bool]] = {}
 
     def run(self, inputs):
-        self.print_msg("print_msg -> PORCO DI QUEL DIO MAIALE")
-        print("print -> PORCO DI QUEL DIO MAIALE")
         return super().run(inputs)
 
     def generate(self, data, additional_data=None):
@@ -49,16 +47,28 @@ class JsonStringModelGenerator(bg.BaseGenerator):
             f"\n\n\n JsonStringModelGenerator IS GENERATING (with data of type: {type(data)}) \n\n")
         try:
             self.print_msg(
-                f"{self.__class__.__name__} is generating JSON with these keys in data: {list(data.__dict__.keys()) if isinstance(data, dict) else len(data)}")
+                f"{self.__class__.__name__} is generating JSON with these keys in data (type: {type(data)}): {list(data.__dict__.keys()) if isinstance(data, dict) else len(data)}")
             self.print_msg(
-                f"{self.__class__.__name__} is generating JSON with these keys in additional_data: {list((additional_data.__dict__ if not isinstance(additional_data, dict) else additional_data).keys()) if additional_data is not None else 'NO-KEYS'}")
-            data_obj: dict = data
+                f"{self.__class__.__name__} is generating JSON with these keys in additional_data (type: {type(additional_data)}): {list((additional_data.__dict__ if not isinstance(additional_data, dict) else additional_data).keys()) if additional_data is not None else 'NO-KEYS'}")
+            data_obj: dict = data  # assumption
             is_string = u.is_string_or_list(data)
             if is_string:
                 data_obj = json.loads(data)
             elif is_string != None:
                 # list
+                if len(data) <= 0:
+                    raise Exception(
+                        "The given data is an empty list of lines (of JSON things)")
+                for i in range(len(data)):
+                    if not isinstance(data[i], str):
+                        raise Exception(
+                            f"The data at line # {i} is not a string, but a: {type(data[i])}")
                 data_obj = json.loads("".join(data))
+            else:
+                if not isinstance(data, dict):
+                    self.print_error(
+                        f"The given data is not a JSON string nor a list (of strings?) but of: type({data})")
+            self.print_msg("LOG: Now, parsing the JSON data of the diagram!")
             return self.parse_diagram(data_obj)
         except Exception as e:
             self.print_error(e)
@@ -86,7 +96,7 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         for i in range(len(what)):
             if not isinstance(what[i], str):
                 raise Exception(
-                    f"While parsing JSON diagram (id: {diagram.id}), the {i}-th (0-based) element in the list {field_name} is not a string: {type(what[i])}")
+                    f"While parsing JSON {type(entity)} (id: {entity.get_id()}), the {i}-th (0-based) element in the list {field_name} is not a string: {type(what[i])}")
 
     def check_fields(self, obj: dict, fields: dict[str, bool], className: str, add_msg: str = None) -> bool:
         missing = []
@@ -532,14 +542,18 @@ class JsonStringModelGenerator(bg.BaseGenerator):
             controlGraphGenerator=cgb.ControlGraphBasic
         )
         diagram.id = data_obj["id"]
+        self.print_msg(f"Diagram ID: {diagram.get_id()}")
         # ... daos
         daos_by_id: dict[str, d.DAO] = {}
         index_dao = 0
         daos_by_id_data = data_obj["daoByID"]
         self._check_is_dict(daos_by_id_data, diagram, "daos_by_id_data")
+        self.print_msg(
+            f"Diagram daos_by_id_data len: {len(daos_by_id_data)}; and type: {type(daos_by_id_data)}")
         for dao_id, dao_data in daos_by_id_data.items():
             self._check_is_dict(dao_data, diagram,
                                 f"dao (# {index_dao}, ID: {dao_id})")
+            self.print_msg(f"... Parsing DAO with ID: {dao_id}")
             dao: d.DAO = self.parse_dao(diagram, dao_id, dao_data)
             diagram.createControlGraph(dao_id, dao=dao)
             daos_by_id[dao_id] = dao
