@@ -72,6 +72,8 @@ class JsonStringModelGenerator(bg.BaseGenerator):
             return self.parse_diagram(data_obj)
         except Exception as e:
             self.print_error(e)
+            import traceback
+            traceback.print_exception(e)
         return None
 
     def _exception_missing_data(self, what, where, add_msg: str = None):
@@ -79,9 +81,9 @@ class JsonStringModelGenerator(bg.BaseGenerator):
             f"Missing {what} field(s) in class {where}!{'' if add_msg is None else add_msg}")
 
     def _check_get_is_primitive(self, what, clazz: type, field_name: str, primitive_type):
-        if not isinstance(what, primitive_type):
+        if (what is not None) and (not isinstance(what, primitive_type)):
             raise Exception(
-                f"While parsing JSON {clazz.__name__}, the supposed {field_name} is not a {str(primitive_type)}: {type(what)}")
+                f"While parsing JSON {clazz.__name__}, the supposed {field_name} is not a {primitive_type.__name__}: {type(what)}")
         return what
 
     def _check_is_dict(self, what, entity: be.BaseEntity, field_name: str):
@@ -305,7 +307,8 @@ class JsonStringModelGenerator(bg.BaseGenerator):
                 com: c.Committee = ae
                 member_entities_ids: list[str] = com.member_entities
                 com.member_entities = [
-                    dao.committees[committee_id]
+                    dao.committees[committee_id] if committee_id in dao.committees else \
+                        (dao.roles[committee_id] if committee_id in dao.roles else None)
                     for committee_id in member_entities_ids
                 ]
             is_committee = not is_committee
@@ -363,18 +366,49 @@ class JsonStringModelGenerator(bg.BaseGenerator):
                                 aggregable_entity, "federated_committees")
         aggregable_entity.federated_committees = federated_committees_ids
 
-    def parse_permission(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, permission_data_obj: dict) -> c.Committee:
+    def parse_permission(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, permission_data_obj: dict) -> p.Permission:
         permission_fields = self._fields_of(p.Permission)
         self.check_fields(permission_data_obj,
                           permission_data_obj, p.Permission.__name__)
         permission = p.Permission(
-            permission_data_obj["id"],
-            permission_data_obj["allowed_action"],
-            permission_data_obj["permission_type"],
-            permission_data_obj["ref_gov_area"] if "ref_gov_area" in permission_data_obj else None,
-            permission_data_obj["voting_right"] if "voting_right" in permission_data_obj else False,
-            permission_data_obj["proposal_right"] if "proposal_right" in permission_data_obj else False,
+            self._check_get_is_primitive(
+                permission_data_obj["id"],
+                p.Permission,
+                "id",
+                str
+            ),
+            self._check_get_is_primitive(
+                permission_data_obj["allowed_action"],
+                p.Permission,
+                "allowed_action",
+                str
+            ),
+            self._check_get_is_primitive(
+                permission_data_obj["permission_type"],
+                p.Permission,
+                "permission_type",
+                str
+            ),
+            self._check_get_is_primitive(
+                permission_data_obj["ref_gov_area"],
+                p.Permission,
+                "ref_gov_area",
+                str
+            ) if "ref_gov_area" in permission_data_obj else None,
+            self._check_get_is_primitive(
+                permission_data_obj["voting_right"],
+                p.Permission,
+                "voting_right",
+                bool
+            ) if "voting_right" in permission_data_obj else False,
+            self._check_get_is_primitive(
+                permission_data_obj["proposal_right"],
+                p.Permission,
+                "proposal_right",
+                bool
+            ) if "proposal_right" in permission_data_obj else False
         )
+        self.print_msg(f"... ... Permission: id={permission.get_id()}")
         return permission
 
     def parse_committee(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, committee_data_obj: dict) -> c.Committee:
@@ -382,11 +416,36 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         self.check_fields(committee_data_obj,
                           committee_data_obj, c.Committee.__name__)
         committee = c.Committee(
-            committee_data_obj["id"],
-            committee_data_obj["committee_description"],
-            committee_data_obj["voting_condition"],
-            committee_data_obj["proposal_condition"],
-            committee_data_obj["decision_making_method"],
+            self._check_get_is_primitive(
+                committee_data_obj["id"],
+                c.Committee,
+                "id",
+                str
+            ),
+            self._check_get_is_primitive(
+                committee_data_obj["committee_description"],
+                c.Committee,
+                "committee_description",
+                str
+            ),
+            self._check_get_is_primitive(
+                committee_data_obj["voting_condition"],
+                c.Committee,
+                "voting_condition",
+                str
+            ),
+            self._check_get_is_primitive(
+                committee_data_obj["proposal_condition"],
+                c.Committee,
+                "proposal_condition",
+                str
+            ),
+            self._check_get_is_primitive(
+                committee_data_obj["decision_making_method"],
+                c.Committee,
+                "decision_making_method",
+                str
+            )
         )
         self._parse_aggregable_entity_part(
             diagram, dao_id, dao, committee_data_obj, committee)
@@ -401,12 +460,42 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         role_fields = self._fields_of(r.Role)
         self.check_fields(role_data_obj, role_data_obj, r.Role.__name__)
         role = r.Role(
-            role_data_obj["id"],
-            role_data_obj["role_name"],
-            role_data_obj["role_assignment_method"],
-            role_data_obj["n_agent_min"],
-            role_data_obj["n_agent_max"],
-            role_data_obj["agent_type"]
+            self._check_get_is_primitive(
+                role_data_obj["id"],
+                r.Role,
+                "id",
+                str
+            ),
+            self._check_get_is_primitive(
+                role_data_obj["role_name"],
+                r.Role,
+                "role_name",
+                str
+            ),
+            self._check_get_is_primitive(
+                role_data_obj["role_assignment_method"],
+                r.Role,
+                "role_assignment_method",
+                str
+            ),
+            self._check_get_is_primitive(
+                role_data_obj["n_agent_min"],
+                r.Role,
+                "n_agent_min",
+                int
+            ),
+            self._check_get_is_primitive(
+                role_data_obj["n_agent_max"],
+                r.Role,
+                "n_agent_max",
+                int
+            ),
+            self._check_get_is_primitive(
+                role_data_obj["agent_type"],
+                r.Role,
+                "agent_type",
+                str
+            )
         )
         self._parse_aggregable_entity_part(
             diagram, dao_id, dao, role_data_obj, role)
@@ -416,31 +505,64 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         dao_fields = self._fields_of(d.DAO)
         self.check_fields(dao_data_obj, dao_fields, d.DAO.__name__)
         dao = d.DAO(
-            dao_data_obj["id"] if dao_id is None else dao_id,
-            dao_data_obj["dao_name"],
-            dao_data_obj["mission_statement"],
-            dao_data_obj["hierarchical_inheritance"]
+            self._check_get_is_primitive(
+                dao_data_obj["id"],
+                d.DAO,
+                "id",
+                str
+            ) if dao_id is None else dao_id,
+
+            self._check_get_is_primitive(
+                dao_data_obj["dao_name"],
+                d.DAO,
+                "dao_name",
+                str
+            ),
+            self._check_get_is_primitive(
+                dao_data_obj["mission_statement"],
+                d.DAO,
+                "mission_statement",
+                str
+            ),
+            self._check_get_is_primitive(
+                dao_data_obj["hierarchical_inheritance"],
+                d.DAO,
+                "hierarchical_inheritance",
+                str
+            )
         )
         # ... permissions
+        self.print_msg(f"in DAO {dao_id}, parsing permissions ...")
         permissions_data: dict = dao_data_obj["permissions"]
         self._check_is_dict(permissions_data, dao, "permissions_data")
-        dao.permissions = self.parse_permission(
-            diagram, dao_id, dao, permissions_data)
+        self.print_msg(f" ... {len(permissions_data)} permissions ...")
+        permissions_dict: dict[str, p.Permission] = {}
+        for permission_id, permission_data in permissions_data.items():
+            permissions_dict[permission_id] = self.parse_permission(
+                diagram, dao_id, dao, permission_data
+            )
+        dao.permissions = permissions_dict
         # ... roles
+        self.print_msg(f"in DAO {dao_id}, parsing roles ...")
         roles_data: dict = dao_data_obj["roles"]
         self._check_is_dict(roles_data, dao, "roles")
+        self.print_msg(f" ... {len(roles_data)} roles ...")
         roles_dict: dict[str, r.Role] = {}
         for role_id, role_data in roles_data.items():
             roles_dict[role_id] = self.parse_role(
-                diagram, dao_id, dao, role_data)
+                diagram, dao_id, dao, role_data
+            )
         dao.roles = roles_dict
         # ... committees
+        self.print_msg(f"in DAO {dao_id}, parsing committees ...")
         committees_data: dict = dao_data_obj["committees"]
         self._check_is_dict(committees_data, dao, "committees")
+        self.print_msg(f" ... {len(committees_data)} committees ...")
         committees_dict: dict[str, c.Committee] = {}
         for committee_id, committee_data in committees_data.items():
             committees_dict[committee_id] = self.parse_committee(
-                diagram, dao_id, dao, committee_data)
+                diagram, dao_id, dao, committee_data
+            )
         dao.committees = committees_dict
         # ... owner_role
         owner_role_id: str = dao_data_obj["owner_role"]
@@ -452,8 +574,11 @@ class JsonStringModelGenerator(bg.BaseGenerator):
                 f"While parsing JSON dao (id: {dao.get_id()}), the owner_role id ({owner_role_id}) does not exists in this dao's 'roles' map")
         dao.owner_role = dao.roles[owner_role_id]
         # ... governance_areas
+        self.print_msg(f"in DAO {dao_id}, parsing governance_areas ...")
         governance_areas_data: dict = dao_data_obj["governance_areas"]
         self._check_is_dict(governance_areas_data, dao, "governance_areas")
+        self.print_msg(
+            f" ... {len(governance_areas_data)} governance_areas ...")
         governance_areas_dict: dict[str, ga.GovernanceArea] = {}
         for governance_area_id, governance_area_data in governance_areas_data.items():
             governance_areas_dict[governance_area_id] = self.parse_governance_area(
@@ -465,11 +590,15 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         # ... dao_control_graph
         dao.dao_control_graph = None
         # ... conditions
+        self.print_msg(f"in DAO {dao_id}, parsing conditions ...")
         conditions_list: list[str] = dao_data_obj["conditions"]
         self._check_is_list_str(conditions_list,
                                 dao, "conditions")
+        self.print_msg(
+            f" ... {len(governance_areas_data)} conditions ...")
         dao.conditions = conditions_list
         # ... other things (dictionaries of primitive types)
+        self.print_msg(f"in DAO {dao_id}, parsing other things ...")
         assignment_conditions_data: dict = dao_data_obj["assignment_conditions"]
         self._check_is_dict(assignment_conditions_data,
                             dao, "assignment_conditions")
@@ -496,7 +625,7 @@ class JsonStringModelGenerator(bg.BaseGenerator):
                             dao, "role_and_committee_proposal_right_dict")
         dao.role_and_committee_proposal_right_dict = role_and_committee_proposal_right_dict_data
         # DONE
-        self._resolve_cross_references(diagram, dao_id, dao)
+        self._resolve_cross_references(diagram, dao_id, dao, dao_data_obj)
         return dao
 
     def parse_relations_by_dao(self, data_obj: dict, daos_by_id: dict[str, d.DAO], diagram: dm.DiagramManager):
@@ -553,7 +682,7 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         for dao_id, dao_data in daos_by_id_data.items():
             self._check_is_dict(dao_data, diagram,
                                 f"dao (# {index_dao}, ID: {dao_id})")
-            self.print_msg(f"... Parsing DAO with ID: {dao_id}")
+            self.print_msg(f"... Parsing DAO {index_dao} with ID: {dao_id}")
             dao: d.DAO = self.parse_dao(diagram, dao_id, dao_data)
             diagram.createControlGraph(dao_id, dao=dao)
             daos_by_id[dao_id] = dao

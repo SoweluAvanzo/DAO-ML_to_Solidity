@@ -87,10 +87,9 @@ class DAO(base_entity_module.BaseEntity):
         obj["governance_areas"] = {
             n.get_id(): n.toJSON()
             for n in self.governance_areas.values()
-        },
+        }
         obj["dao_control_graph"] = f"DAO Graph, but not serializable, of type: {self.dao_control_graph.__class__.__name__ if self.dao_control_graph is not None else 'NONE'}"
         obj["metadata"] = self.metadata.toJSON()
-
         obj["assignment_conditions"] = {
             role_id: role_assignment_method
             for role_id, role_assignment_method

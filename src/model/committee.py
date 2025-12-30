@@ -6,7 +6,7 @@ import src.model.aggregable_entity as aggregable_entity
 
 class Committee(aggregable_entity.AggregableEntity):
     # removed n_agent_min, n_agent_max
-    def __init__(self, id, committee_description: str, voting_condition, proposal_condition, decision_making_method):
+    def __init__(self, id, committee_description: str, voting_condition: str, proposal_condition: str, decision_making_method: str):
         super().__init__(id)
         self.committee_description = committee_description
         self.voting_condition = voting_condition
