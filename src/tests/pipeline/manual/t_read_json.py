@@ -21,6 +21,23 @@ import src.pipeline.utilities.pi_chain_store_releaser_branching as pstore
 import src.files.file_utils as files
 import src.postprocessing.consts_template as consts_t
 import src.utilities.utils as u
+import src.utilities.comparisons as comp
+
+
+def diffs(bd: dm.DiagramManager, nd: dm.DiagramManager) -> list[str]:
+    """ Returns a list of errors and mismatches
+    Args:
+        bd (dm.DiagramManager): base Diagram (XML) to compare onto
+        nd (dm.DiagramManager): new Diagram (JSON) to be compared
+        field_path (str, optional): sequence of field names from the root obhect to the current field. Defaults to "".
+        current_field_base (_type_, optional): _description_. Defaults to None.
+        current_field_new (_type_, optional): _description_. Defaults to None.
+
+    Returns:
+        bool: _description_
+    """
+    return comp.check_differences(bd, nd)
+
 
 printer_debug = u.PrinterDebug()
 pm = pmp.PipelineManager(
