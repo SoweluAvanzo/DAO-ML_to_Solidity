@@ -34,7 +34,7 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
         and (type_base.__name__ != type_new.__name__)
     ):
         return [
-            f"Type mismatch: << base = {type_base} >> ; << new = {type_new} >>"
+            f"in path: {field_path}, Type mismatch: << base = {type_base} >> ; << new = {type_new} >>"
         ]
     errors: list[str] = []
     # types should be equal ...
@@ -68,8 +68,9 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
     if keys is None:
         keys = list(fields_base.keys())
     if len(fields_base) != len(fields_new):
-        raise Exception(
-            f"in path: {field_path}, the {fields_collection_name} have different lengths: base = {len(fields_base)} ; new {len(fields_new)}")
+        return [
+            f"in path: {field_path}, the {fields_collection_name} have different lengths: base = {len(fields_base)} ; new {len(fields_new)}"
+        ]
     # TODO finally, recursively iterate over the fields
     for k in keys:
         if are_keys_strings and (k not in fields_new):

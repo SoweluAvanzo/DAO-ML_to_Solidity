@@ -42,6 +42,18 @@ ints2 = [4, 5, 6]
 mixin_vals = [None, 666, True, 5.5, "ciao"]
 object1 = {"o": 0}
 object2 = {"p": 0}
+o_2f_1 = {"a": 7, "b": False}
+o_2f_2 = {"c": "ciao", "b": True}
+o_l_1 = {"id": "Point1", "coord": [0, 2, 3]}
+o_l_2 = {"id": "Point1", "coord": [8, 2, -3]}
+onl1 = {"loc": ["Via", "Sostegno", [65, "bis"]]}  # Object Nested list
+onl2 = {"loc": ["Via", "Sostegno", ["65", "bis"]]}  # Object Nested list
+onl3 = {"loc": ["Via", "Sostegno", ["65", {}]]}  # Object Nested list
+ono1 = {"name": "lonevetad", "stats": {  # Object Nested Object
+    "int": 8, "des": 5, "for": 7, "cos": 2}, "liv": 30}
+ono2 = {"name": "lonevetad", "stats": {
+    "int": 9, "des": 4, "for": 8, "cos": 2}, "liv": 31}
+
 tests: list[T] = [
     *[
         T(v1, v2, v1 == v2)
@@ -58,7 +70,15 @@ tests: list[T] = [
     T([9, ints1, 0], [9, ints1, 0], True),
     T([9, ints1, 0], [9, ints2, 0], False),
     T([9, ints1, 0], [9, ints1, 3], False),
-    # 35
+    T(ints2, [-3, 4, 5, 6, 8], False),  # 35
+    T(o_2f_1, {**o_2f_1}, True),
+    T(o_2f_1, o_2f_2, False),
+    T(o_2f_1, {**o_2f_2, "b": [98]}, False),
+    T(o_l_1, {**o_l_1}, True),
+    T(o_l_1, o_l_2, False),  # 40
+    T(onl1, onl2, False),
+    T(onl3, onl2, False),
+    T(ono1, ono2, False),
     # TODO
 ]
 
