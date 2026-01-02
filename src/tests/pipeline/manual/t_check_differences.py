@@ -29,6 +29,11 @@ class DE:
         self.e = e
 
 
+class K:
+    def __init__(self, **kwargs):
+        self.__dict__ = kwargs
+
+
 class T:
     def __init__(self, value1, value2, should_pass=True):
         self.value1 = value1
@@ -53,6 +58,16 @@ ono1 = {"name": "lonevetad", "stats": {  # Object Nested Object
     "int": 8, "des": 5, "for": 7, "cos": 2}, "liv": 30}
 ono2 = {"name": "lonevetad", "stats": {
     "int": 9, "des": 4, "for": 8, "cos": 2}, "liv": 31}
+#
+a = A()
+a2 = A_same()
+oa = {"ob": a}
+oa2 = {"ob": a2}
+a1 = A("altra a")
+
+k1 = K(a="ciao", b="mamma", c=7)
+k2 = K(a="ciao", b="mondo", c=8)
+k3 = K(a="ciao", b=9, d=True)
 
 tests: list[T] = [
     *[
@@ -78,7 +93,27 @@ tests: list[T] = [
     T(o_l_1, o_l_2, False),  # 40
     T(onl1, onl2, False),
     T(onl3, onl2, False),
+    T(ono1, comp.deep_copy(ono1), True),
     T(ono1, ono2, False),
+    T(a, a, True),  # 45
+    T(a, a2, False),
+    T(a2, a, False),
+    T(a2, a2, True),
+    T(oa, {"ob": a}, True),
+    T(oa, oa2, False),  # 50
+    T(a, a1, False),
+    T(a1, a, False),
+    T(a, B(), False),
+    T(a, B(b="a"), False),
+    T(B(), B(), True),  # 55
+
+    # in the end
+    T(k1, k1, True),
+    T(k1, K(a="ciao", b="mamma", c=7), True),
+    T(k1, k2, False),
+    T(k1, k3, False),
+    T(k3, k2, False),
+
     # TODO
 ]
 

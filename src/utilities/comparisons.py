@@ -1,5 +1,10 @@
 
+global PRIMITIVE_TYPES
+PRIMITIVE_TYPES = (bool, str, int, float)
+
+
 def check_differences(current_field_base, current_field_new, field_path: str = None) -> list[str]:
+    # global PRIMITIVE_TYPES
     """ Returns a list of errors and mismatches
     Args:
         bd (dm.DiagramManager): base Diagram (XML) to compare onto
@@ -30,7 +35,8 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
     # currently, only strict type comparison is implemented (rather than the flexible polymorph-aware "isinstance" allows)
     if (type_base != type_new) or ( \
         # is a class?
-        ((type == type_base) or (type == type_new))
+        ((type == type_base) or (type == type_new)
+         or ("class" in f"{type_base}") or ("class" in f"{type_new}"))
         and (type_base.__name__ != type_new.__name__)
     ):
         return [
@@ -38,7 +44,7 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
         ]
     errors: list[str] = []
     # types should be equal ...
-    if type_base in (bool, str, int, float):
+    if type_base in PRIMITIVE_TYPES:
         # all OK?
         return None if current_field_base == current_field_new \
             else [
@@ -57,7 +63,7 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
         fields_base = current_field_base
         fields_new = current_field_new
         fields_collection_name = "lists"
-    elif type_base == type:
+    elif (type_base == type) or ((type_base != dict) and ("class" in f"{type_base}")):
         fields_base = current_field_base.__dict__
         fields_new = current_field_new.__dict__
         fields_collection_name = "set of classes' fields"
@@ -65,6 +71,9 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
         fields_base = current_field_base
         fields_new = current_field_new
         fields_collection_name = "dictionaries"
+    else:
+        raise Exception(
+            f"in path: {field_path}, unrecognized type: {type_base} (and type_new: {type_new}) (... is == type?: {type == type_base})")
     if keys is None:
         keys = list(fields_base.keys())
     if len(fields_base) != len(fields_new):
@@ -103,3 +112,27 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
             )
     # end
     return errors if len(errors) > 0 else None
+
+
+def deep_copy(x, path=None):
+    t = type(x)
+    if path is None:
+        path = ""
+    if t in PRIMITIVE_TYPES:
+        return x
+    if t == list:
+        return [
+            deep_copy(x[i], f"{path}[{i}]")
+            for i in range(len(x))
+        ]
+    dictionary: dict = None
+    if t == type:
+        dictionary = x.__dict__
+    elif t == dict:
+        dictionary = x
+    else:
+        raise Exception(f"In path '{path}', unexpected type to copy: {t}")
+    return {
+        k: deep_copy(dictionary[k], f"{path}.{k}")
+        for k in dictionary.keys()
+    }
