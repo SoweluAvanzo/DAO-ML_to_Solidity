@@ -307,8 +307,9 @@ class JsonStringModelGenerator(bg.BaseGenerator):
                 com: c.Committee = ae
                 member_entities_ids: list[str] = com.member_entities
                 com.member_entities = [
-                    dao.committees[committee_id] if committee_id in dao.committees else \
-                        (dao.roles[committee_id] if committee_id in dao.roles else None)
+                    dao.committees[committee_id] if committee_id in dao.committees else
+                    (dao.roles[committee_id]
+                     if committee_id in dao.roles else None)
                     for committee_id in member_entities_ids
                 ]
             is_committee = not is_committee
@@ -692,4 +693,5 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         diagram.relations_by_dao = self.parse_relations_by_dao(
             data_obj, daos_by_id, diagram
         )
+        diagram.processRawInstances()
         return diagram

@@ -3,7 +3,7 @@ global PRIMITIVE_TYPES
 PRIMITIVE_TYPES = (bool, str, int, float)
 
 
-def check_differences(current_field_base, current_field_new, field_path: str = None) -> list[str]:
+def check_differences(current_field_base, current_field_new, field_path: str = None, field_path_filterer=None) -> list[str]:
     # global PRIMITIVE_TYPES
     """ Returns a list of errors and mismatches
     Args:
@@ -20,6 +20,8 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
         return None
     if field_path is None:
         field_path = ""
+    if (field_path_filterer is not None) and field_path_filterer(current_field_base, current_field_new, field_path):
+        return None
     if (current_field_base is None) and (current_field_new is None):
         return None  # i.e., both None -> no errors at all b
     if current_field_base is None:
@@ -91,8 +93,11 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
             rec_field_path = k if field_path == "" else (
                 f"{field_path}.{k}" if are_keys_strings else f"{field_path}[{k}]"
             )
+            print(f"recursion in path {rec_field_path}")
             rec_errors: list[str] = check_differences(
-                fields_base[k], fields_new[k], rec_field_path
+                fields_base[k], fields_new[k],
+                field_path=rec_field_path,
+                field_path_filterer=field_path_filterer
             )
             if (rec_errors is not None) and (len(rec_errors) > 0):
                 # there are errors -> collect them
@@ -100,15 +105,16 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
         index_field += 1
         # field_path == ""
     if are_keys_strings:
-        fields_new_missing_in_base: list[str] = [
-            k
-            for k in fields_new.keys()
-            if k not in fields_base
+        fields_new_keys: list[str] = list(fields_new.keys())
+        fields_new_missing_in_base: list[tuple[str, int]] = [
+            (fields_new_keys[i], i)
+            for i in range(len(fields_new_keys))
+            if fields_new_keys[i] not in fields_base
         ]
         if len(fields_new_missing_in_base) > 0:
             errors.extend(
-                f"in path: {field_path}, / the {i}-th key '{fields_new_missing_in_base[i]}' in the new object is not present in the base object"
-                for i in range(len(fields_new_missing_in_base))
+                f"in path: {field_path}, / the {f_i[1]}-th key '{f_i[0]}' in the new object is not present in the base object"
+                for f_i in fields_new_missing_in_base
             )
     # end
     return errors if len(errors) > 0 else None

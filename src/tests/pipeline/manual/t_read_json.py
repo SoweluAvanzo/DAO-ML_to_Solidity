@@ -1,6 +1,7 @@
 import src.pipeline.pipeline_manager as pmp
 import src.pipeline.pipeline_item as pi
 
+import src.model.base_entity as be
 import src.model.diagram_manager as dm
 
 import src.phases_builders.shared as pb_shared
@@ -172,5 +173,56 @@ if not isinstance(model_json, dm.DiagramManager):
         f"Model JSON is not a DiagramManager but: {type(model_json)}")
 
 printer_debug.print_msg("\n\n\n now comparing...")
+
+
+"""_summary_
+def check_differences(dm_xml:dm.DiagramManager,dm_json:dm.DiagramManager) -> list[str]:
+    errors: list[str] = []
+    if dm_xml.get_id() != dm_json.get_id():
+        errors.append(
+            f"DM have different id: xml= {dm_xml.get_id() } ; JSON={ dm_json.get_id()}")
+    if 
+    return errors
+
+"""
+
+FIELDS_TO_FILTER = ["controlGraphGenerator",
+                    # "dao_control_graph",
+                    "control_graph"
+                    ]
+ids_checked = set()
+
+
+def field_filter(current_field_base, current_field_new, field_path: str):
+    if (field_path is None) or (field_path == ""):
+        return False
+    needs_to_be_filtered = False
+    for ftf in FIELDS_TO_FILTER:
+        if field_path.endswith(ftf):
+            needs_to_be_filtered = True
+            break
+    if not needs_to_be_filtered:
+        if isinstance(current_field_base, be.BaseEntity) and isinstance(current_field_new, be.BaseEntity):
+            id_base = current_field_base.get_id()
+            id_new = current_field_new.get_id()
+            if (id_base in ids_checked) and (id_new in ids_checked):
+                return True  # already checked
+            # not found -> can check
+            ids_checked.add(id_base)
+            ids_checked.add(id_new)
+        return False  # can check
+    return True
+
+
+differences: list[str] = comp.check_differences(
+    model_xml, model_json,
+    field_path_filterer=field_filter
+)
+if (differences is None) or (len(differences) <= 0):
+    printer_debug.print_msg("All ok! ^_^")
+else:
+    printer_debug.print_error(f"ERROR: {len(differences)} differences:")
+    for e in differences:
+        printer_debug.print_error(e)
 
 # python -m src.tests.pipeline.manual.t_read_json > OUT_t_read_json.txt

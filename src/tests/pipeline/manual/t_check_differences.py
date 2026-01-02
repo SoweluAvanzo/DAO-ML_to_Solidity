@@ -106,15 +106,13 @@ tests: list[T] = [
     T(a, B(), False),
     T(a, B(b="a"), False),
     T(B(), B(), True),  # 55
-
-    # in the end
+    T(CD(), DE(), False),
     T(k1, k1, True),
     T(k1, K(a="ciao", b="mamma", c=7), True),
     T(k1, k2, False),
-    T(k1, k3, False),
+    T(k1, k3, False),  # 60
     T(k3, k2, False),
-
-    # TODO
+    T(k3, K(a=9, b=85, k={"eheh": "ahah"}, f=False, t=True), False)
 ]
 
 
