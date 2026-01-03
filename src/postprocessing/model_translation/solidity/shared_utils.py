@@ -51,7 +51,7 @@ def get_control_bitflags(
         return 0, 0
     all_controllers = dao.dao_control_graph.get_all_descendants_of(r_o_c_ID) \
         if is_transitive else \
-        role_or_committee.controllers
+        list(role_or_committee.controllers)
     if is_transitive and dao.dao_control_graph.has_edge(r_o_c_ID, r_o_c_ID):
         all_controllers.append(r_o_c_ID)
     for controller in all_controllers:

@@ -68,9 +68,10 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
         return shared_utils_sol.addresses_by_entities_data(dao, entity_to_data)
 
     def generate_control_tests_expected_results(self, entities: list[aggregable_entity.AggregableEntity], entity_to_data: dict[str, dict]) -> list[tuple[int, int, bool]]:
-
-        controlledBy = {entity.get_id(): set(entity.controllers)
-                        for entity in entities}
+        controlledBy = {
+            entity.get_id(): entity.controllers
+            for entity in entities
+        }
         return [
             (
                 # the controller
@@ -98,7 +99,7 @@ class SolidityTestsTranslatorJinjaHardhat_1_0_0(st_t.SolidityTestsTranslator):
         permission_tests_expected_results = [(entity_to_data[entity.get_id()]['final_id'],
                                               fu.sanitize_filename(permission.allowed_action).replace(
                                                   "/", "_").replace("\\", ""),
-                                              permission in entity.permissions and permission.voting_right == False and permission.proposal_right == False)
+                                              permission.get_id() in entity.permissions and permission.voting_right == False and permission.proposal_right == False)
                                              for entity in entities
                                              for permission in postprocessed_permissions]
         return permission_tests_expected_results

@@ -285,33 +285,38 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         is_committee = False
         for aggregable_entities_dict in [dao.roles, dao.committees]:
             for ae_id, ae in aggregable_entities_dict.items():
-                #
+                # alreaddy done
+                """
                 permissions_ids: list[str] = ae.permissions
-                ae.permissions = [
-                    dao.permissions[permission_id]
+                ae.permissions = {
+                    permission_id: dao.permissions[permission_id]
                     for permission_id in permissions_ids
-                ]
+                }
+                """
                 #
                 aggregated_ids: list[str] = ae.aggregated
-                ae.aggregated = [
-                    dao.roles[ag_id] if ag_id in dao.roles else dao.committees[ag_id]
+                ae.aggregated = {
+                    ag_id: dao.roles[ag_id] if ag_id in dao.roles else dao.committees[ag_id]
                     for ag_id in aggregated_ids
-                ]
+                }
                 #
                 federated_committees_ids: list[str] = ae.federated_committees
-                ae.aggregated = [
-                    dao.roles[fc_id] if fc_id in dao.roles else dao.committees[fc_id]
+                ae.federated_committees = {
+                    fc_id: dao.roles[fc_id] if fc_id in dao.roles else dao.committees[fc_id]
                     for fc_id in federated_committees_ids
-                ]
-            if is_committee:
-                com: c.Committee = ae
-                member_entities_ids: list[str] = com.member_entities
-                com.member_entities = [
-                    dao.committees[committee_id] if committee_id in dao.committees else
-                    (dao.roles[committee_id]
-                     if committee_id in dao.roles else None)
-                    for committee_id in member_entities_ids
-                ]
+                }
+                if is_committee:
+                    com: c.Committee = ae
+                    member_entities_ids: list[str] = com.member_entities
+                    com.member_entities = {
+                        committee_id: dao.committees[committee_id]
+                        if committee_id in dao.committees else (
+                            dao.roles[committee_id]
+                            if committee_id in dao.roles
+                            else None
+                        )
+                        for committee_id in member_entities_ids
+                    }
             is_committee = not is_committee
 
     def parse_governance_area(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, governance_area_data_obj: dict) -> ga.GovernanceArea:
@@ -347,13 +352,16 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         # just str id but should be the instance, for now
         self._check_is_list_str(
             permissions_ids, aggregable_entity, "permissions")
-        aggregable_entity.permissions = permissions_ids
+        aggregable_entity.permissions = {
+            perm_id: dao.permissions[perm_id]
+            for perm_id in permissions_ids
+        }
         # ... controllers
         controllers_ids: list[str] = aggr_entity_data_obj["controllers"]
         # just str id but should be the instance, for now
         self._check_is_list_str(
             controllers_ids, aggregable_entity, "controllers")
-        aggregable_entity.controllers = controllers_ids
+        aggregable_entity.controllers = set(controllers_ids)
         # ... aggregated
         aggregated_ids: list[str] = aggr_entity_data_obj["aggregated"]
         # just str id but should be the instance, for now

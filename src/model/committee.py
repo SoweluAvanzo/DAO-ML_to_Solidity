@@ -12,20 +12,20 @@ class Committee(aggregable_entity.AggregableEntity):
         self.voting_condition = voting_condition
         self.proposal_condition = proposal_condition
         self.decision_making_method = decision_making_method
-        self.member_entities: list[Committee] = []
+        self.member_entities: dict[str, Committee] = {}
 
     def get_name(self) -> str:
         return self.committee_description
 
     def add_member_entity(self, entity: base_entity.BaseEntity):
-        self.member_entities.append(entity)
+        self.member_entities[entity.get_id()] = entity
         print(f'Adding member entity {entity.get_id()} to committee {self.id}')
 
     def __str__(self):
         parts = [
             f', committee_description={self.committee_description}, voting_condition={self.voting_condition}, proposal_condition={self.proposal_condition}, decision_making_method={self.decision_making_method}']
         parts.append(
-            f", member_entities<{len(self.member_entities)}>=[{','.join(e.get_id() for e in self.member_entities)}]")
+            f", member_entities<{len(self.member_entities)}>=[{','.join(self.member_entities.keys())}]")
         return super().__str__(parts)
 
     def toJSON(self):
@@ -34,5 +34,5 @@ class Committee(aggregable_entity.AggregableEntity):
         obj["voting_condition"] = self.voting_condition
         obj["proposal_condition"] = self.proposal_condition
         obj["decision_making_method"] = self.decision_making_method
-        obj["member_entities"] = [c.get_id() for c in self.member_entities]
+        obj["member_entities"] = list(self.member_entities.keys())
         return obj

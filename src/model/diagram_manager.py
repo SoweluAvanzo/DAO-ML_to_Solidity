@@ -84,11 +84,11 @@ class DiagramManager(base_entity_module.BaseEntity):
         if not (isinstance(role_or_committee, role_module.Role) or isinstance(role_or_committee, committee_module.Committee)):
             raise Exception(
                 f"The provided role_or_committe is not a Role nor a Committe: {type(role_or_committee)}")
-        for aggregated in role_or_committee.aggregated:
+        for aggregated in role_or_committee.aggregated.values():
             self.get_aggregated_permissions(aggregated)
             # the aggregator inherits permissions from the aggregated
-            for permission in aggregated.permissions:
-                if permission not in role_or_committee.permissions:
+            for permission in aggregated.permissions.values():
+                if permission.get_id() not in role_or_committee.permissions:
                     source_id = role_or_committee.get_id() if isinstance(
                         role_or_committee, role_module.Role) else role_or_committee.get_id()
                     target_id = aggregated.get_id() if isinstance(
@@ -179,14 +179,14 @@ class DiagramManager(base_entity_module.BaseEntity):
                     gp.GovernancePermission.PROPOSAL, committee)
                 dao.add_permission(voting_permission)
                 dao.add_permission(proposal_permission)
-                for role_or_committee in committee.member_entities:
-                    if isinstance(role_or_committee, role_module.Role or isinstance(role_or_committee, committee_module.Committee)):
-                        if voting_permission not in role_or_committee.permissions:
+                for role_or_committee in committee.member_entities.values():
+                    if isinstance(role_or_committee, role_module.Role) or isinstance(role_or_committee, committee_module.Committee):
+                        if voting_permission.get_id() not in role_or_committee.permissions:
                             role_or_committee.add_permission(voting_permission)
                             # adding to the dictionary of voting rights to access it in simple translator
                             dao.role_and_committee_voting_right_dict[role_or_committee.get_id(
                             )] = committee.get_id()
-                        if proposal_permission not in role_or_committee.permissions:
+                        if proposal_permission.get_id() not in role_or_committee.permissions:
                             role_or_committee.add_permission(
                                 proposal_permission)
                             dao.role_and_committee_proposal_right_dict[role_or_committee.get_id(
@@ -230,26 +230,26 @@ class DiagramManager(base_entity_module.BaseEntity):
 
     def generate_conditions(self, dao: dao_module.DAO):
         # storing both the list of the conditions and the respective relations with the roles and committees (how conditions are used in the DAO)
-        conditions = []
+        conditions = set()
         for role in dao.roles.values():
             if role.role_assignment_method != None:
                 dao.assignment_conditions[role.get_id(
                 )] = role.role_assignment_method
                 if role.role_assignment_method not in conditions:
-                    conditions.append(role.role_assignment_method)
+                    conditions.add(role.role_assignment_method)
 
         for committee in dao.committees.values():
             if committee.voting_condition != None:
                 dao.voting_conditions[committee.get_id(
                 )] = committee.voting_condition
                 if committee.voting_condition not in conditions:
-                    conditions.append(committee.voting_condition)
+                    conditions.add(committee.voting_condition)
             if committee.proposal_condition != None:
                 dao.proposal_conditions[committee.get_id(
                 )] = committee.proposal_condition
                 if committee.proposal_condition not in conditions:
-                    conditions.append(committee.proposal_condition)
-        dao.conditions = conditions
+                    conditions.add(committee.proposal_condition)
+        dao.conditions = list(conditions)
 
     def __str__(self):
         result = ["DiagramManager", f"\t id: {self.get_id()}", "DAOs:"]

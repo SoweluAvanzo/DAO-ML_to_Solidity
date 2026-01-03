@@ -393,7 +393,9 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         for entity_map in entities_map_list:
             for entity in entity_map.values():
                 permission_indices = [
-                    permission_to_index[permission.get_id()] for permission in entity.permissions]
+                    permission_to_index[permission.get_id()]
+                    for permission in entity.permissions.values()
+                ]
                 # Set the bit for each permission index
                 bitflag = 0
                 for index in permission_indices:
