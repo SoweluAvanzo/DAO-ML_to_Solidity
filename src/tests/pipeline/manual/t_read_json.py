@@ -3,6 +3,7 @@ import src.pipeline.pipeline_item as pi
 
 import src.model.base_entity as be
 import src.model.diagram_manager as dm
+import src.model.role as ro
 
 import src.phases_builders.shared as pb_shared
 import src.phases_builders.phase_builder as pb
@@ -163,8 +164,8 @@ keys = list(results_by_key.keys())
 printer_debug.print_msg(keys)
 
 printer_debug.print_msg("\n\n\n getting model...")
-model_xml = results_by_key[k_p_model_storer_xml]
-model_json = results_by_key[k_p_model_storer_json]
+model_xml: dm.DiagramManager = results_by_key[k_p_model_storer_xml]
+model_json: dm.DiagramManager = results_by_key[k_p_model_storer_json]
 if not isinstance(model_xml, dm.DiagramManager):
     printer_debug.print_error(
         f"Model XML is not a DiagramManager but: {type(model_xml)}")
@@ -224,5 +225,27 @@ else:
     printer_debug.print_error(f"ERROR: {len(differences)} differences:")
     for e in differences:
         printer_debug.print_error(e)
+
+    def print_entity(entity: be.BaseEntity):
+        printer_debug.print_error(
+            f"\t\t - {entity.get_id()} : {entity.get_name()}")
+
+    printer_debug.print_error("\n the roles were:")
+    for m_t, model in [("xml", model_xml), ("json", model_json)]:
+        printer_debug.print_error(f"\n... on {m_t}:")
+        for dao_id, dao in model.daoByID.items():
+            printer_debug.print_error(f"\tdao: {dao_id}")
+            printer_debug.print_error("\t    owner role:")
+            if dao.owner_role is None:
+                printer_debug.print_error("\t\t NONE!!!")
+            else:
+                print_entity(dao.owner_role)
+            printer_debug.print_error(f"\t {len(dao.roles)} roles:")
+            for role_id, role in dao.roles.items():
+                print_entity(role)
+            printer_debug.print_error(",,, conditions:")
+            for cond in dao.conditions:
+                printer_debug.print_error(f"\t {cond}")
+
 
 # python -m src.tests.pipeline.manual.t_read_json > OUT_t_read_json.txt

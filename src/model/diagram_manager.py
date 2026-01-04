@@ -168,8 +168,6 @@ class DiagramManager(base_entity_module.BaseEntity):
                         else:
                             print(
                                 f'ERROR: wrong federation type: Committee {fromID} -> {content} \n')
-            dao.metadata.save_user_functionalities_group_size(
-                dao.roles, dao.committees)
             # Assign voting and proposal permissions to committees
             for committee in dao.committees.values():
                 # Assign voting and proposal permissions to committees
@@ -200,13 +198,22 @@ class DiagramManager(base_entity_module.BaseEntity):
             self.generate_conditions(dao)
             # generate owner role
             self.generateOwnerRole(dao)
+            # after generating the owner Role, save some metadata (like the "bit-size")
+            dao.metadata.save_user_functionalities_group_size(
+                dao.roles, dao.committees)
             self.createControlGraph(dao_id, dao)
 
     def generateOwnerRole(self, dao: dao_module.DAO):
         # create owner role
         owner_role_name = f"{dao.dao_name}Owner".replace(" ", "_")
-        owner_role = role_module.Role(role_id=owner_role_name, role_name=owner_role_name,
-                                      role_assignment_method="Non Assignable", n_agent_min=None, n_agent_max=None, agent_type=None)
+        owner_role = role_module.Role(
+            role_id=owner_role_name,
+            role_name=owner_role_name,
+            role_assignment_method="Non Assignable",
+            n_agent_min=None,
+            n_agent_max=None,
+            agent_type=None
+        )
         dao.owner_role = owner_role
         for permission in dao.permissions.values():
             owner_role.add_permission(permission)

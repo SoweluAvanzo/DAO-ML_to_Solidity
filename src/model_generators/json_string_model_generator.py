@@ -701,5 +701,5 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         diagram.relations_by_dao = self.parse_relations_by_dao(
             data_obj, daos_by_id, diagram
         )
-        diagram.processRawInstances()
+        # diagram.processRawInstances() # NOT NEEDED ^^
         return diagram

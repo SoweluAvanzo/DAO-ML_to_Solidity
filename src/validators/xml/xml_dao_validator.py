@@ -169,7 +169,7 @@ class ConstraintValidator():
 
     def check_relations_in_same_DAO(self, diagram, early_return=False):
         # { dao_id: TARGETS } ;; TARGETS-> { elem_id: set_of_targetsID }
-        possible_targets_by_dao_id: map[str, map[str, set]] = {}
+        possible_targets_by_dao_id: dict[str, dict[str, set]] = {}
 
         all_descendants_name = [
             "federates_into",
@@ -226,7 +226,7 @@ class ConstraintValidator():
                             other_dao = possible_targets_by_dao_id[other_dao_id]
                             if target_id in other_dao:
                                 self.printer_debug.print_error(
-                                    f"ERROR: found target {target_id} (originally from DAO __{dao_id}__) pointing insinde DAO --{other_dao_id}--")
+                                    f"ERROR: found target {target_id} (originally from DAO __{dao_id}__) pointing insinde (another) DAO --{other_dao_id}--")
                                 if early_return:
                                     return False  # ERROR
                                 all_violations.append({"elementID_with_external_target": element_id,

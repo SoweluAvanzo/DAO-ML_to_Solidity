@@ -79,9 +79,20 @@ def check_differences(current_field_base, current_field_new, field_path: str = N
     if keys is None:
         keys = list(fields_base.keys())
     if len(fields_base) != len(fields_new):
-        return [
-            f"in path: {field_path}, the {fields_collection_name} have different lengths: base = {len(fields_base)} ; new {len(fields_new)}"
+        error_text: list[str] = [
+            f"in path: {field_path}, the {fields_collection_name} have different lengths: base = {len(fields_base)} ; new {len(fields_new)} :"
         ]
+        if type_base == list:
+            error_text.append(f"\t ({len(fields_base)}) base:")
+            error_text.extend(f"\t - {x}" for x in fields_base)
+            error_text.append(f"\t ({len(fields_new)}) new")
+            error_text.extend(f"\t - {x}" for x in fields_new)
+        else:
+            error_text.append(f"\t ({len(fields_base)}) base:")
+            error_text.extend(f"\t - {k}: {x}" for k, x in fields_base.items())
+            error_text.append(f"\t ({len(fields_new)}) new")
+            error_text.extend(f"\t - {k}: {x}" for k, x in fields_new.items())
+        return ["\n".join(error_text)]
     # TODO finally, recursively iterate over the fields
     for k in keys:
         if are_keys_strings and (k not in fields_new):
