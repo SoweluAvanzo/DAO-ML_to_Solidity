@@ -101,7 +101,7 @@ class ConstraintValidator():
             self.printer_debug.print_error(f"Error with the schema file: {e}")
             return e
 
-    def split_and_add_to_list(self, strings):
+    def split_and_add_to_list(self, strings: list[str]):
         result = []
         for string in strings:
             substrings = string.split()

@@ -353,7 +353,7 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         self._check_is_list_str(
             permissions_ids, aggregable_entity, "permissions")
         aggregable_entity.permissions = {
-            perm_id: dao.permissions[perm_id]
+            perm_id: dao.permissions[perm_id] if perm_id in dao.permissions else None
             for perm_id in permissions_ids
         }
         # ... controllers

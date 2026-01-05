@@ -174,41 +174,41 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         if ctx.associated_to():
             for assoc in ctx.associated_to():
                 content = self.aggregate_texts(assoc.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
                     self.current_dao,
                     r_t.RelationType.ASSOCIATION,
-                    id,
+                    id_role_or_committee,
                     content
                 )
         if ctx.controlled_by():
             for control in ctx.controlled_by():
                 content = self.aggregate_texts(control.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
                     self.current_dao,
                     r_t.RelationType.CONTROL,
-                    id,
+                    iid_role_or_committeed,
                     content
                 )
         if ctx.aggregates():
             for aggregated in ctx.aggregates():
                 content = self.aggregate_texts(aggregated.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
                     self.current_dao,
                     r_t.RelationType.AGGREGATION,
-                    id,
+                    id_role_or_committee,
                     content
                 )
         if ctx.federates_into():
             for federated in ctx.federates_into():
                 content = self.aggregate_texts(federated.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
                     self.current_dao,
                     r_t.RelationType.FEDERATION,
-                    id,
+                    id_role_or_committee,
                     content
                 )
         return self.visitChildren(ctx)
