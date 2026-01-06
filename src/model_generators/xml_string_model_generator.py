@@ -188,7 +188,7 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
                 self.diagramManager.addRelation(
                     self.current_dao,
                     r_t.RelationType.CONTROL,
-                    iid_role_or_committeed,
+                    id_role_or_committee,
                     content
                 )
         if ctx.aggregates():

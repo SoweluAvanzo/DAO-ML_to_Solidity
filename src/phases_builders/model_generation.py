@@ -106,6 +106,8 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
             k_input = phase_step_variant_and_data.key_input_provider
             k_model_gen_from_json = self.new_unique_key(
                 "k_model_gen_from_json")
+
+            # TODO: use "DiagramModelValidator", then gather its error, print it if necessary, etc etc, like XML does
             return pb.PipelineItemsGenerated(
                 [
                     jsmg.JsonStringModelGenerator(
