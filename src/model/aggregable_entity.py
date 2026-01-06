@@ -9,6 +9,7 @@ class AggregableEntity(base_entity.BaseEntity):
     def __init__(self, id):
         super().__init__(id)
         self.permissions: dict[str, permission.Permission] = {}
+        # set of IDs of things controlling this instance
         self.controllers: set[str] = set()
         self.aggregated: dict[str, AggregableEntity] = {}
         self.federated_committees: dict[str, AggregableEntity] = {}

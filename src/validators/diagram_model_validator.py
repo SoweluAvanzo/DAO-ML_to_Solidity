@@ -15,6 +15,7 @@ import src.model.enums.relation_type as rt
 
 import src.control_graph.control_graph_basic as cgb
 
+import src.utilities.utils as u
 import src.utilities.errors as e_C
 
 
@@ -35,6 +36,11 @@ class AggregatedGetter(EntityToSetLinksExtractor):
     def get_collection(self, aggregable_entity: ae.AggregableEntity) -> set[str]:
         return aggregable_entity.aggregated
 
+
+class ControllersGetter(EntityToSetLinksExtractor):
+    def get_collection(self, aggregable_entity: ae.AggregableEntity) -> set[str]:
+        return aggregable_entity.controllers
+
 #
 
 
@@ -47,7 +53,7 @@ class OutwardLink:
                  keys_linked_objects: set[str]
                  ):
         self.collections_same_link_type = collections_same_link_type
-        self.entity_to_set_links_extractor: EntityToSetLinksExtractor = entity_to_set_links_extractor: EntityToSetLinksExtractor
+        self.entity_to_set_links_extractor = entity_to_set_links_extractor
         self.link_type = link_type
         self.keys_linked_objects = keys_linked_objects
 
@@ -55,31 +61,11 @@ class OutwardLink:
 
 
 class DiagramModelValidator(bv.BaseValidator):
-    # TODO actually (2026-01-05), it's more like a "Already-created-model-Validator"....
-
-    # TODO: deve ricevere un oggetto (JSON/dict) e verificare che rispetti il modello denro il model
-
-    """
-    Also: (see "xml_dao_validator.py")
-        check_relation_graphs(d, "aggregation_level", "aggregates"))
-        check_relation_graphs(d, "federation_level", "federates_into"))
-        check_cyclic_dependencies(d, "aggregates"))
-        check_cyclic_dependencies(d, "federates_into"))
-        check_relations_in_same_DAO(d, early_return=False))
-    """
-
-    """
-    NOTE:
-    "check_relations_in_same_DAO" checks if any object (Role/Committee/Relation/Permission/etc) is referring to
-    something that is NOT present in the same DAO they belong.
-    The possible references are: ["federates_into","aggregates","associated_to","is_controlled_by"].
-    Implementation notes:
-    a) for each DAO, collect all of those object IDs (including the DAO's one) into a set, which is the value of a map whose keys are the DAOs' IDs (one set for each individual DAO)
-    b) for each DAO, collect all of those references (again, in a set for each DAO)
-    c.1) perform the "subtraction" "b-a" (i.e., all references in "b" not present in "a")
-    c.2) partition the "leftover after the subtraction" into "present in any other DAO | totally missing link" for a better debugging/printing
-    c.3) IF c is empty -> ok ELSE error
-    """
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 printer_debug: u.PrinterDebug = None):
+        super().__init__(pipeline_item_data,
+                         printer_debug=printer_debug
+                         )
 
     def ids_to_nowhere(self, ids_to_check: set[str], ids_to_check_into: set[str]) -> set[str]:
         return ids_to_check.difference(ids_to_check_into)
@@ -111,6 +97,7 @@ class DiagramModelValidator(bv.BaseValidator):
         errors: list[str] = []
         permissions_getter = PermissionsGetter()
         aggregated_getter = AggregatedGetter()
+        controllers_getter = ControllersGetter()
         # CHECKS ON EACH DAO
         for dao_id, dao in diagram.daoByID.items():
             all_permissions_ids_in_dao: set[str] = set(
@@ -148,53 +135,49 @@ class DiagramModelValidator(bv.BaseValidator):
                     "aggregates",
                     all_aggregable_entities_in_dao
                 ),
-                OutwardLink(  # 1)
+                OutwardLink(  # 4)
                     [
                         dao.roles,
                         dao.committees
                     ],
-                    permissions_getter,  # TODO: which one?
+                    controllers_getter,
                     "is_controlled_by",
-                    all_permissions_ids_in_dao  # TODO: which one?
+                    all_aggregable_entities_in_dao
                 ),
             ]
-            # role.per
-            # 1)
-            associatables_dicts: list[dict[str, ae.AggregableEntity]] = [
-                dao.roles,
-                dao.committees
-            ]
-            is_role = True
-            for associatables_dict in associatables_dicts:
-                for aggregable_entity_id, aggregable_entity in associatables_dict.items():
-                    if aggregable_entity is None:
-                        other_dao_might_belong = self.other_dao_with_BE_of_ID(
-                            diagram,
-                            dao,
-                            aggregable_entity_id
-                        )
-                        errors.append(
-                            f"In DAO '{dao_id}' ({dao.get_name()}) , {'Role' if is_role else 'Committee'} with ID '{aggregable_entity_id}' {'do not exists' if other_dao_might_belong is None else f'exists in ANOTHER DAO (id={other_dao_might_belong.get_id()}; name= {other_dao_might_belong.get_name()})'}"
-                        )
-                    permissions_ids_not_existing: set[str] = self.ids_to_nowhere(
-                        set(perm_id for perm_id in aggregable_entity.permissions.keys()),
-                        all_permissions_ids_in_dao
-                    )
-                    if (permissions_ids_not_existing is not None) and (len(permissions_ids_not_existing) > 0):
-                        # error:
-                        for id_unexisting_permission in permissions_ids_not_existing:
+            index_ol = 0
+            for ol in links_to_check:
+                associatables_dicts: list[dict[str, ae.AggregableEntity]
+                                          ] = ol.collections_same_link_type
+
+                for associatables_dict in associatables_dicts:
+                    for aggregable_entity_id, aggregable_entity in associatables_dict.items():
+                        if aggregable_entity is None:
                             other_dao_might_belong = self.other_dao_with_BE_of_ID(
                                 diagram,
                                 dao,
-                                id_unexisting_permission
+                                aggregable_entity_id
                             )
                             errors.append(
-                                f"In DAO '{dao_id}' ({dao.get_name()}) , {aggregable_entity.__class__.__name__} '{aggregable_entity_id}' ({aggregable_entity.get_name()}) has 'associates_to' '{id_unexisting_permission}' pointing to {'unexisting permission' if other_dao_might_belong is None else f' somewhere else in ANOTHER DAO (id={other_dao_might_belong.get_id()}; name= {other_dao_might_belong.get_name()})'}"
+                                f"In DAO '{dao_id}' ({dao.get_name()}), check # {index_ol} , {aggregable_entity.__class__.__name__} with ID '{aggregable_entity_id}' {'do not exists' if other_dao_might_belong is None else f'exists in ANOTHER DAO (id={other_dao_might_belong.get_id()}; name= {other_dao_might_belong.get_name()})'}"
                             )
-                        # TODO: DOES THEM EXIST IN OTHER DAOs?
-                is_role = not is_role
-            # TODO: 2, 3, 4
-            # for role ... for committee ...
+                        outward_links_ids_not_existing: set[str] = self.ids_to_nowhere(
+                            ol.entity_to_set_links_extractor.extract_links(
+                                aggregable_entity),
+                            ol.keys_linked_objects
+                        )
+                        if (outward_links_ids_not_existing is not None) and (len(outward_links_ids_not_existing) > 0):
+                            # error:
+                            for id_unexisting_link in outward_links_ids_not_existing:
+                                other_dao_might_belong = self.other_dao_with_BE_of_ID(
+                                    diagram,
+                                    dao,
+                                    id_unexisting_link
+                                )
+                                errors.append(
+                                    f"In DAO '{dao_id}' ({dao.get_name()}), check # {index_ol} , {aggregable_entity.__class__.__name__} with ID '{aggregable_entity_id}' ({aggregable_entity.get_name()}) has '{ol.link_type}' '{id_unexisting_link}' pointing to {'unexisting link' if other_dao_might_belong is None else f' somewhere else in ANOTHER DAO (id={other_dao_might_belong.get_id()}; name= {other_dao_might_belong.get_name()})'}"
+                                )
+                index_ol += 1
         return errors
 
     def validate(self, input_to_validate: dict) -> bool:
@@ -205,7 +188,31 @@ class DiagramModelValidator(bv.BaseValidator):
             if (errors_r_c_out_links is not None) and (len(errors_r_c_out_links) > 0):
                 errors.extend(errors_r_c_out_links)
             del errors_r_c_out_links  # release the RAM
-            # TODO: do all other checks
+
+            # TODO: do all other checks (06-01-2026)")
+
+            """
+            Also: (see "xml_dao_validator.py")
+                check_relation_graphs(d, "aggregation_level", "aggregates"))
+                check_relation_graphs(d, "federation_level", "federates_into"))
+                check_cyclic_dependencies(d, "aggregates"))
+                check_cyclic_dependencies(d, "federates_into"))
+                check_relations_in_same_DAO(d, early_return=False))
+            """
+
+            """
+            NOTE:
+            "check_relations_in_same_DAO" checks if any object (Role/Committee/Relation/Permission/etc) is referring to
+            something that is NOT present in the same DAO they belong.
+            The possible references are: ["federates_into","aggregates","associated_to","is_controlled_by"].
+            Implementation notes:
+            a) for each DAO, collect all of those object IDs (including the DAO's one) into a set, which is the value of a map whose keys are the DAOs' IDs (one set for each individual DAO)
+            b) for each DAO, collect all of those references (again, in a set for each DAO)
+            c.1) perform the "subtraction" "b-a" (i.e., all references in "b" not present in "a")
+            c.2) partition the "leftover after the subtraction" into "present in any other DAO | totally missing link" for a better debugging/printing
+            c.3) IF c is empty -> ok ELSE error
+            """
+
         else:
             errors.append(
                 f"the given input to check is not a DiagramManager, but a: {type(input_to_validate)}")
@@ -216,4 +223,3 @@ class DiagramModelValidator(bv.BaseValidator):
         for er in errors:
             self.print_error(er)
         return False
-        # raise Exception("TODO : NOT IMPLEMENTED YET (31-12-2025)")
