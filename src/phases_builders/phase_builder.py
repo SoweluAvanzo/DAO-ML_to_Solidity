@@ -9,9 +9,9 @@ import src.utilities.errors as e_c
 
 
 class PipelineItemsGenerated:
-    def __init__(self, pipeline_items: list[pi.PipelineItem], key_last_pi: str):
+    def __init__(self, pipeline_items: list[pi.PipelineItem], key_output_for_next_step: str):
         self.pipeline_items = pipeline_items
-        self.key_last_pi = key_last_pi
+        self.key_output_for_next_step = key_output_for_next_step
 
 
 class PipelineItemFactory:

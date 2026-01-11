@@ -101,6 +101,9 @@ class JsonStringModelGenerator(bg.BaseGenerator):
                     f"While parsing JSON {type(entity)} (id: {entity.get_id()}), the {i}-th (0-based) element in the list {field_name} is not a string: {type(what[i])}")
 
     def check_fields(self, obj: dict, fields: dict[str, bool], className: str, add_msg: str = None) -> bool:
+        """
+        Given a set of fields (second parameter) and their "mandatority", check if all of them are present
+        """
         missing = []
         optional_f = []
         for f, is_mandatory in fields.items():
@@ -120,6 +123,9 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         return False
 
     def _fields_of(self, clazz: type) -> dict[str, bool]:
+        """
+        Get the set of fields (passed onto "check_fields(...)") for a specific class
+        """
         class_name: str = clazz.__name__
         if class_name in self._fields_mandatority_by_classname:
             fields = self._fields_mandatority_by_classname[class_name]
@@ -223,7 +229,9 @@ class JsonStringModelGenerator(bg.BaseGenerator):
             "permissions": True,
             "controllers": True,
             "aggregated": True,
-            "federated_committees": True
+            "federated_committees": True,
+            "aggregation_level": False,
+            "federation_level": False
         }
 
     def _fields_of_role(self):
@@ -374,6 +382,8 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         self._check_is_list_str(federated_committees_ids,
                                 aggregable_entity, "federated_committees")
         aggregable_entity.federated_committees = federated_committees_ids
+        aggregable_entity.aggregation_level = aggr_entity_data_obj[
+            "aggregation_level"] if "aggregation_level" in aggr_entity_data_obj else 0
 
     def parse_permission(self, diagram: dm.DiagramManager,  dao_id: str, dao: d.DAO, permission_data_obj: dict) -> p.Permission:
         permission_fields = self._fields_of(p.Permission)
@@ -642,12 +652,12 @@ class JsonStringModelGenerator(bg.BaseGenerator):
         rbd_data = data_obj["relations_by_dao"]
         self._check_is_dict(rbd_data, diagram, "rbd_data")
         expected_relation_fields = self._fields_of(rel.Relation)
-        for dao_id, l in rbd_data.items():
+        for dao_id, relations_list in rbd_data.items():
             if dao_id not in daos_by_id:
                 raise Exception(f"Missing DAO (id: {dao_id})")
             index_relation = 0
             relations: list[rel.Relation] = []
-            for relation in l:
+            for relation in relations_list:
                 self.check_fields(
                     relation, expected_relation_fields,
                     rel.Relation.__name__,

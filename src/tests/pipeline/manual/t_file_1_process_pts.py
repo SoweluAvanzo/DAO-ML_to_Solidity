@@ -20,7 +20,7 @@ class TestFile1_Processor_ParsedTreeStringer(pi.PipelineItem):
         # validation_result = validation_data["validation_result"]
         errors = validation_data.errors
         tree_parsed = validation_data.additional_data["tree_parsed"]
-        input_string_list = validation_data.input_string_list
+        input_string_list = validation_data.additional_data["input_string_list"]
         input_consumed = validation_data.input_consumed
         if errors is not None and len(errors) > 0:
             print("\n\nTestFile1_Processor_ParsedTreeStringer HAS ERRORS!!!")

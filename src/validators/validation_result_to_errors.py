@@ -23,7 +23,7 @@ class ValidationResultToErrorsExtractor(pi.PipelineItem):
         errs = err_validation.errors
         self.print_msg(
             f"validation results validation_result: {err_validation.validation_result}")
-        self.print_msg(f"validation results errors: {err_validation.errors}")
+        self.print_msg(f"validation results errors: {errs}")
         self.print_msg(
             f"validation results input_consumed: {err_validation.input_consumed}")
         return errs

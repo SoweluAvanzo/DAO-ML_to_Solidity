@@ -97,11 +97,10 @@ input_p_g_xml: pb.PipelineItemsGenerated = pf_input.new_pipeline_items(
     input_data_xml
 )
 input_items_xml = input_p_g_xml.pipeline_items
-k_input_xml = input_p_g_xml.key_last_pi
+k_input_xml = input_p_g_xml.key_output_for_next_step
 add_pi_s(input_items_xml)
 
 # ... model
-
 mg_data_xml: pb_m_g.AdditionalDataModelGeneration = pb_m_g.ModelXMLGeneratordData(
     FILE_PATH_XML_SCHEMA,
     key_input_provider=k_input_xml
@@ -109,7 +108,7 @@ mg_data_xml: pb_m_g.AdditionalDataModelGeneration = pb_m_g.ModelXMLGeneratordDat
 mg_p_g_xml: pb.PipelineItemsGenerated = pf_model_generator.new_pipeline_items(
     mg_data_xml)
 model_items_xml = mg_p_g_xml.pipeline_items
-k_model_generator_xml = mg_p_g_xml.key_last_pi
+k_model_generator_xml = mg_p_g_xml.key_output_for_next_step
 add_pi_s(model_items_xml)
 
 k_p_model_storer_xml = "k_p_model_storer_xml"
@@ -131,11 +130,10 @@ input_p_g_json: pb.PipelineItemsGenerated = pf_input.new_pipeline_items(
     input_data_json
 )
 input_items_json = input_p_g_json.pipeline_items
-k_input_json = input_p_g_json.key_last_pi
+k_input_json = input_p_g_json.key_output_for_next_step
 add_pi_s(input_items_json)
 
 # ... model
-
 mg_data_json: pb_m_g.AdditionalDataModelGeneration = pb_m_g.ModelJSONGeneratordData(
     key_input_provider=k_input_json
 )
@@ -143,7 +141,7 @@ mg_p_g_json: pb.PipelineItemsGenerated = pf_model_generator.new_pipeline_items(
     mg_data_json
 )
 model_items_json = mg_p_g_json.pipeline_items
-k_model_generator_json = mg_p_g_json.key_last_pi
+k_model_generator_json = mg_p_g_json.key_output_for_next_step
 printer_debug.print_msg(f"model_items_json: {model_items_json}")
 printer_debug.print_msg(f"k_model_generator_json: {k_model_generator_json}")
 add_pi_s(model_items_json)

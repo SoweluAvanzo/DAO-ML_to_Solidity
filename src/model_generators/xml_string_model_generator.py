@@ -111,6 +111,10 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             else None
         agent_type = self._text_from_node(ctx.agent_type()[0]) \
             if len(ctx.agent_type()) > 0 else None
+        aggregation_level = int(self._text_from_node(ctx.aggregation_level()[0])) \
+            if len(ctx.aggregation_level()) > 0 else None
+        federation_level = int(self._text_from_node(ctx.federation_level()[0])) \
+            if len(ctx.federation_level()) > 0 else None
         role = r.Role(
             role_id,
             role_name,
@@ -119,6 +123,8 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             n_agent_max,
             agent_type
         )
+        role.aggregation_level = aggregation_level
+        role.federation_level = federation_level
         self.diagramManager.addRole(self.current_dao, role)
         return self.visitChildren(ctx)
 
@@ -135,6 +141,10 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         decision_making_method = self._text_from_node(ctx.decision_making_method()[0]) \
             if len(ctx.decision_making_method()) > 0 and ctx.decision_making_method()[0] \
             else None
+        aggregation_level = int(self._text_from_node(ctx.aggregation_level()[0])) \
+            if len(ctx.aggregation_level()) > 0 else None
+        federation_level = int(self._text_from_node(ctx.federation_level()[0])) \
+            if len(ctx.federation_level()) > 0 else None
         committee = c.Committee(
             committee_id,
             committee_description,
@@ -142,6 +152,8 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             proposal_condition,
             decision_making_method
         )
+        committee.aggregation_level = aggregation_level
+        committee.federation_level = federation_level
         self.diagramManager.addCommittee(self.current_dao, committee)
         return self.visitChildren(ctx)
 

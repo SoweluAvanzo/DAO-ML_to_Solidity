@@ -13,6 +13,8 @@ class AggregableEntity(base_entity.BaseEntity):
         self.controllers: set[str] = set()
         self.aggregated: dict[str, AggregableEntity] = {}
         self.federated_committees: dict[str, AggregableEntity] = {}
+        self.aggregation_level: int = 0
+        self.federation_level: int = 0
 
     def get_name(self) -> str:
         raise Exception(
@@ -51,6 +53,8 @@ class AggregableEntity(base_entity.BaseEntity):
         parts.append(f", aggregated<{len(self.aggregated)}>=[")
         parts.append(",".join(self.aggregated.keys()))
         parts.append("]")
+        parts.append(f", aggregation_level={self.aggregation_level}")
+        parts.append(f", federation_level={self.federation_level}")
         return super().__str__(parts)
 
     def toJSON(self):
@@ -59,4 +63,6 @@ class AggregableEntity(base_entity.BaseEntity):
         obj["controllers"] = list(self.controllers)
         obj["aggregated"] = list(self.aggregated.keys())
         obj["federated_committees"] = list(self.federated_committees.keys())
+        obj["aggregation_level"] = self.aggregation_level
+        obj["federation_level"] = self.federation_level
         return obj

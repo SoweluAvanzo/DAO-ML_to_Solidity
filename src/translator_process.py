@@ -292,7 +292,7 @@ class TranslatorProcess:
         input_p_g: pb.PipelineItemsGenerated = pf_input.new_pipeline_items(
             input_data)
         input_items = input_p_g.pipeline_items
-        k_input = input_p_g.key_last_pi
+        k_input = input_p_g.key_output_for_next_step
         add_pi_s(input_items)
         # clean the memory
         input_data = None
@@ -313,7 +313,7 @@ class TranslatorProcess:
         mg_p_g: pb.PipelineItemsGenerated = pf_model_generator.new_pipeline_items(
             mg_data)
         model_items = mg_p_g.pipeline_items
-        k_model_generator = mg_p_g.key_last_pi
+        k_model_generator = mg_p_g.key_output_for_next_step
         add_pi_s(model_items)
         # clean the memory
         mg_data = None
@@ -351,7 +351,7 @@ class TranslatorProcess:
             pp_p_g: pb.PipelineItemsGenerated = pp_factory.new_pipeline_items(
                 pp_data)
             pp_items = pp_p_g.pipeline_items
-            k_pp_output_producer: pb.PipelineItemsGenerated = pp_p_g.key_last_pi
+            k_pp_output_producer: pb.PipelineItemsGenerated = pp_p_g.key_output_for_next_step
             add_pi_s(pp_items)
 
             # 4) output

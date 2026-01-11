@@ -53,7 +53,9 @@ class DiagramManager(base_entity_module.BaseEntity):
     def addRelation(self, daoOrID, relationType: rt.RelationType, fromID: str, content: str):
         dao = self.get_dao_by(daoOrID)
         dao_id = dao.get_id()
-        rel = relation_module.Relation(dao_id, relationType, fromID, content)
+        rel = relation_module.Relation(
+            dao_id, relationType, fromID, content
+        )
         self.relations_by_dao[dao_id].append(rel)
 
     def addGovernanceArea(self, daoOrID, governance_area: governance_area_module.GovernanceArea):

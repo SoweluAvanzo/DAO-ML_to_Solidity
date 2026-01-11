@@ -68,8 +68,8 @@ class XMLDaoValidator(bv.BaseValidator):
             validation_result=ok,
             errors=errors,
             input_consumed=input_to_validate,
-            input_string_list=input_string_list,
             additional_data={
+                "input_string_list": input_string_list,
                 "tree_parsed": tree_root,
             }
         )

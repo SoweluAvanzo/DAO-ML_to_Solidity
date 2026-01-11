@@ -1,6 +1,7 @@
 import src.pipeline.pipeline_item as pi
-import src.validators.base_validator as bv
 
+import src.validators.base_validator as bv
+import src.validators.validation_result as validation_res
 
 import src.model.base_entity as be
 import src.model.diagram_manager as dm
@@ -24,7 +25,7 @@ class EntityToSetLinksExtractor:
         raise Exception(e_C.ERROR_TEXT__NOT_IMPLEMENTED)
 
     def extract_links(self, aggregable_entity: ae.AggregableEntity) -> set[str]:
-        return (perm_id for perm_id in self.get_collection(aggregable_entity))
+        return set([perm_id for perm_id in self.get_collection(aggregable_entity)])
 
 
 class PermissionsGetter(EntityToSetLinksExtractor):
@@ -90,10 +91,16 @@ class DiagramModelValidator(bv.BaseValidator):
         return None
 
     def check_roles_committess_out_links(self, diagram: dm.DiagramManager) -> list[str]:
+        """
+        Took inspiration from "xml_dao_validator.py".
+        This check implements both the "check_relations_in_same_DAO" check and the check "compare_subsets" aganst
+        the possible 4 references (["federates_into","aggregates","associated_to","is_controlled_by"]).
+        The latter are:
         # 1) All Roles/Committees 's "associated_to" (which are IDs) must be among the Permissions' IDs
         # 2) All Roles' "aggregates" (which are IDs) must be existing Roles' IDs
         # 3) All Committees' "aggregates" (which are IDs) must be existing Committees' IDs
         # 4) All Roles/Committees 's "is_controlled_by" (which are IDs) must be among the Roles/Committees ' IDs
+        """
         errors: list[str] = []
         permissions_getter = PermissionsGetter()
         aggregated_getter = AggregatedGetter()
@@ -180,46 +187,104 @@ class DiagramModelValidator(bv.BaseValidator):
                 index_ol += 1
         return errors
 
-    def validate(self, input_to_validate: dict) -> bool:
+    # a.k.a. "check_relation_graphs"
+    def check_relations_under_level_hierarchy(self, diagram: dm.DiagramManager) -> list[str]:
+        """
+        For each "AggregableEntity", check the relations between those instances and both their "aggregated" and "federated_committees":
+        each "link" must check, respectively, "aggregation_level" and "federation_level" (which are int or None) and their
+        values must be "in order", i.e. must be lesser or equal
+        """
+        def aggregation_level_extractor(
+            aggr_entity: ae.AggregableEntity): return aggr_entity.aggregation_level
+        def federation_level_extractor(
+            aggr_entity: ae.AggregableEntity): return aggr_entity.federation_level
+        errors: list[str] = []
+        extractor_type = type(aggregation_level_extractor)
+        for dao_id, dao in diagram.daoByID.items():
+            entities_with_hierarchy_relation: list[dict[str, ae.AggregableEntity]] = [
+                dao.roles,
+                dao.committees
+            ]
+            is_role = True
+            for entity_dict_by_id in entities_with_hierarchy_relation:
+                # for each aggregable entity (in a specific dict), check their "relations regulated by a level-based hierarchy"
+                for aggr_entity_id, aggr_entity in entity_dict_by_id.items():
+                    relations_and_level_to_check: list[
+                        tuple[
+                            dict[str, ae.AggregableEntity],
+                            int, str,
+                            extractor_type
+                        ]
+                    ] = [
+                        (aggr_entity.aggregated,
+                         aggr_entity.aggregation_level,
+                         "aggregation_level",
+                         aggregation_level_extractor
+                         ),
+                        (aggr_entity.federated_committees,
+                         aggr_entity.federation_level,
+                         "federation_level",
+                         federation_level_extractor
+                         ),
+                    ]
+                    for t in relations_and_level_to_check:
+                        relations: dict[str, ae.AggregableEntity] = t[0]
+                        level: int = t[1]
+                        relation_name: str = t[2]
+                        level_extractor = t[3]
+                        # THE CHECK
+                        if level is not None:
+                            for linked_entity_id, linked_entity in relations.items():
+                                if linked_entity is None:
+                                    errors.append(
+                                        f"NONE in relation with level-based hierarchy '{relation_name}' violation: in DAO '{dao_id}' (named: '{dao.get_name()}'), the {aggr_entity.__class__.__name__} '{aggr_entity_id}' (named: {aggr_entity.get_name()}) has NONE relation with a {'Role' if is_role else 'Committee'} id: {linked_entity_id}"
+                                    )
+                                else:
+                                    level_link = level_extractor(linked_entity)
+                                    if (level_link is not None) and (level_link > level):
+                                        # ERROR
+                                        errors.append(
+                                            f"relation with level-based hierarchy '{relation_name}' violation: in DAO '{dao_id}' (named: '{dao.get_name()}'), the {aggr_entity.__class__.__name__} '{aggr_entity_id}' (named: {aggr_entity.get_name()}) has level '{level}' and is in relation with {linked_entity.__class__.__name__} '{linked_entity_id}' (named: {linked_entity.get_name()}) with level '{level_link}'"
+                                        )
+                        # else : should I print it at a debug level?
+                is_role = not is_role
+        return errors
+
+    def validate(self, input_to_validate: dict) -> validation_res.ValidationResult:
         errors: list[str] = []
         if isinstance(input_to_validate, dm.DiagramManager):
-            errors_r_c_out_links = self.check_roles_committess_out_links(
-                input_to_validate)
-            if (errors_r_c_out_links is not None) and (len(errors_r_c_out_links) > 0):
-                errors.extend(errors_r_c_out_links)
-            del errors_r_c_out_links  # release the RAM
-
-            # TODO: do all other checks (06-01-2026)")
-
+            check_fn_type = type(self.check_roles_committess_out_links)
+            checks_to_run: list[check_fn_type] = [
+                self.check_roles_committess_out_links,
+                self.check_relations_under_level_hierarchy
+            ]
             """
-            Also: (see "xml_dao_validator.py")
-                check_relation_graphs(d, "aggregation_level", "aggregates"))
-                check_relation_graphs(d, "federation_level", "federates_into"))
+            # TODO: do all other checks (06-01-2026) (see "xml_dao_validator.py"):
                 check_cyclic_dependencies(d, "aggregates"))
                 check_cyclic_dependencies(d, "federates_into"))
-                check_relations_in_same_DAO(d, early_return=False))
             """
-
-            """
-            NOTE:
-            "check_relations_in_same_DAO" checks if any object (Role/Committee/Relation/Permission/etc) is referring to
-            something that is NOT present in the same DAO they belong.
-            The possible references are: ["federates_into","aggregates","associated_to","is_controlled_by"].
-            Implementation notes:
-            a) for each DAO, collect all of those object IDs (including the DAO's one) into a set, which is the value of a map whose keys are the DAOs' IDs (one set for each individual DAO)
-            b) for each DAO, collect all of those references (again, in a set for each DAO)
-            c.1) perform the "subtraction" "b-a" (i.e., all references in "b" not present in "a")
-            c.2) partition the "leftover after the subtraction" into "present in any other DAO | totally missing link" for a better debugging/printing
-            c.3) IF c is empty -> ok ELSE error
-            """
+            for check_fn in checks_to_run:
+                errors_r_c_out_links: list[str] = check_fn(input_to_validate)
+                if (errors_r_c_out_links is not None) and (len(errors_r_c_out_links) > 0):
+                    errors.extend(errors_r_c_out_links)
+                del errors_r_c_out_links  # release the RAM
 
         else:
             errors.append(
                 f"the given input to check is not a DiagramManager, but a: {type(input_to_validate)}")
-        if len(errors) == 0:
-            return True
-        self.print_error < (
-            f"{len(errors)} ERRORS in validating given model input:")
-        for er in errors:
-            self.print_error(er)
-        return False
+        # in he end
+        is_ok = len(errors) == 0
+        res = validation_res.ValidationResult(
+            validation_result=is_ok,
+            errors=errors,
+            input_consumed=input_to_validate,
+            additional_data=None
+        )
+        if not is_ok:
+            self.print_error(
+                f"{len(errors)} ERRORS in validating given model input:")
+            for er in errors:
+                self.print_error(er)
+        else:
+            self.print_msg("Diagram instance has no errors ^_^")
+        return res

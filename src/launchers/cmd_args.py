@@ -396,14 +396,10 @@ def get_args(logger: u.PrinterDebug = None):
         if version_translator_str is not None:
             ppt_c.version_translator = version_translator_str
             index_ppt_version_translator += 1
-        print(
-            f"\n\n DEBUG: translation_target_str : {translation_target_str}, type: {type(translation_target_str)} \n\n")
         if translation_target_str is not None:
             ppt_c.version_translation_target = translation_target_str
             index_ppt_translation_target += 1
 
-        print(
-            f"\n\n DEBUG: ppt_c.version_translation_target : {ppt_c.version_translation_target}, type: {type(ppt_c.version_translation_target)} \n\n")
         # ... output
         if output_type_str is not None:
             o_c.output_type = pb_o.REVERSE_MAPPING_OutputType[output_type_str]
@@ -422,8 +418,6 @@ def get_args(logger: u.PrinterDebug = None):
                 # | pb_pp.PostProcessingTransformation.PETRI_NETS.value \
                 base_template_folder = output_folder_default if \
                     base_template_folder_str is None else base_template_folder_str
-                print(
-                    f"AJAJJAJAJJA DEBUUUUUUUU        base_template_folder: {base_template_folder} ,,, output_uri_str: {output_uri_str}")
                 ppt_c.base_template_folder = base_template_folder
                 if ppt == pb_pp.PostProcessingTransformation.SOLIDITY \
                         or ppt == pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS:
@@ -431,10 +425,6 @@ def get_args(logger: u.PrinterDebug = None):
                         args.folder_voting_protocols_solidity[index_folder_voting_protocols_solidity] \
                         if index_folder_voting_protocols_solidity < len(args.folder_voting_protocols_solidity) \
                         else base_template_folder
-                    print(
-                        f"folder_voting_protocols_solidity .... len: {len(args.folder_voting_protocols_solidity)}, args.folder_voting_protocols_solidity: {args.folder_voting_protocols_solidity}")
-                    print(
-                        f"... ... index_folder_voting_protocols_solidity: {index_folder_voting_protocols_solidity} ,,, base_template_folder: {base_template_folder}")
                     index_folder_voting_protocols_solidity += 1
                     ppt_c.translator_solidity_subtype = trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value  # by default
                 match(ppt.value):
