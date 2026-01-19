@@ -11,8 +11,8 @@ import src.utilities.utils as u
 
 
 class AcceptedClasses_Jinja_TFO(extended_enum.ExtendedEnum):
-    LIST = type([])
-    CompiledSolidityDiagram = compiled_sol.CompiledSolidityDiagram
+    LIST = type([]).__name__
+    CompiledSolidityDiagram = compiled_sol.CompiledSolidityDiagram.__name__
 
 
 class JinjaTextFileOutput(tfo.TextFileOutput):
@@ -93,7 +93,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         @return a dict whose keys are "type" (got from the classes itselves; check out
         "AcceptedClasses_Jinja_TFO" for more info)
         """
-        def from_list(td):
+        def from_list(td) -> dict[str, object]:
             content_and_filepath_to_output = []
             for t in td:
                 if isinstance(t, cgd.CompiledUnitWithID):
@@ -105,8 +105,8 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
             return content_and_filepath_to_output
         return {
             AcceptedClasses_Jinja_TFO.LIST.value: from_list,
-            AcceptedClasses_Jinja_TFO.CompiledSolidityDiagram.value: lambda td: self.__td_t_list_o_solidity(
-                td)
+            AcceptedClasses_Jinja_TFO.CompiledSolidityDiagram.value:
+            lambda td: self.__td_t_list_o_solidity(td)
         }
 
     def to_output(self, what, additional_data=None) -> bool:
@@ -124,31 +124,31 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         # get the list of things to output, based on its class
         # this way, it's possible to modularize and extend the
         # ways to get "things to output"
-        class_compiled_diagram = type(compiled_diagram)
+        class_compiled_diagram: str = type(compiled_diagram).__name__
         class_based_TD_translator = self.translated_diagram_to_list_output_translators(
             additional_data=additional_data)
         if class_compiled_diagram not in class_based_TD_translator:
             # try to recover the compiled diagram class
-            print(
+            self.print_msg(
                 f"\nERROR: unrecognized class_compiled_diagram: {class_compiled_diagram} - {type(compiled_diagram)}")
             if self.key_compiled_diagram is None:
                 compiled_diagram = self.get_ith_input(0, additional_data)
-                class_compiled_diagram = type(compiled_diagram)
+                class_compiled_diagram = type(compiled_diagram).__name__
             else:
                 if self.key_compiled_diagram in additional_data:
                     compiled_diagram = self.current_inputs[self.key_compiled_diagram]
-                    class_compiled_diagram = type(compiled_diagram)
+                    class_compiled_diagram = type(compiled_diagram).__name__
                 else:
-                    print(
+                    self.print_msg(
                         f"ERROR: compiled_diagram is not a compiled_sol.CompiledSolidityDiagram and is missing key_compiled_diagram : {self.key_compiled_diagram}")
-                    print(additional_data)
+                    self.print_msg(additional_data)
                     compiled_diagram = None
         else:
-            print(
-                f"class_compiled_diagram not recognized: {class_compiled_diagram}")
+            self.print_msg(
+                f"ERROR: class_compiled_diagram not recognized: {class_compiled_diagram}")
+            self.print_msg(list(class_based_TD_translator.keys()))
         if compiled_diagram is None:
-            classes_list = ', '.join(
-                c.__name__ for c in class_based_TD_translator.keys())
+            classes_list = ', '.join(class_based_TD_translator.keys())
             raise Exception(
                 f"In {type(self)} with key ''{self.get_key()}'', The provided translated diagram should be an instance of one of [{classes_list}], but it's a: {class_compiled_diagram}")
 

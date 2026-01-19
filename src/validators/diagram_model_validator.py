@@ -1,3 +1,5 @@
+import networkx as nx
+
 import src.pipeline.pipeline_item as pi
 
 import src.validators.base_validator as bv
@@ -67,6 +69,16 @@ class DiagramModelValidator(bv.BaseValidator):
         super().__init__(pipeline_item_data,
                          printer_debug=printer_debug
                          )
+
+    #
+
+    def aggregation_level_extractor(self,
+                                    aggr_entity: ae.AggregableEntity): return aggr_entity.aggregation_level
+
+    def federation_level_extractor(self,
+                                   aggr_entity: ae.AggregableEntity): return aggr_entity.federation_level
+
+    #
 
     def ids_to_nowhere(self, ids_to_check: set[str], ids_to_check_into: set[str]) -> set[str]:
         return ids_to_check.difference(ids_to_check_into)
@@ -194,12 +206,8 @@ class DiagramModelValidator(bv.BaseValidator):
         each "link" must check, respectively, "aggregation_level" and "federation_level" (which are int or None) and their
         values must be "in order", i.e. must be lesser or equal
         """
-        def aggregation_level_extractor(
-            aggr_entity: ae.AggregableEntity): return aggr_entity.aggregation_level
-        def federation_level_extractor(
-            aggr_entity: ae.AggregableEntity): return aggr_entity.federation_level
         errors: list[str] = []
-        extractor_type = type(aggregation_level_extractor)
+        extractor_type = type(self.aggregation_level_extractor)
         for dao_id, dao in diagram.daoByID.items():
             entities_with_hierarchy_relation: list[dict[str, ae.AggregableEntity]] = [
                 dao.roles,
@@ -219,12 +227,12 @@ class DiagramModelValidator(bv.BaseValidator):
                         (aggr_entity.aggregated,
                          aggr_entity.aggregation_level,
                          "aggregation_level",
-                         aggregation_level_extractor
+                         self.aggregation_level_extractor
                          ),
                         (aggr_entity.federated_committees,
                          aggr_entity.federation_level,
                          "federation_level",
-                         federation_level_extractor
+                         self.federation_level_extractor
                          ),
                     ]
                     for t in relations_and_level_to_check:
@@ -250,13 +258,77 @@ class DiagramModelValidator(bv.BaseValidator):
                 is_role = not is_role
         return errors
 
+    def check_cyclic_dependencies(self, diagram: dm.DiagramManager) -> list[str]:
+        errors: list[str] = []
+
+        for dao_id, dao in diagram.daoByID.items():
+            # graph preparation ...
+            all_aggregable_entities_in_dao: dict[str, ae.AggregableEntity] = {
+                k: v
+                for k, v in dao.roles.items()
+            }
+            for k, v in k in dao.committees.items():
+                all_aggregable_entities_in_dao[k] = v
+
+            # .. by defining the vertexes first (to recycle them), and adding the edges later
+            graph = nx.DiGraph()
+            for ae_id, edge_aggregable_entity in all_aggregable_entities_in_dao.items():
+                graph.add_node(ae_id)
+            # now, fill the edges and do the analysis
+            edge_link_extractors = [
+                self.aggregation_level_extractor,
+                self.federation_level_extractor
+            ]
+            # should_remove_edges = False
+            lastly_added_edges: list[tuple[str, str]] = None
+            for ele in edge_link_extractors:
+                if lastly_added_edges is not None:
+                    graph.remove_edges_from(lastly_added_edges)
+
+                for ae_id, edge_aggregable_entity in all_aggregable_entities_in_dao.items():
+                    destination_link = ele(edge_aggregable_entity)
+                    edge: tuple[str, str] = (ae_id, destination_link)
+                    lastly_added_edges.append(edge)
+                    graph.add_edge(edge[0], edge[1])
+
+                # TODO CHECK FOR LINKS
+
+            cycles: list[set[str]] = [
+                c
+                for c in [
+                    set(c) for c in nx.simple_cycles(graph)
+                ]
+                if len(c) > 1  # 1 == self-reference, which is admissible
+            ]
+            if len(cycles) > 0:  # ERROR
+                err_str = [
+                    f"In DAO '{dao_id}' (name: {dao.get_name()}) we have {len(cycles)} cycles:"
+                ]
+                i = 0
+                for c_s in cycles:
+                    c: list[str] = list(c_s)
+                    c.sort()
+                    err_str.append(
+                        f"\t - {i}\t): [{', '.join(c)}]"
+                    )
+                    i += 1
+                errors.append(
+                    "\n".join(err_str)
+                )
+
+        # must not have cycles in Roles+Committees by considering the links "aggregates" / "Federates_into"
+        # TODO
+
+        return errors
+
     def validate(self, input_to_validate: dict) -> validation_res.ValidationResult:
         errors: list[str] = []
         if isinstance(input_to_validate, dm.DiagramManager):
             check_fn_type = type(self.check_roles_committess_out_links)
             checks_to_run: list[check_fn_type] = [
                 self.check_roles_committess_out_links,
-                self.check_relations_under_level_hierarchy
+                self.check_relations_under_level_hierarchy,
+                self.check_cyclic_dependencies
             ]
             """
             # TODO: do all other checks (06-01-2026) (see "xml_dao_validator.py"):
