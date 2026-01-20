@@ -20,6 +20,26 @@ class AggregableEntity(base_entity.BaseEntity):
         raise Exception(
             f"get_name not implemented in {self.__class__.__name__}")
 
+    def get_permissions(self) -> dict[str, permission.Permission]:
+        return self.permissions
+
+    def get_controllers(self) -> set[str]:
+        return self.controllers
+
+    def get_aggregated(self) -> dict[str, AggregableEntity]:
+        return self.aggregated
+
+    def get_federated_committees(self) -> dict[str, AggregableEntity]:
+        return self.federated_committees
+
+    def get_aggregation_level(self) -> int:
+        return self.aggregation_level
+
+    def get_federation_level(self) -> int:
+        return self.federation_level
+
+    #
+
     def add_permission(self, permission: permission.Permission):
         # print(f'Adding permission {str(permission)} to {self.__class__.__name__} {self.id}')
         self.permissions[permission.get_id()] = permission

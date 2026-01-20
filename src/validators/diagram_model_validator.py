@@ -72,11 +72,11 @@ class DiagramModelValidator(bv.BaseValidator):
 
     #
 
-    def aggregation_level_extractor(self,
-                                    aggr_entity: ae.AggregableEntity): return aggr_entity.aggregation_level
+    def aggregation_level_extractor(self, aggr_entity: ae.AggregableEntity) -> int:
+        return aggr_entity.aggregation_level
 
-    def federation_level_extractor(self,
-                                   aggr_entity: ae.AggregableEntity): return aggr_entity.federation_level
+    def federation_level_extractor(self, aggr_entity: ae.AggregableEntity) -> int:
+        return aggr_entity.federation_level
 
     #
 
@@ -207,7 +207,7 @@ class DiagramModelValidator(bv.BaseValidator):
         values must be "in order", i.e. must be lesser or equal
         """
         errors: list[str] = []
-        extractor_type = type(self.aggregation_level_extractor)
+        extractor_type = type(ae.AggregableEntity.get_aggregated)
         for dao_id, dao in diagram.daoByID.items():
             entities_with_hierarchy_relation: list[dict[str, ae.AggregableEntity]] = [
                 dao.roles,
@@ -227,12 +227,12 @@ class DiagramModelValidator(bv.BaseValidator):
                         (aggr_entity.aggregated,
                          aggr_entity.aggregation_level,
                          "aggregation_level",
-                         self.aggregation_level_extractor
+                         ae.AggregableEntity.get_aggregation_level  # "Java-alike method reference"
                          ),
                         (aggr_entity.federated_committees,
                          aggr_entity.federation_level,
                          "federation_level",
-                         self.federation_level_extractor
+                         ae.AggregableEntity.get_federation_level  # "Java-alike method reference"
                          ),
                     ]
                     for t in relations_and_level_to_check:
@@ -248,6 +248,7 @@ class DiagramModelValidator(bv.BaseValidator):
                                         f"NONE in relation with level-based hierarchy '{relation_name}' violation: in DAO '{dao_id}' (named: '{dao.get_name()}'), the {aggr_entity.__class__.__name__} '{aggr_entity_id}' (named: {aggr_entity.get_name()}) has NONE relation with a {'Role' if is_role else 'Committee'} id: {linked_entity_id}"
                                     )
                                 else:
+                                    # (passing the "self" to the "static method")
                                     level_link = level_extractor(linked_entity)
                                     if (level_link is not None) and (level_link > level):
                                         # ERROR
@@ -259,65 +260,86 @@ class DiagramModelValidator(bv.BaseValidator):
         return errors
 
     def check_cyclic_dependencies(self, diagram: dm.DiagramManager) -> list[str]:
+        # must not have cycles in Roles+Committees by considering the links "aggregates" / "Federates_into"
         errors: list[str] = []
 
         for dao_id, dao in diagram.daoByID.items():
             # graph preparation ...
+            graph = nx.DiGraph()
+            # .. by defining the vertexes first (to recycle them)
             all_aggregable_entities_in_dao: dict[str, ae.AggregableEntity] = {
                 k: v
                 for k, v in dao.roles.items()
             }
-            for k, v in k in dao.committees.items():
+            for k, v in dao.committees.items():
                 all_aggregable_entities_in_dao[k] = v
-
-            # .. by defining the vertexes first (to recycle them), and adding the edges later
-            graph = nx.DiGraph()
+            # (vertex addition)
             for ae_id, edge_aggregable_entity in all_aggregable_entities_in_dao.items():
                 graph.add_node(ae_id)
-            # now, fill the edges and do the analysis
-            edge_link_extractors = [
-                self.aggregation_level_extractor,
-                self.federation_level_extractor
+            # ... then adding the edges ...
+            edge_link_extractors_names = [
+                # "Java-alike method reference"
+                (ae.AggregableEntity.get_aggregated, "aggregated"),
+                (ae.AggregableEntity.get_federated_committees,  # "Java-alike method reference"
+                 "federated_committees"),
+                (ae.AggregableEntity.get_controllers,  # "Java-alike method reference"
+                 "controllers")
             ]
-            # should_remove_edges = False
             lastly_added_edges: list[tuple[str, str]] = None
-            for ele in edge_link_extractors:
+            for ele_and_name in edge_link_extractors_names:
+                ele = ele_and_name[0]
+                ele_name: str = ele_and_name[1]
                 if lastly_added_edges is not None:
                     graph.remove_edges_from(lastly_added_edges)
-
+                    lastly_added_edges = None  # free the memory
+                lastly_added_edges = []
                 for ae_id, edge_aggregable_entity in all_aggregable_entities_in_dao.items():
-                    destination_link = ele(edge_aggregable_entity)
-                    edge: tuple[str, str] = (ae_id, destination_link)
-                    lastly_added_edges.append(edge)
-                    graph.add_edge(edge[0], edge[1])
-
-                # TODO CHECK FOR LINKS
-
-            cycles: list[set[str]] = [
-                c
-                for c in [
+                    # (passing the "self" to the "static method")
+                    dict_destination_link: dict[str, ae.AggregableEntity] = ele(
+                        edge_aggregable_entity)
+                    # for each outward link, create the edge
+                    outward_links_generator = dict_destination_link.keys() \
+                        if isinstance(dict_destination_link, dict) else \
+                        [l for l in dict_destination_link]  # set-alike, like "controllers"
+                    for destination_link_id in outward_links_generator:
+                        edge: tuple[str, str] = (ae_id, destination_link_id)
+                        lastly_added_edges.append(edge)
+                        graph.add_edge(edge[0], edge[1])
+                # THE TEST (of a particular type of link)
+                all_cycles: list[set[str]] = [
                     set(c) for c in nx.simple_cycles(graph)
                 ]
-                if len(c) > 1  # 1 == self-reference, which is admissible
-            ]
-            if len(cycles) > 0:  # ERROR
-                err_str = [
-                    f"In DAO '{dao_id}' (name: {dao.get_name()}) we have {len(cycles)} cycles:"
+                cycles: list[set[str]] = [
+                    c for c in all_cycles
+                    if len(c) > 1  # 1 == self-reference, which is admissible
                 ]
-                i = 0
-                for c_s in cycles:
-                    c: list[str] = list(c_s)
-                    c.sort()
-                    err_str.append(
-                        f"\t - {i}\t): [{', '.join(c)}]"
+                if len(cycles) > 0:  # ERROR
+                    err_str = [
+                        f"In DAO '{dao_id}' (name: {dao.get_name()}), while checking the link '{ele_name}' across the Aggregable Entities, we have {len(cycles)} cycles:"
+                    ]
+                    i = 0
+                    for c_s in cycles:
+                        c: list[str] = list(c_s)
+                        c.sort()
+                        err_str.append(
+                            f"\t - {i}\t): [{', '.join(c)}]"
+                        )
+                        i += 1
+                    errors.append(
+                        "\n".join(err_str)
                     )
-                    i += 1
-                errors.append(
-                    "\n".join(err_str)
-                )
+                else:
+                    self.print_msg(
+                        f"debug: In DAO '{dao_id}' (name: {dao.get_name()}), while checking the link '{ele_name}', we have {len(all_cycles)} self-referencing cycles")
+                    if len(all_cycles) > 0:
+                        for c in all_cycles:
+                            self.print_msg(
+                                f"\t -): [{', '.join(c)}]"
+                            )
 
-        # must not have cycles in Roles+Committees by considering the links "aggregates" / "Federates_into"
-        # TODO
+                all_cycles = None  # free the memory
+                cycles = None  # free the memory
+            lastly_added_edges = None  # free the memory
 
         return errors
 
