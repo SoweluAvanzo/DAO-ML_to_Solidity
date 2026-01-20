@@ -32,7 +32,7 @@ class XmlStringModelGenerator(bg.BaseGenerator):
     def new_XMLDAOVisitor(self):
         return XMLDAOVisitor(printer_debug=self.printer_debug)
 
-    def generate(self, validation_result):
+    def generate(self, validation_result, additional_data=None):
         try:
             if not isinstance(validation_result, validation_res.ValidationResult):
                 raise Exception(
@@ -40,12 +40,12 @@ class XmlStringModelGenerator(bg.BaseGenerator):
 
             # errors=validation_result["errors"]
             # tree_parsed=validation_result["tree_parsed"]
-            input = validation_result.input
+            input_consumed = validation_result.input_consumed
             # input_string_list=validation_result["input_string_list"]
 
             # setup of the parser
             # buffer # StringIO(text_wrapper.read())
-            xml_content_as_stream = InputStream(input)
+            xml_content_as_stream = InputStream(input_consumed)
             lexer = xmlL.XMLLexer(xml_content_as_stream)
             stream = CommonTokenStream(lexer)
             parser = xmlP.XMLParser(stream)
@@ -87,51 +87,85 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         diagramManager.processRawInstances()
         self.diagramManager = None  # just to clean the memory
 
+    def _text_from_node(self, node) -> str:
+        return node.STRING().getText().strip('"')
+
     def visitDiagram(self, ctx: xmlP.XMLParser.DiagramContext):
-        self.printer_debug.print_msg("..........visitDiagram ^^ ")
-        uniqueID = ctx.diagram_uniqueID()[0].STRING().getText().strip('"')
+        self.print_msg("\n\nXML..........visitDiagram ^^ ")
+        uniqueID = self._text_from_node(ctx.diagram_uniqueID()[0])
         self.diagramManager.id = uniqueID
-        self.printer_debug.print_msg(f"Diagram uniqueID: {uniqueID}")
+        self.print_msg(f"Diagram uniqueID: {uniqueID}")
         return super().visitDiagram(ctx)
 
     def visitRole(self, ctx: xmlP.XMLParser.RoleContext):
-        role_id = ctx.role_id()[0].STRING().getText().strip('"')
-        role_name = ctx.role_name()[0].STRING().getText().strip('"')
-        role_assignment_method = ctx.role_assignment_method()[0].STRING().getText().strip(
-            '"') if len(ctx.role_assignment_method()) > 0 and ctx.role_assignment_method()[0] else None
-        n_agent_min = ctx.n_agent_min()[0].STRING().getText().strip('"') if len(
-            ctx.n_agent_min()) > 0 and ctx.n_agent_min()[0] else None
-        n_agent_max = ctx.n_agent_max()[0].STRING().getText().strip('"') if len(
-            ctx.n_agent_max()) > 0 and ctx.n_agent_max()[0] else None
-        agent_type = ctx.agent_type()[0].STRING().getText().strip(
-            '"') if len(ctx.agent_type()) > 0 else None
-        role = r.Role(role_id, role_name, role_assignment_method,
-                      n_agent_min, n_agent_max, agent_type)
+        role_id = self._text_from_node(ctx.role_id()[0])
+        role_name = self._text_from_node(ctx.role_name()[0])
+        role_assignment_method = self._text_from_node(ctx.role_assignment_method()[0]) \
+            if len(ctx.role_assignment_method()) > 0 and ctx.role_assignment_method()[0] \
+            else None
+        n_agent_min = int(self._text_from_node(ctx.n_agent_min()[0])) \
+            if len(ctx.n_agent_min()) > 0 and ctx.n_agent_min()[0]\
+            else None
+        n_agent_max = int(self._text_from_node(ctx.n_agent_max()[0])) \
+            if len(ctx.n_agent_max()) > 0 and ctx.n_agent_max()[0]\
+            else None
+        agent_type = self._text_from_node(ctx.agent_type()[0]) \
+            if len(ctx.agent_type()) > 0 else None
+        aggregation_level = int(self._text_from_node(ctx.aggregation_level()[0])) \
+            if len(ctx.aggregation_level()) > 0 else None
+        federation_level = int(self._text_from_node(ctx.federation_level()[0])) \
+            if len(ctx.federation_level()) > 0 else None
+        role = r.Role(
+            role_id,
+            role_name,
+            role_assignment_method,
+            n_agent_min,
+            n_agent_max,
+            agent_type
+        )
+        role.aggregation_level = aggregation_level
+        role.federation_level = federation_level
         self.diagramManager.addRole(self.current_dao, role)
         return self.visitChildren(ctx)
 
     def visitCommittee(self, ctx):
-        committee_id = ctx.committee_id()[0].STRING().getText().strip('"')
-        committee_description = ctx.committee_description()[
-            0].STRING().getText().strip('"')
-        voting_condition = ctx.voting_condition()[0].STRING().getText().strip(
-            '"') if len(ctx.voting_condition()) > 0 and ctx.voting_condition()[0] else None
-        proposal_condition = ctx.proposal_condition()[0].STRING().getText().strip(
-            '"') if len(ctx.proposal_condition()) > 0 and ctx.proposal_condition()[0] else None
-        decision_making_method = ctx.decision_making_method()[0].STRING().getText().strip(
-            '"') if len(ctx.decision_making_method()) > 0 and ctx.decision_making_method()[0] else None
-        committee = c.Committee(committee_id, committee_description,
-                                voting_condition, proposal_condition, decision_making_method)
+        committee_id = self._text_from_node(ctx.committee_id()[0])
+        committee_description = self._text_from_node(
+            ctx.committee_description()[0])
+        voting_condition = self._text_from_node(ctx.voting_condition()[0]) \
+            if len(ctx.voting_condition()) > 0 and ctx.voting_condition()[0] \
+            else None
+        proposal_condition = self._text_from_node(ctx.proposal_condition()[0]) \
+            if len(ctx.proposal_condition()) > 0 and ctx.proposal_condition()[0] \
+            else None
+        decision_making_method = self._text_from_node(ctx.decision_making_method()[0]) \
+            if len(ctx.decision_making_method()) > 0 and ctx.decision_making_method()[0] \
+            else None
+        aggregation_level = int(self._text_from_node(ctx.aggregation_level()[0])) \
+            if len(ctx.aggregation_level()) > 0 else None
+        federation_level = int(self._text_from_node(ctx.federation_level()[0])) \
+            if len(ctx.federation_level()) > 0 else None
+        committee = c.Committee(
+            committee_id,
+            committee_description,
+            voting_condition,
+            proposal_condition,
+            decision_making_method
+        )
+        committee.aggregation_level = aggregation_level
+        committee.federation_level = federation_level
         self.diagramManager.addCommittee(self.current_dao, committee)
         return self.visitChildren(ctx)
 
     def visitPermission(self, ctx):
-        permission_id = ctx.permission_id()[0].STRING().getText().strip('"')
-        allowed_action = ctx.allowed_action()[0].STRING().getText().strip('"')
-        permission_type = ctx.permission_type()[0].STRING().getText().strip(
-            '"') if len(ctx.permission_type()) > 0 else None
-        ref_gov_area = ctx.ref_gov_area()[0].STRING().getText().strip('"') if len(
-            ctx.ref_gov_area()) > 0 and ctx.ref_gov_area()[0] else None
+        permission_id = self._text_from_node(ctx.permission_id()[0])
+        allowed_action = self._text_from_node(ctx.allowed_action()[0])
+        permission_type = self._text_from_node(ctx.permission_type()[0]) \
+            if len(ctx.permission_type()) > 0 \
+            else None
+        ref_gov_area = self._text_from_node(ctx.ref_gov_area()[0]) \
+            if len(ctx.ref_gov_area()) > 0 and ctx.ref_gov_area()[0] \
+            else None
         permission = p.Permission(
             permission_id, allowed_action, permission_type, ref_gov_area)
         self.diagramManager.addPermission(self.current_dao, permission)
@@ -145,67 +179,91 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             beholderID = node.committee_id()[0]
         if beholderID is None:
             raise Exception("can't extract an id")
-        return beholderID.STRING().getText().strip('"')
+        return self._text_from_node(beholderID)
 
     def visitRelations(self, ctx):
         # visits associated to relations and stores them in the dictionary
         if ctx.associated_to():
             for assoc in ctx.associated_to():
                 content = self.aggregate_texts(assoc.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
-                    self.current_dao, r_t.RelationType.ASSOCIATION, id, content)
+                    self.current_dao,
+                    r_t.RelationType.ASSOCIATION,
+                    id_role_or_committee,
+                    content
+                )
         if ctx.controlled_by():
             for control in ctx.controlled_by():
                 content = self.aggregate_texts(control.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
-                    self.current_dao, r_t.RelationType.CONTROL, id, content)
+                    self.current_dao,
+                    r_t.RelationType.CONTROL,
+                    id_role_or_committee,
+                    content
+                )
         if ctx.aggregates():
             for aggregated in ctx.aggregates():
                 content = self.aggregate_texts(aggregated.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
-                    self.current_dao, r_t.RelationType.AGGREGATION, id, content)
+                    self.current_dao,
+                    r_t.RelationType.AGGREGATION,
+                    id_role_or_committee,
+                    content
+                )
         if ctx.federates_into():
             for federated in ctx.federates_into():
                 content = self.aggregate_texts(federated.content().chardata())
-                id = self.__extract_ID(ctx.parentCtx)
+                id_role_or_committee = self.__extract_ID(ctx.parentCtx)
                 self.diagramManager.addRelation(
-                    self.current_dao, r_t.RelationType.FEDERATION, id, content)
+                    self.current_dao,
+                    r_t.RelationType.FEDERATION,
+                    id_role_or_committee,
+                    content
+                )
         return self.visitChildren(ctx)
 
     def visitDao(self, ctx):
-        dao_id = ctx.dao_id()[0].STRING().getText().strip('"')
-        dao_name = ctx.dao_name()[0].STRING().getText().strip('"')
-        mission_statement = ctx.mission_statement()[0].STRING().getText().strip(
-            '"') if len(ctx.mission_statement()) > 0 else None
-        hierarchical_inheritance = ctx.hierarchical_inheritance()[
-            0].STRING().getText().strip('"')
-        dao = d.DAO(dao_id, dao_name, mission_statement,
-                    hierarchical_inheritance)
+        dao_id = self._text_from_node(ctx.dao_id()[0])
+        dao_name = self._text_from_node(ctx.dao_name()[0])
+        mission_statement = self._text_from_node(ctx.mission_statement()[0]) \
+            if len(ctx.mission_statement()) > 0 \
+            else None
+        hierarchical_inheritance = self._text_from_node(
+            ctx.hierarchical_inheritance()[0])
+        dao = d.DAO(
+            dao_id,
+            dao_name,
+            mission_statement,
+            hierarchical_inheritance
+        )
         # self.daos[dao_id] = dao
         self.diagramManager.addDao(dao)
-        self.printer_debug.print_msg(f'DAO created with ID: {dao_id}')
+        self.print_msg(f'DAO created with ID: {dao_id}')
         # recursively visits the children of the dao
         self.current_dao = dao
         self.visitChildren(ctx)
-        self.printer_debug.print_msg("visitDao completed")
+        self.print_msg("visitDao completed")
         self.current_dao = None
         return dao
 
     def visitGov(self, ctx: xmlP.XMLParser.GovContext):
-        gov_area_ID = ctx.gov_area_ID()[0].STRING().getText().strip('"')
-        gov_area_description = ctx.gov_area_description()[
-            0].STRING().getText().strip('"')
-        gov_area_implementation = ctx.gov_area_implementation()[
-            0].STRING().getText().strip('"')
-        self.printer_debug.print_msg(
+        gov_area_ID = self._text_from_node(ctx.gov_area_ID()[0])
+        gov_area_description = self._text_from_node(
+            ctx.gov_area_description()[0])
+        gov_area_implementation = self._text_from_node(
+            ctx.gov_area_implementation()[0])
+        self.print_msg(
             f"visitGov: gov_area_ID: {gov_area_ID} --- gov_area_description: {gov_area_description}")
         governance_area = ga.GovernanceArea(
-            gov_area_ID, gov_area_description, gov_area_implementation)
+            gov_area_ID,
+            gov_area_description,
+            gov_area_implementation
+        )
         self.diagramManager.addGovernanceArea(
-            self.current_dao, governance_area=governance_area)
+            self.current_dao, governance_area)
         return self.visitChildren(ctx)
 
     def aggregate_texts(self, chardata_list, separator=""):
@@ -227,10 +285,10 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
         if tree.getText() == "<EOF>":
             return
         elif isinstance(tree, TerminalNodeImpl):
-            self.printer_debug.print_msg(
+            self.print_msg(
                 "{0}TOKEN='{1}'".format("\t" * indent, tree.getText()))
         else:
-            self.printer_debug.print_msg("{0}{1}".format(
+            self.print_msg("{0}{1}".format(
                 "\t" * indent, rule_names[tree.getRuleIndex()]))
             for child in tree.children:
                 self.traverse_parsing_tree_debug(child, rule_names, indent + 1)

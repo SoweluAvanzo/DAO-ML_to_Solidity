@@ -1,7 +1,8 @@
 import src.model.base_entity as base_entity
 
+
 class Permission(base_entity.BaseEntity):
-    def __init__(self, permission_id, allowed_action, permission_type, ref_gov_area = None, voting_right = False, proposal_right = False):
+    def __init__(self, permission_id: str, allowed_action: str, permission_type: str, ref_gov_area: str = None, voting_right: bool = False, proposal_right: bool = False):
         super().__init__(permission_id)
         self.allowed_action = allowed_action
         self.permission_type = permission_type
@@ -14,7 +15,7 @@ class Permission(base_entity.BaseEntity):
 
     def get_name(self) -> str:
         return self.get_id()
-    
+
     def toJSON(self):
         obj = super().toJSON()
         obj["allowed_action"] = self.allowed_action
@@ -23,6 +24,6 @@ class Permission(base_entity.BaseEntity):
         obj["voting_right"] = self.voting_right
         obj["proposal_right"] = self.proposal_right
         return obj
-    
+
     def __repr__(self):
         return self.toJSON()

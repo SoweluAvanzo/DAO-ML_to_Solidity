@@ -70,10 +70,14 @@ class StringableJsonable:
                 can_recour = True
                 break
         return {
-            k: v.to_json(**kwargs) if isinstance(v, StringableJsonable) else v
+            k: v.to_json(**kwargs) if isinstance(v, StringableJsonable)
+            else self.to_string(v)
             for k, v in d
         } if can_recour \
             else self.__dict__
+
+    def toJSON(self):
+        return self.to_json()
 
     def __repr__(self):
         return json.dumps(self.to_json())

@@ -3,10 +3,10 @@ import src.files.file_utils as fu
 
 
 def is_string_or_list(t):
-    if isinstance(t, list):
-        return False
-    elif isinstance(t, str):
+    if isinstance(t, str):
         return True
+    elif isinstance(t, list):
+        return False
     else:
         return None
 

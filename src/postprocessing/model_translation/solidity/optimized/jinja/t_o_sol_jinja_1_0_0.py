@@ -125,8 +125,8 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
             dao_id: [ \
                 # note: the rt.RelationType instance can be retrieved back by writing :
                 #    rt.RelationType[ name_of_enum_instance ]
-                (rel_data[0].name if isinstance(rel_data[0], rt.RelationType)
-                 else f"{rel_data[0]}", rel_data[1], rel_data[2])
+                (rel_data.relation_type.name if isinstance(rel_data.relation_type, rt.RelationType)
+                 else f"{rel_data.relation_type}", rel_data.from_id, rel_data.content)
                 for rel_data in diagram.relations_by_dao[dao_id]
             ]
             for dao_id in diagram.relations_by_dao.keys()
@@ -393,7 +393,9 @@ class SolidityTranslatorOptimizedJinja_1_0_0(sol_transl_opt_jinja.SolidityTransl
         for entity_map in entities_map_list:
             for entity in entity_map.values():
                 permission_indices = [
-                    permission_to_index[permission.get_id()] for permission in entity.permissions]
+                    permission_to_index[permission.get_id()]
+                    for permission in entity.permissions.values()
+                ]
                 # Set the bit for each permission index
                 bitflag = 0
                 for index in permission_indices:

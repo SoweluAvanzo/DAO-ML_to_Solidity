@@ -22,7 +22,8 @@ class TextFileInputCacheableDelegating(txt_f_i_caching.TextFileInputCacheable):
         self.txt_input_cacheable_delegator = txt_input_cacheable_delegator
 
     def get_cache_content_lines_by_path(self):
-        self.print_msg(f"{type(self)} is delegating the cache instance")
+        self.print_msg(
+            f"{type(self)} (and key: {self.get_key()}) is delegating the cache instance (because of calling the method get_cache_content_lines_by_path)")
         return super().get_cache_content_lines_by_path() \
             if self.txt_input_cacheable_delegator is None \
             else self.txt_input_cacheable_delegator.get_cache_content_lines_by_path()

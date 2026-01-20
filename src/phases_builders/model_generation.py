@@ -11,6 +11,7 @@ import src.phases_builders.phase_builder as pb
 
 import src.validators.validation_result_to_errors as vete
 import src.validators.xml.xml_dao_validator as xvi
+import src.validators.json.json_validator as jvi
 import src.model_generators.xml_string_model_generator as xsmg
 import src.model_generators.json_string_model_generator as jsmg
 
@@ -100,17 +101,46 @@ class ModelGeneratorFactory(pb.PipelineItemFactory):
                 k_model_generator
             )
         elif phase_step_variant_and_data.phase_step_variant == pb_shared.ModelPersistanceFormat.JSON:
-            k_input = ModelJSONGeneratordData(
-                phase_step_variant_and_data).key_input_provider
-            k_model_gen_from_json = self.new_unique_key(
-                "k_model_gen_from_json")
+            if not isinstance(phase_step_variant_and_data, ModelJSONGeneratordData):
+                raise Exception(
+                    f"Wrong class for given phase_step_variant_and_data: expected ModelJSONGeneratordData, got: {type(phase_step_variant_and_data)}")
+            k_input = phase_step_variant_and_data.key_input_provider
+            k_model_generator = self.new_unique_key("k_model_generator")
+            model_generator = jsmg.JsonStringModelGenerator(
+                pi.PIData(k_model_generator, [k_input]),
+                printer_debug=self.printer_debug
+            )
+            # TODO: use "DiagramModelValidator", then gather its error, print it if necessary, etc etc, like XML does
+            k_json_validator = self.new_unique_key("k_json_validator")
+            json_validator = jvi.JSONValidator(
+                pi.PIData(k_json_validator, [
+                    # k_input -> this validator _actually_ validates an already-generated Model, not the "str/list[str]" source of it
+                    k_model_generator
+                ]),
+                printer_debug=self.printer_debug
+            )
+
+            k_validator_errors_extractor = self.new_unique_key(
+                "validator_errors_extractor")
+            validator_errors_extractor = vete.ValidationResultToErrorsExtractor(
+                pi.PIData(k_validator_errors_extractor, [k_json_validator]),
+                key_validation_result=k_json_validator,
+                printer_debug=self.printer_debug
+            )
+            k_v_exc_raiser = self.new_unique_key("k_v_exc_raiser")
+            v_exc_raiser = perrr.PIExceptionRaiser(
+                pi.PIData(k_v_exc_raiser, [k_validator_errors_extractor]),
+                key_error_input=k_validator_errors_extractor,
+                printer_debug=self.printer_debug
+            )
             return pb.PipelineItemsGenerated(
                 [
-                    jsmg.JsonStringModelGenerator(
-                        pi.PIData(phase_step_variant_and_data, [k_input])
-                    )
+                    json_validator,
+                    validator_errors_extractor,
+                    v_exc_raiser,
+                    model_generator
                 ],
-                k_model_gen_from_json
+                k_model_generator
             )
         raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED +
                         " : " + phase_step_variant_and_data.phase_step_variant.value)

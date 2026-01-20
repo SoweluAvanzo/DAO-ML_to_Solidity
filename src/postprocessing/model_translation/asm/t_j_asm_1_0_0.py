@@ -62,7 +62,7 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
             dao.roles.values(),  dao.committees.values()]
         for entities in entities_controllable:
             for e_slave in entities:
-                masters: list[str] = e_slave.controllers
+                masters: set[str] = e_slave.controllers
                 for master_controller in masters:
                     slaves_set: set[str] = None
                     if master_controller in controls_relation:
@@ -76,18 +76,19 @@ class TranslatorJinjaASM_1_0_0(t_j_asm_base.TranslatorJinjaASM):
         asm_data["roles"] = [
             {
                 "name": u.to_keyword(r.get_name()),
-                "permissions": [u.to_keyword(p.allowed_action) for p in r.permissions],
+                "permissions": [u.to_keyword(p.allowed_action) for p in r.permissions.values()],
                 "controls": list(controls_relation[u.to_keyword(r.get_name())]) if u.to_keyword(r.get_name()) in controls_relation else [],
-                "aggregation": "" if len(r.aggregated) <= 0 else u.to_keyword(r.aggregated[0].get_name())
+                "aggregation": "" if len(r.aggregated) <= 0 else u.to_keyword(list(r.aggregated.values())[0].get_name())
             }
             for r in dao.roles.values()
         ]
         asm_data["committees"] = [
             {
                 "name": u.to_keyword(c.get_name()),
-                "permissions": [u.to_keyword(p.allowed_action) for p in c.permissions],
+                "permissions": [u.to_keyword(p.allowed_action) for p in c.permissions.values()],
                 "controls":  list(controls_relation[u.to_keyword(c.get_name())]) if u.to_keyword(c.get_name()) in controls_relation else [],
-                "aggregation": "" if len(c.aggregated) <= 0 else u.to_keyword(c.aggregated[0].get_name())
+                "aggregation": "" if len(c.aggregated) <= 0 else u.to_keyword(list(c.aggregated.values())[0].get_name()),
+                "federated_committee": "" if len(c.federated_committees) <= 0 else u.to_keyword(list(c.federated_committees.values())[0].get_name())
             }
             for c in dao.committees.values()
         ]

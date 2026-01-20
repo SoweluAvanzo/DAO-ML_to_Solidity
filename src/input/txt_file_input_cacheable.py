@@ -43,7 +43,7 @@ class TextFileInputCacheable(tfi.TextFileInput):
             if filepath in self.get_cache_content_lines_by_path():
                 # simply return them
                 self.print_msg(
-                    f"get_input_as_iterable in class {type(self)} is getting the content from the cache!")
+                    f"get_input_as_iterable in class {type(self)} (and key: {self.get_key()}) is getting the content from the cache!")
                 content_as_iter = self.get_cache_content_lines_by_path()[
                     filepath]
                 for line in content_as_iter:
@@ -51,7 +51,7 @@ class TextFileInputCacheable(tfi.TextFileInput):
             else:  # read and return it
                 content_as_iter = super().get_input_as_iterable()
                 self.print_msg(
-                    f"get_input_as_iterable in class {type(self)} is getting the content from the super (with filename: {filepath})")
+                    f"get_input_as_iterable in class {type(self)} (and key: {self.get_key()}) is getting the content from the super (with filename: {filepath})")
                 lines = []
                 for line in content_as_iter:
                     lines.append(line)
@@ -60,6 +60,6 @@ class TextFileInputCacheable(tfi.TextFileInput):
         else:
             content_as_iter = super().get_input_as_iterable()
             self.print_msg(
-                f"get_input_as_iterable in class {type(self)} is NOT CACHING and is getting the content from the super (with filename: {filepath})")
+                f"get_input_as_iterable in class {type(self)} (and key: {self.get_key()}) is NOT CACHING and is getting the content from the super (with filename: {filepath})")
             for line in content_as_iter:
                 yield self.strip_line(line)

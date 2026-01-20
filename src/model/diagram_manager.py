@@ -4,18 +4,20 @@ import src.model.role as role_module
 import src.model.committee as committee_module
 import src.model.permission as permission_module
 import src.model.governance_area as governance_area_module
+import src.model.relation as relation_module
+
 import src.model.enums.relation_type as rt
 import src.model.enums.governance_permission as gp
+
 import src.control_graph.control_graph_basic as cgb
 
 
 class DiagramManager(base_entity_module.BaseEntity):
     def __init__(self, controlGraphGenerator=None):
         super().__init__("DiagramManager_ID")
-        self.rowDataOnly = True
         self.daoByID: dict[str, dao_module.DAO] = {}
         self.relations_by_dao: dict[str,
-                                    list[tuple[rt.RelationType, str, str]]] = {}
+                                    list[relation_module.Relation]] = {}
         self.controlGraphGenerator = controlGraphGenerator
 
     def get_name(self) -> str:
@@ -32,8 +34,8 @@ class DiagramManager(base_entity_module.BaseEntity):
         return dao
 
     def addDao(self, dao: dao_module.DAO):
-        self.daoByID[dao.get_id()] = dao
         dao_id = dao.get_id()
+        self.daoByID[dao_id] = dao
         self.relations_by_dao[dao_id] = []
 
     def addRole(self, daoOrID, role: role_module.Role):
@@ -51,7 +53,10 @@ class DiagramManager(base_entity_module.BaseEntity):
     def addRelation(self, daoOrID, relationType: rt.RelationType, fromID: str, content: str):
         dao = self.get_dao_by(daoOrID)
         dao_id = dao.get_id()
-        self.relations_by_dao[dao_id].append((relationType, fromID, content))
+        rel = relation_module.Relation(
+            dao_id, relationType, fromID, content
+        )
+        self.relations_by_dao[dao_id].append(rel)
 
     def addGovernanceArea(self, daoOrID, governance_area: governance_area_module.GovernanceArea):
         dao = self.get_dao_by(daoOrID)
@@ -81,11 +86,11 @@ class DiagramManager(base_entity_module.BaseEntity):
         if not (isinstance(role_or_committee, role_module.Role) or isinstance(role_or_committee, committee_module.Committee)):
             raise Exception(
                 f"The provided role_or_committe is not a Role nor a Committe: {type(role_or_committee)}")
-        for aggregated in role_or_committee.aggregated:
+        for aggregated in role_or_committee.aggregated.values():
             self.get_aggregated_permissions(aggregated)
             # the aggregator inherits permissions from the aggregated
-            for permission in aggregated.permissions:
-                if permission not in role_or_committee.permissions:
+            for permission in aggregated.permissions.values():
+                if permission.get_id() not in role_or_committee.permissions:
                     source_id = role_or_committee.get_id() if isinstance(
                         role_or_committee, role_module.Role) else role_or_committee.get_id()
                     target_id = aggregated.get_id() if isinstance(
@@ -104,9 +109,9 @@ class DiagramManager(base_entity_module.BaseEntity):
             dao: dao_module.DAO = daooo
             dao_id: str = dao.get_id()
             for relation in self.relations_by_dao[dao_id]:
-                fromID = relation[1]
-                content = relation[2]
-                if relation[0] == rt.RelationType.CONTROL:
+                fromID = relation.from_id
+                content = relation.content
+                if relation.relation_type == rt.RelationType.CONTROL:
                     the_controller_ID = content
                     controlled_ID = fromID
 
@@ -119,7 +124,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                     else:
                         print(
                             f"ERROR: the controller __{the_controller_ID}__ should control __{controlled_ID}__, but this last one has not been found")
-                elif relation[0] == rt.RelationType.ASSOCIATION:
+                elif relation.relation_type == rt.RelationType.ASSOCIATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
                         if content in dao.permissions:
@@ -128,7 +133,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                         committee = dao.committees[fromID]
                         if content in dao.permissions:
                             committee.add_permission(dao.permissions[content])
-                elif relation[0] == rt.RelationType.AGGREGATION:
+                elif relation.relation_type == rt.RelationType.AGGREGATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
                         if content in dao.roles:
@@ -141,7 +146,7 @@ class DiagramManager(base_entity_module.BaseEntity):
                             committee.add_aggregated(dao.committees[content])
                         elif content in dao.roles:
                             committee.add_aggregated(dao.roles[content])
-                elif relation[0] == rt.RelationType.FEDERATION:
+                elif relation.relation_type == rt.RelationType.FEDERATION:
                     if fromID in dao.roles:
                         role = dao.roles[fromID]
                         if content in dao.committees:
@@ -165,8 +170,6 @@ class DiagramManager(base_entity_module.BaseEntity):
                         else:
                             print(
                                 f'ERROR: wrong federation type: Committee {fromID} -> {content} \n')
-            dao.metadata.save_user_functionalities_group_size(
-                dao.roles, dao.committees)
             # Assign voting and proposal permissions to committees
             for committee in dao.committees.values():
                 # Assign voting and proposal permissions to committees
@@ -176,14 +179,14 @@ class DiagramManager(base_entity_module.BaseEntity):
                     gp.GovernancePermission.PROPOSAL, committee)
                 dao.add_permission(voting_permission)
                 dao.add_permission(proposal_permission)
-                for role_or_committee in committee.member_entities:
-                    if isinstance(role_or_committee, role_module.Role or isinstance(role_or_committee, committee_module.Committee)):
-                        if voting_permission not in role_or_committee.permissions:
+                for role_or_committee in committee.member_entities.values():
+                    if isinstance(role_or_committee, role_module.Role) or isinstance(role_or_committee, committee_module.Committee):
+                        if voting_permission.get_id() not in role_or_committee.permissions:
                             role_or_committee.add_permission(voting_permission)
                             # adding to the dictionary of voting rights to access it in simple translator
                             dao.role_and_committee_voting_right_dict[role_or_committee.get_id(
                             )] = committee.get_id()
-                        if proposal_permission not in role_or_committee.permissions:
+                        if proposal_permission.get_id() not in role_or_committee.permissions:
                             role_or_committee.add_permission(
                                 proposal_permission)
                             dao.role_and_committee_proposal_right_dict[role_or_committee.get_id(
@@ -197,13 +200,22 @@ class DiagramManager(base_entity_module.BaseEntity):
             self.generate_conditions(dao)
             # generate owner role
             self.generateOwnerRole(dao)
+            # after generating the owner Role, save some metadata (like the "bit-size")
+            dao.metadata.save_user_functionalities_group_size(
+                dao.roles, dao.committees)
             self.createControlGraph(dao_id, dao)
 
     def generateOwnerRole(self, dao: dao_module.DAO):
         # create owner role
         owner_role_name = f"{dao.dao_name}Owner".replace(" ", "_")
-        owner_role = role_module.Role(role_id=owner_role_name, role_name=owner_role_name,
-                                      role_assignment_method="Non Assignable", n_agent_min=None, n_agent_max=None, agent_type=None)
+        owner_role = role_module.Role(
+            role_id=owner_role_name,
+            role_name=owner_role_name,
+            role_assignment_method="Non Assignable",
+            n_agent_min=None,
+            n_agent_max=None,
+            agent_type=None
+        )
         dao.owner_role = owner_role
         for permission in dao.permissions.values():
             owner_role.add_permission(permission)
@@ -227,29 +239,29 @@ class DiagramManager(base_entity_module.BaseEntity):
 
     def generate_conditions(self, dao: dao_module.DAO):
         # storing both the list of the conditions and the respective relations with the roles and committees (how conditions are used in the DAO)
-        conditions = []
+        conditions = set()
         for role in dao.roles.values():
             if role.role_assignment_method != None:
                 dao.assignment_conditions[role.get_id(
                 )] = role.role_assignment_method
                 if role.role_assignment_method not in conditions:
-                    conditions.append(role.role_assignment_method)
+                    conditions.add(role.role_assignment_method)
 
         for committee in dao.committees.values():
             if committee.voting_condition != None:
                 dao.voting_conditions[committee.get_id(
                 )] = committee.voting_condition
                 if committee.voting_condition not in conditions:
-                    conditions.append(committee.voting_condition)
+                    conditions.add(committee.voting_condition)
             if committee.proposal_condition != None:
                 dao.proposal_conditions[committee.get_id(
                 )] = committee.proposal_condition
                 if committee.proposal_condition not in conditions:
-                    conditions.append(committee.proposal_condition)
-        dao.conditions = conditions
+                    conditions.add(committee.proposal_condition)
+        dao.conditions = list(conditions)
 
     def __str__(self):
-        result = ["DiagramManager", f"\t uniqueID: {self.get_id()}", "DAOs:"]
+        result = ["DiagramManager", f"\t id: {self.get_id()}", "DAOs:"]
         try:
             for dao in self.daoByID.values():
                 result.append("Dao")
@@ -270,11 +282,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         # TODO: self.controlGraphGenerator
         relations_by_dao = {
             dao_id: [
-                {
-                    "relationType": rel_data[0].name,
-                    "fromID": rel_data[1],
-                    "content": rel_data[2],
-                }
+                rel_data.toJSON()
                 for rel_data in relations
             ]
             for dao_id, relations in self.relations_by_dao.items()
@@ -285,8 +293,7 @@ class DiagramManager(base_entity_module.BaseEntity):
         }
         return {
             "id": self.get_id(),
-            "uniqueID": self.get_id(),
-            "rowDataOnly": self.rowDataOnly,
+            # "uniqueID": self.get_id(),
             "relations_by_dao": relations_by_dao,
             "daoByID": daoByID,
             "controlGraphGenerator": None

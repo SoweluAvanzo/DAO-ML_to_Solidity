@@ -119,7 +119,7 @@ class PipelineManager:
     def getItem(self, key: str) -> pi.PipelineItem:
         return self.items[key]
 
-    def runPipeline(self):
+    def runPipeline(self) -> dict[str,]:
         # setup the data structures
         items_as_list = list(self.items.values())
         nodes = {item.get_key(): PipelineNode(self, item, printer_debug=self.printer_debug)
@@ -133,8 +133,7 @@ class PipelineManager:
                 for d in item.get_dependencies():
                     if d not in nodes:
                         self.print_error(
-                            f"ERROR: dependency {d} in node '{key}' does not exist")
-
+                            f"ERROR: dependency {d} in node '{key}' (of type: {type(current_node.getItem())}) does not exist")
                     else:
                         n = nodes[d]
                         n.addDependant(current_node)
@@ -150,10 +149,11 @@ class PipelineManager:
         while len(job_queues) > 0:
             job: PipelineNode = job_queues.popleft()
             job.status_run = NodeRunStatus.RUNNING
-            input = job.getInputForRun()
+            input_to_run = job.getInputForRun()
             try:
-                self.print_msg(f"Running item with key: {job.item.get_key()}")
-                output = job.item.run(input)
+                self.print_msg(
+                    f"Running item with key: {job.item.get_key()} (and type: {type(job.item)})")
+                output = job.item.run(input_to_run)
                 job.status_run = NodeRunStatus.DONE
                 # update dependants
                 if len(job.getDependants()) > 0:
@@ -174,6 +174,7 @@ class PipelineManager:
                 print(e)
                 import traceback
                 traceback.print_exception(e)
+                self.print_error(e)
 
             except TypeError as e:
                 job.status_run = NodeRunStatus.CRASHED
@@ -182,4 +183,5 @@ class PipelineManager:
                 print(e)
                 import traceback
                 traceback.print_exception(e)
+                self.print_error(e)
         return final_outputs_by_key
