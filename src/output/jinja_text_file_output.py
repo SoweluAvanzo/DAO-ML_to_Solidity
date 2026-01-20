@@ -145,8 +145,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                     compiled_diagram = None
         else:
             self.print_msg(
-                f"ERROR: class_compiled_diagram not recognized: {class_compiled_diagram}")
-            self.print_msg(list(class_based_TD_translator.keys()))
+                f"class_compiled_diagram recognized: {class_compiled_diagram}")
         if compiled_diagram is None:
             classes_list = ', '.join(class_based_TD_translator.keys())
             raise Exception(
@@ -155,8 +154,6 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         content_and_filepath_to_output = class_based_TD_translator[class_compiled_diagram](
             compiled_diagram)
         # produce the output
-        print(
-            f"\n\n\n PRODUCING {len(content_and_filepath_to_output)} outputs in total")
         k_fn_e: str = self.key_filename_extension  # keep the previous value
         is_k_fn_unset = k_fn_e is None
         # add a dummy key _that just need to work_
@@ -174,7 +171,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                     else filepath
                 folder = fu.extract_folder_from_full_path(full_path)
                 self.print_msg(
-                    f"creating folder ({folder}), extracted from full_path: {full_path}")
+                    f"in class {type(self)}  with key ''{self.get_key()}'', creating folder ({folder}), extracted from full_path: {full_path}")
                 fu.check_and_make_folder(folder)
                 # update the "key_base_destination" because the superclass needs the full path "up to the filename" ...
                 additional_data[self.key_base_destination] = folder
@@ -185,7 +182,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
                 # revert the modification to key_base_destination
                 additional_data[self.key_base_destination] = provided_base_destination
             except Exception as e:
-                print(
+                self.print_error(
                     f"ERROR while outputting some Jinja compiled thing into: {filepath}")
-                print(e)
+                self.print_error(e)
         return ok
