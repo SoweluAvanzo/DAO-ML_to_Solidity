@@ -1,7 +1,20 @@
 import src.pipeline.pipeline_item as pi
+import src.postprocessing.output_preparation.compilers.solidity.compiler_solidity_base as csb
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_base as tjb
+import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+
+import src.postprocessing.model_translation.shared.templates.translation_result_template as crt
+import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
+
+import src.model.diagram_manager as dm
+import src.model.dao as d
+import src.model.committee as c
+import src.model.role as r
+import src.model.governance_area as ga
+import src.model.permission as perm
 
 import src.utilities.utils as u
+import src.utilities.errors as e_c
 
 
 """
@@ -9,7 +22,7 @@ No differences at the moment from the super (Jinja Base) class.
 """
 
 
-class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase):
+class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase, csb.CompilerSolidityBase):
     """
     It fundamentally relies on an instance of ModelToTemplateMapperBase
     """
@@ -31,6 +44,36 @@ class CompilerSolidityTemplateJinja(tjb.CompilerTemplateJinjaBase):
                                                key_template_skeleton=key_template_skeleton,
                                                printer_debug=printer_debug
                                                )
+        csb.CompilerSolidityBase.__init__(self,
+                                          pipeline_item_data,
+                                          optional_external_data=optional_external_data,
+                                          key_template_instance_data=key_template_instance_data,
+                                          printer_debug=printer_debug
+                                          )
         self.key_diagram_model = key_diagram_model
 
     #
+
+    def compile_governance_area(self, governance_area_translated: trmt.TranslatedGovernanceAreaTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        """
+        Overriding the parameter type to a Template-specific subclass
+        """
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    def compile_committee(self, committee_translated: trmt.TranslatedCommitteeTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        """
+        Overriding the parameter type to a Template-specific subclass
+        """
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    def compile_dao(self, dao_translated: trmt.TranslatedDAOTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        """
+        Overriding the parameter type to a Template-specific subclass
+        """
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    def compile_diagram(self, diagram_translated: trmt.TranslatedDiagramTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        """
+        Overriding the parameter type to a Template-specific subclass
+        """
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)

@@ -4,6 +4,19 @@ import src.postprocessing.model_translation.shared.translation_result_model as t
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.committee as c
+import src.model.governance_area as ga
+
+
+class TranslatedGovernanceAreaTemplated(crt.TranslatedSubpartTemplated, trm.TranslatedGovernanceArea):
+    def __init__(self, governance_area: ga.GovernanceArea, governance_area_specific_data: dict,
+                 voting_protocol_specific_data: dict = None,
+                 is_convertible: bool = True
+                 ):
+        crt.TranslatedSubpartTemplated.__init__(
+            self, governance_area, governance_area_specific_data, is_convertible=is_convertible)
+        trm.TranslatedGovernanceArea.__init__(
+            self, governance_area, governance_area_specific_data, is_convertible=is_convertible)
+        # TODO: (2025-01-24) WHAT TO PUT THERE? ALL PERMISSIONS (' IDs) MANAGED BY THIS G.A.?
 
 
 class TranslatedCommitteeTemplated(crt.TranslatedSubpartTemplated, trm.TranslatedCommittee):

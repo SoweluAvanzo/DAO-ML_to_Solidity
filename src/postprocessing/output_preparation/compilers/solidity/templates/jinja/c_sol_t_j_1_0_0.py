@@ -60,6 +60,27 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
     def add_template_extensions(self, fn: str):
         return f"{fn}.{consts.SOLIDITY_EXTENSION_OUTPUT}.jinja"
 
+    #
+    #
+
+    # TODO: (2025-01-24) START REFACTORING THE "compile_all_parts_as_generator" BY SPLITTING IT INTO THESE SUB-PARTS (for easier extension in subclasses)
+
+    def compile_governance_area(self, governance_area_translated: trmt.TranslatedGovernanceAreaTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    def compile_committee(self, committee_translated: trmt.TranslatedCommitteeTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    def compile_dao(self, dao_translated: trmt.TranslatedDAOTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    def compile_diagram(self, diagram_translated: trmt.TranslatedDiagramTemplated, additional_data=None) -> cgd.CompiledUnitWithID:
+        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+
+    #
+    #
+    #
+
     def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
         diagram_instance_data: conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0 = instance_data  # alias
         name = diagram_instance_data.get_name()

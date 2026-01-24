@@ -3,6 +3,19 @@ import src.postprocessing.model_translation.shared.translation_result_subpart as
 import src.model.diagram_manager as dm
 import src.model.dao as d
 import src.model.committee as c
+import src.model.governance_area as ga
+
+
+class TranslatedGovernanceArea(crsp.TranslatedSubpart):
+    def __init__(self, governance_area: ga.GovernanceArea, governance_area_specific_data: dict,
+                 is_convertible: bool = True
+                 ):
+        super().__init__(governance_area, governance_area_specific_data,
+                         is_convertible=is_convertible
+                         )
+
+    def get_specific_data_name(self):
+        return "governance_area_specific_data"
 
 
 class TranslatedCommittee(crsp.TranslatedSubpart):

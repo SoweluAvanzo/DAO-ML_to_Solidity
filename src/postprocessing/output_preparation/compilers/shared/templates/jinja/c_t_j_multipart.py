@@ -71,7 +71,7 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
 
     #
 
-    def get_all_parts_to_compile_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
+    def get_all_compiled_parts_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
         if additional_data is None:
             raise Exception(
                 f"Compile template ({self.__class__.__name__}) needs non-None additional_data (from inputs) to get stuff")
@@ -95,9 +95,10 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
             # return super(tb_m.CompilerTemplateBaseMultipart, self)
             return tb_m.CompilerTemplateBaseMultipart.compile_template(self, instance_data=diagram_instance_data, additional_data=additional_data)
         compiled: cgd.CompiledUnitWithID = None
-        for cp in self.get_all_parts_to_compile_as_generator(instance_data=diagram_instance_data, additional_data=additional_data):
+        for cp in self.get_all_compiled_parts_as_generator(instance_data=diagram_instance_data, additional_data=additional_data):
             if self.is_root_of_compilation(cp):
                 compiled = cp  # assumption: this check is True only ONE time
         if compiled is None:
-            print(f"{type(self)} returns NOTHING on compile_template")
+            self.print_error(
+                f"{type(self)} returns NOTHING on compile_template")
         return compiled
