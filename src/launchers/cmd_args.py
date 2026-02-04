@@ -11,7 +11,7 @@ import src.phases_builders.postprocessing as pb_pp
 import src.phases_builders.output as pb_o
 
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
-import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.solidity.optimized.jinja.s_t_jinja_optimized_versions as jinja_opt_versions
 import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as t_prov_by_name
@@ -429,8 +429,8 @@ def get_args(logger: u.PrinterDebug = None):
                     ppt_c.translator_solidity_subtype = trans_type_sol.TranslationTypesSolidity.OPTIMIZED.value  # by default
                 match(ppt.value):
                     case pb_pp.PostProcessingTransformation.SOLIDITY.value:
-                        if (ppt_c.version_translator is None) or (ppt_c.version_translator not in jinja_opt_versions.JinjaOptimizedVersions):
-                            ppt_c.version_translator = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
+                        if (ppt_c.version_translator is None) or (ppt_c.version_translator not in jinja_opt_versions.SolidityTranslatorJinjaOptimizedVersions):
+                            ppt_c.version_translator = jinja_opt_versions.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value
                     case pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS.value:
                         if (ppt_c.version_translator is None):
                             # currently (2025-12-18) it's not generalized (and there's just one version)

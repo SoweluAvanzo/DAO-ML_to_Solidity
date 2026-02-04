@@ -18,9 +18,13 @@ class CompiledDAOData(cumult.CompiledUnitMultipart):
     def __init__(self, id: str, compiled: dict):
         super().__init__(id, compiled)
         self.committees_by_id: dict[str, CompiledCommitteeData] = {}
+        self.governance_areas_by_id: dict[str, CompiledGovernanceAreaData] = {}
 
     def add_committee(self, committee_data: CompiledCommitteeData):
         self.committees_by_id[committee_data.id] = committee_data
+
+    def add_governance_area(self, governance_area_data: CompiledGovernanceAreaData):
+        self.governance_areas_by_id[governance_area_data.id] = governance_area_data
 
     def get_all_compiled_subparts_as_generator(self) -> Generator[cuwid.CompiledUnitWithID, None, None]:
         if (self.committees_by_id is None) or (len(self.committees_by_id) <= 0):
@@ -30,7 +34,14 @@ class CompiledDAOData(cumult.CompiledUnitMultipart):
             if committee_translated is not None:
                 yield committee_translated
                 for sp in committee_translated.get_all_compiled_subparts_as_generator():
-                    yield sp
+                    if sp is not None:
+                        yield sp
+        for governance_area_id, governance_area_translated in self.governance_areas_by_id.items():
+            if governance_area_translated is not None:
+                yield governance_area_translated
+                for sp in governance_area_translated.get_all_compiled_subparts_as_generator():
+                    if sp is not None:
+                        yield sp
 
 
 class CompiledDiagramData(cumult.CompiledUnitMultipart):

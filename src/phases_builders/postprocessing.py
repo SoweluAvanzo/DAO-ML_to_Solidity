@@ -11,7 +11,7 @@ import src.postprocessing.model_translation.model_translator_configurable as mcc
 import src.postprocessing.model_translation.translation_types as tt
 import src.postprocessing.model_translation.solidity.voting_protocols_list_loader as pi_vpll
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
-import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.solidity.optimized.jinja.s_t_jinja_optimized_versions as jinja_opt_versions
 import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as sol_test_t
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
@@ -19,6 +19,7 @@ import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as t_prov_by_name
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
 import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_sol_t_j_1_0_0 as c_sol_t_j_1_0_0
+import src.postprocessing.output_preparation.compilers.solidity.s_c_versions as s_c_vers
 import src.postprocessing.output_preparation.compilers.solidity.tests.templates.jinja.c_sol_tests_t_j as c_sol_tests_t_j
 import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j
 import src.postprocessing.output_preparation.json.model_to_json as pp_o_json
@@ -73,7 +74,7 @@ class AdditionalDataSolidity(AdditionalDataPostProcessingTemplated):
                  k_model_generator: str = None,
                  templates_provider: t_prov_by_name.TemplateProviderByName = None,
                  folder_templates: str = None,
-                 version_translator: str = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value,
+                 version_translator: str = jinja_opt_versions.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value,
                  translator_solidity_subtype: str = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value,
                  version_translation_target: str = "1.0.0"
                  ):
@@ -194,7 +195,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             "k_version_translator_sol")
         pi_version_translator_sol = pstr.PIStr(
             pi.PIData(k_version_translator_sol, None),
-            jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value if version_translator is None else version_translator
+            jinja_opt_versions.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value if version_translator is None else version_translator
         )
         k_translator_target_sol = self.new_unique_key(
             "k_translator_target_sol")
@@ -253,6 +254,7 @@ class PostProcessingFactory(pb.PipelineItemFactory):
         # ... compiler
         k_template_compiler_sol = self.new_unique_key(
             "k_template_compiler_sol")
+        # TODO: (04-02-2026) gestire le versioni del compilatore, come s_c_vers.SolidityCompilerVersions.SC_1_1_0 ... dovremmo fare un CompilerConfigurable
         template_compiler_sol = c_sol_t_j_1_0_0.CompilerSolidityTemplateJinja_1_0_0(
             pi.PIData(
                 k_template_compiler_sol,

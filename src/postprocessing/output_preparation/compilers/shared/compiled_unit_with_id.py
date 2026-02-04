@@ -1,15 +1,15 @@
 
 KEY_ID = "id"
-KEY_OUTPUT_FULL_PATH = "output_full_path"
 KEY_COMPILED = "compiled"
 
 
 class CompiledUnitWithID:
-    def __init__(self, id: str, output_full_path: str, compiled, suggested_output_folder_path_from_base: str = ""):
+    def __init__(self, id: str, compiled):
         self.id = id
-        self.output_full_path = output_full_path
         self.compiled = compiled
-        self.suggested_output_folder_path_from_base = suggested_output_folder_path_from_base
+
+    def get_id(self):
+        return self.id
 
     def get_compiled(self):
         return self.compiled

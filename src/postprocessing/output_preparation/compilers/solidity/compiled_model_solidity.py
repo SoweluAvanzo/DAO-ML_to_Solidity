@@ -6,6 +6,7 @@ import src.postprocessing.output_preparation.compilers.shared.compiled_model_dat
 # import src.postprocessing.output_preparation.compilers.shared.templates.compiled_model_data_templated as cmdt
 
 KEY_DAO_COMMITTEES = "committees"
+KEY_DAO_GOVERNANCE_AREASS = "governance_areas"
 KEY_DAOS_BY_ID = "daos_by_id"
 
 
@@ -56,6 +57,12 @@ class CompiledSolidityDAO(cmd.CompiledDAOData):
         """
         return self.committees_by_id  # dao_data[KEY_DAO_COMMITTEES]
 
+    def get_dao_governance_areas_from_data(self, dao_data: dict) -> dict[str, CompiledSolidityGovernanceArea]:
+        """
+        Overridable
+        """
+        return self.governance_areas_by_id  # dao_data[KEY_DAO_GOVERNANCE_AREASS]
+
     def get_committee_id_from_data(self, committee_data: dict):
         return typing.cast(CompiledSolidityCommittee, committee_data).get_committee_id_from_data(committee_data) \
             if isinstance(committee_data, CompiledSolidityCommittee) \
@@ -71,15 +78,31 @@ class CompiledSolidityDAO(cmd.CompiledDAOData):
             yield i_dr_cc
 
     def add_committee_data_to_dao(self, committee_data: dict):
+        """
+        Overrides the super().add_committee(committee_data)
+        """
         committees = self.get_dao_committees_from_data(self.compiled)
         c_id = self.get_committee_id_from_data(committee_data)
         committees[c_id] = committee_data
 
+    def add_governance_area_to_dao(self, governance_area_data: dict):
+        """
+        Overrides the super().add_governance_area(governance_area_data)
+        """
+        governance_areas = self.get_dao_governance_areas_from_data(
+            self.compiled)
+        c_id = self.get_governance_area_id_from_data(governance_area_data)
+        governance_areas[c_id] = governance_area_data
+
     def __tojson__(self, **kwargs):
         j = super().__tojson__()
-        j["committees"] = {
+        j[KEY_DAO_COMMITTEES] = {
             c.id: c.__tojson__() for c in self.get_dao_committees_from_data(self.compiled).values()
         }
+        j[KEY_DAO_GOVERNANCE_AREASS] = {
+            ga.id: ga.__tojson__() for ga in self.get_dao_governance_areas_from_data(self.compiled).values()
+        }
+        governance_areas
         return j
 
 

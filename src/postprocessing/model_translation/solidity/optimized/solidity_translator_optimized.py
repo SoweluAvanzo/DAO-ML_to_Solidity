@@ -1,7 +1,7 @@
 import src.pipeline.pipeline_item as pi
 # import src.postprocessing.model_conversion.solidity.model_to_solidity as mts
 import src.postprocessing.model_translation.solidity.solidity_translator_general as stg
-import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as j_o_v
+import src.postprocessing.model_translation.solidity.optimized.jinja.s_t_jinja_optimized_versions as j_o_v
 # import src.model.diagram_manager as dm
 import src.utilities.utils as u
 

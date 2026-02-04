@@ -11,7 +11,7 @@ import src.phases_builders.postprocessing as pb_pp
 import src.phases_builders.output as pb_o
 
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
-import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.solidity.optimized.jinja.s_t_jinja_optimized_versions as jinja_opt_versions
 import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as t_prov_by_name
@@ -68,7 +68,7 @@ def main():
     # .. solidity
     ppc_solidity = configs.PostprocessingConfigs()
     ppc_solidity.post_processing_transformation = pb_pp.PostProcessingTransformation.SOLIDITY
-    ppc_solidity.version_translator = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
+    ppc_solidity.version_translator = jinja_opt_versions.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value
     ppc_solidity.translator_solidity_subtype = transl_types_sol.TranslationTypesSolidity.OPTIMIZED.value
     ppc_solidity.base_template_folder = base_template_folder
     ppc_solidity.folder_voting_protocols_solidity = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
@@ -84,7 +84,7 @@ def main():
     # .. solidity hardhat tests
     ppc_solidity_hardhat_tests = configs.PostprocessingConfigs()
     ppc_solidity_hardhat_tests.post_processing_transformation = pb_pp.PostProcessingTransformation.SOLIDITY_HARDHAT_TESTS
-    ppc_solidity_hardhat_tests.version_translator = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
+    ppc_solidity_hardhat_tests.version_translator = jinja_opt_versions.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value
     ppc_solidity_hardhat_tests.base_template_folder = base_template_folder
     ppc_solidity_hardhat_tests.folder_voting_protocols_solidity = consts_t.DEFAULT_FOLDER_TEMPLATES_VOTING_PROTOCOL
     # TODO: is there a way to generalize the following?

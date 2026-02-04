@@ -1,11 +1,11 @@
 from typing import Generator
 
-import src.pipeline.pipeline_item as piì
+import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_multipart as ctj_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
-import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_solidity_t_j as tjs
-import src.postprocessing.output_preparation.compilers.solidity.templates.compiled_model_solidity_t as cmst  # TODO RIMPIAZZARE
 import src.postprocessing.output_preparation.compilers.shared.templates.compiled_model_data_templated as cmdt
+import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.c_solidity_t_j as tjs
+import src.postprocessing.output_preparation.compilers.solidity.templates.compiled_model_solidity_t as cmst
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 
 import src.postprocessing.model_translation.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as conv_sol_jinja_1_0_0
@@ -14,6 +14,9 @@ import src.postprocessing.consts_template as consts_t
 import src.files.file_utils as file_utils
 import src.utilities.constants as consts
 import src.utilities.utils as u
+
+KEY__TEMPLATE_FOLDER_PATH_BASE = "template_folder_path_base"
+KEY__DAO_FOLDER_OUTPUT_PATH = "dao_folder_output_path"
 
 
 class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj_m.CompilerTemplateJinjaMultipart):
@@ -80,7 +83,12 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
             additional_data["dao_templates_loaded_by_filename"]
         templates_loaded_by_filename_cache: dict[str, str] = \
             additional_data["templates_loaded_by_filename_cache"]
+        template_folder_path_base: str = additional_data[KEY__TEMPLATE_FOLDER_PATH_BASE]
+        dao_folder_output_path: str = additional_data[KEY__DAO_FOLDER_OUTPUT_PATH]
+        tpbn: template_provider.TemplateProviderByName = self.get_template_skeleton_provider_by_name(
 
+            additional_data)
+        #
         if committee_translated.can_be_converted():
             # lists are allowed to load sub-templates in sub-folders
             # i.e., lists are valid argument to :
@@ -115,33 +123,32 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                 committee_folder_output_path, f"{committee_translated.translated_name_output}.{consts.SOLIDITY_EXTENSION_OUTPUT}")
             compiled_committee = super().compile_single_template(
                 template_skeleton_committee, committee_translated.entity_specific_data)
+            committee_id: str = committee_translated.get_id()
             compiled_committee_struct = cmst.CompiledSolidityCommitteeTemplated(
                 committee_id, compiled_committee,
                 output_full_path=compiled_committee_fullpath
             )
-            compiled_dao_struct.add_committee_data_to_dao(
-                compiled_committee_struct)
             yield compiled_committee_struct
         else:
             print(
                 f"Can't convert COMMITTEE: {committee_id} - {committee_translated.get_name()}")
-        """
-        Overriding the parameter type to a Template-specific subclass
-        """
-        raise Exception(e_c.ERROR_TEXT__NOT_IMPLEMENTED)
+            yield None
 
     def compile_dao(self, diagram_translated: trmt.TranslatedDiagramTemplated, dao_translated: trmt.TranslatedDAOTemplated, additional_data=None) -> cmst.CompiledSolidityDAOTemplated | Generator[cmdt.CompiledWithOutputPath, None, None]:
         dao_templates_loaded_by_filename: dict[str, str] = \
             additional_data["dao_templates_loaded_by_filename"]
         templates_loaded_by_filename_cache: dict[str, str] = \
             additional_data["templates_loaded_by_filename_cache"]
-
+        tpbn: template_provider.TemplateProviderByName = self.get_template_skeleton_provider_by_name(
+            additional_data)
+        #
+        template_folder_path_base = ""
+        dao_id: str = dao_translated.get_id()
         compiled_dao_struct: cmst.CompiledSolidityDAOTemplated = None
         if dao_translated.can_be_converted():
             # get the template
             template_filename_dao_in = ""
             template_filename_dao_out = ""
-            template_folder_path_base = ""
             if isinstance(dao_translated, conv_sol_jinja_1_0_0.TranslatedDAO_Jinja_1_0_0):
                 template_filename_dao_in = dao_translated.template_filename_input
                 template_filename_dao_out = dao_translated.translated_name_output
@@ -223,19 +230,23 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
                                 filename] = compiled_thing_wrapper
                             yield compiled_thing_wrapper
                         # else:
-            compiled.add_dao(compiled_dao_struct)
-            yield compiled_dao_struct
         # else:
+        additional_data[KEY__TEMPLATE_FOLDER_PATH_BASE] = template_folder_path_base
+        additional_data[KEY__DAO_FOLDER_OUTPUT_PATH] = dao_folder_output_path
         for committee_id, committee_translated in dao_translated.committees_by_id.items():
-            compiled_committee = self.compile_committee(
-                diagram_translated, dao_translated, committee_translated,
-                additional_data=additional_data
-            )
-            if compiled_committee is not None:
-                if u.is_generator(compiled_committee):
-                    yield from compiled_committee
-                else:
-                    yield compiled_committee
+            compiled_things = self.compile_committee(diagram_translated,
+                                                     dao_translated,
+                                                     committee_translated,
+                                                     additional_data=additional_data
+                                                     )
+            if compiled_things is not None:
+                if not u.is_generator(compiled_things):
+                    compiled_things = [compiled_things]  # make it iterable
+                for compiled_part in compiled_things:
+                    if isinstance(compiled_part, cmst.CompiledSolidityCommitteeTemplated):
+                        compiled_dao_struct.add_committee_data_to_dao(
+                            compiled_part)
+                    yield compiled_part
             """
             TODO (20/10/2025)
             if isinstance(committee_translated, conv_sol_jinja_1_0_0.TranslatedCommittee_Jinja_1_0_0):
@@ -245,15 +256,23 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
         TODO (04/02/2026) - compile also the GovernanceAreas related to the DAO (if any) ... shoulw we?
         """
         for governance_area_id, governance_area_translated in dao_translated.governance_areas_by_id.items():
-            compile_governance_area(diagram_translated, dao_translated,
-                                    governance_area_translated, additional_data=additional_data)
-            if compile_governance_area is not None:
-                if u.is_generator(compile_governance_area):
-                    yield from compile_governance_area
-                else:
-                    yield compile_governance_area
-
-        # done DAO
+            compiled_things = self.compile_governance_area(diagram_translated,
+                                                           dao_translated,
+                                                           governance_area_translated,
+                                                           additional_data=additional_data
+                                                           )
+            if compiled_things is not None:
+                if not u.is_generator(compiled_things):
+                    compiled_things = [compiled_things]  # make it iterable
+                for compiled_part in compiled_things:
+                    if isinstance(compiled_part, cmst.CompiledSolidityGovernanceAreaTemplated):
+                        compiled_dao_struct.add_governance_area_to_dao(
+                            compiled_part)
+                    yield compiled_part
+        # DAO done
+        del additional_data[KEY__TEMPLATE_FOLDER_PATH_BASE]
+        del additional_data[KEY__DAO_FOLDER_OUTPUT_PATH]
+        yield compiled_dao_struct
 
     def compile_diagram(self, diagram_translated: trmt.TranslatedDiagramTemplated, additional_data=None) -> cmst.CompiledSolidityDiagramTemplated | Generator[cmdt.CompiledWithOutputPath, None, None]:
         if additional_data is None:
@@ -272,30 +291,31 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
         compiled_diagram_filename = file_utils.concat_folder_filename(
             diagram_folder_output_path, template_filename_diagram_out_ext)
         # the compiled diagram
-        compiled = cmst.CompiledSolidityDiagramTemplated(
-            diagram_instance_data.get_id(),
-            compiled=diagram_compiled,
-            output_full_path=compiled_diagram_filename,
-            can_diagram_be_compiled=False  # might change in the future
-        )
+        compiled_diagram = cmst.CompiledSolidityDiagramTemplated(diagram_instance_data.get_id(),
+                                                                 compiled=diagram_compiled,
+                                                                 output_full_path=compiled_diagram_filename,
+                                                                 can_diagram_be_compiled=False  # might change in the future
+                                                                 )
         # ... and ? let's start the DAO part
         dao_templates_loaded_by_filename: dict[str, str] = {}
         templates_loaded_by_filename_cache: dict[str, str] = {}
+        # ... prepare the additional data to pass to data required by sub-compilations
         additional_data["dao_templates_loaded_by_filename"] = dao_templates_loaded_by_filename
         additional_data["templates_loaded_by_filename_cache"] = templates_loaded_by_filename_cache
-
         # now, the CORE
         for dao_id, dao_translated in diagram_instance_data.daos_by_id.items():
-            compiled_dao = self.compile_dao(
+            compiled_things = self.compile_dao(
                 diagram_translated, dao_translated, additional_data=additional_data)
-            if compiled_dao is not None:
-                if u.is_generator(compiled_dao):
-                    yield from compiled_dao
-                else:
-                    yield compiled_dao
+            if compiled_things is not None:
+                if not u.is_generator(compiled_things):
+                    compiled_things = [compiled_things]  # make it iterable
+                for compiled_part in compiled_things:
+                    if isinstance(compiled_part, cmst.CompiledSolidityDAOTemplated):
+                        compiled_diagram.add_dao(compiled_part)
+                    yield compiled_part
         del additional_data["dao_templates_loaded_by_filename"]
         del additional_data["templates_loaded_by_filename_cache"]
-        return compiled
+        yield compiled_diagram
 
     #
     #
@@ -305,7 +325,7 @@ class CompilerSolidityTemplateJinja_1_0_0(tjs.CompilerSolidityTemplateJinja, ctj
         diagram_instance_data: conv_sol_jinja_1_0_0.TranslatedDiagram_Jinja_1_0_0 = instance_data  # alias
         if additional_data is None:
             additional_data = {}
-        compiled: cmst.CompiledSolidityDiagramTemplated = self.compile_diagram(
+        compiled: cmst.CompiledSolidityDiagramTemplated | Generator[cmdt.CompiledWithOutputPath, None, None] = self.compile_diagram(
             instance_data,
             additional_data=additional_data
         )

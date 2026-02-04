@@ -14,7 +14,7 @@ import src.postprocessing.model_translation.translation_types as ct
 import src.postprocessing.model_translation.model_translator_configurable as mcc
 import src.postprocessing.model_translation.solidity.voting_protocols_list_loader as pi_vpll
 import src.postprocessing.model_translation.solidity.translation_types_solidity as transl_types_sol
-import src.postprocessing.model_translation.solidity.optimized.jinja.jinja_optimized_versions as jinja_opt_versions
+import src.postprocessing.model_translation.solidity.optimized.jinja.s_t_jinja_optimized_versions as jinja_opt_versions
 import src.postprocessing.model_translation.solidity.tests.jinja.solidity_tests_translator_jinja_hardhat as sol_test_t
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm_versions
@@ -283,7 +283,7 @@ if __name__ == "__main__":
         pi.PIData(k_translator_type, None), translator_type)
     pm.addItem(pi_translator_type)
 
-    jinja_translator_version = jinja_opt_versions.JinjaOptimizedVersions.JO_1_0_0.value
+    jinja_translator_version = jinja_opt_versions.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value
     k_version_translator = "k_version_translator"
     pi_version_translator = pstr.PIStr(
         pi.PIData(k_version_translator, None), jinja_translator_version)

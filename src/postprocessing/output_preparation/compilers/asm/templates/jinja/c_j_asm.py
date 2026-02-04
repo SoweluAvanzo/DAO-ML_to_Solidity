@@ -60,8 +60,8 @@ class CompilerASMTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipart_Templat
         dao_id = dao_translated.get_id()
         compiled_dao_struct = cad.CompiledASM_DAO(
             dao_id,
-            name_dao,
-            compiled_dao
+            compiled_dao,
+            name_dao
         )
         return compiled_dao_struct
 
@@ -70,8 +70,8 @@ class CompilerASMTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipart_Templat
     def new_compiled_diagram(self, diagram_instance_data: trmt.TranslatedDiagramTemplated,  name_diagram: str, compiled_diagram) -> cmd.CompiledDiagramData:
         compilated = cad.CompiledASM_Diagram(
             diagram_instance_data.get_id(),
+            compiled_diagram,
             name_diagram,
-            compiled=compiled_diagram,
             can_diagram_be_compiled=False
         )
         return compilated

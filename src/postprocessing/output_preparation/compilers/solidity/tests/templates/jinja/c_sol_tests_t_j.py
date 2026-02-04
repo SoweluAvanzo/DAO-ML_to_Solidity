@@ -58,8 +58,8 @@ class CompilerSolidityTestsTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipa
         dao_id = dao_translated.get_id()
         compiled_dao_struct = c_st_data.CompiledSolidityTest_DAO(
             dao_id,
-            name_dao,
-            compiled_dao
+            compiled_dao,
+            output_full_path=name_dao,
         )
         return compiled_dao_struct
 
@@ -74,8 +74,8 @@ class CompilerSolidityTestsTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipa
     def new_compiled_diagram(self, diagram_instance_data: trmt.TranslatedDiagramTemplated,  name_diagram: str, compiled_diagram) -> cmd.CompiledDiagramData:
         compilated = c_st_data.CompiledSolidityTest_Diagram(
             diagram_instance_data.get_id(),
-            name_diagram,
-            compiled=compiled_diagram,
+            compiled_diagram,
+            output_full_path=name_diagram,
             can_diagram_be_compiled=False
         )
         return compilated

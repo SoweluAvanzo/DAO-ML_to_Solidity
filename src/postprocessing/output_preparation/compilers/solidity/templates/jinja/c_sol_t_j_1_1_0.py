@@ -14,6 +14,7 @@ import src.postprocessing.consts_template as consts_t
 import src.files.file_utils as file_utils
 import src.utilities.constants as consts
 import src.utilities.utils as u
+import src.utilities.errors as e_c
 
 
 class CompilerSolidityTemplateJinja_1_1_0(tjs_1_0_0.CompilerSolidityTemplateJinja_1_0_0):
@@ -38,3 +39,7 @@ class CompilerSolidityTemplateJinja_1_1_0(tjs_1_0_0.CompilerSolidityTemplateJinj
             key_is_result_as_list=key_is_result_as_list,
             printer_debug=printer_debug
         )
+
+    def compile_governance_area(self, diagram_translated: trmt.TranslatedDiagramTemplated, dao_translated: trmt.TranslatedDAOTemplated, governance_area_translated: trmt.TranslatedGovernanceAreaTemplated, additional_data=None) -> cmst.CompiledSolidityGovernanceAreaTemplated | Generator[cmdt.CompiledWithOutputPath, None, None]:
+        raise Exception(
+            f"ERROR: {e_c.ERROR_TEXT__NOT_IMPLEMENTED} in {self.__class__.__name__} in 04-02-2026")

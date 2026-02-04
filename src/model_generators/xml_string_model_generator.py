@@ -255,8 +255,6 @@ class XMLDAOVisitor(xmlPV.XMLParserVisitor):
             ctx.gov_area_description()[0])
         gov_area_implementation = self._text_from_node(
             ctx.gov_area_implementation()[0])
-        self.print_msg(
-            f"visitGov: gov_area_ID: {gov_area_ID} --- gov_area_description: {gov_area_description}")
         governance_area = ga.GovernanceArea(
             gov_area_ID,
             gov_area_description,
