@@ -1,5 +1,5 @@
 
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
 import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as cmd
 
 

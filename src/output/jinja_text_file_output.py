@@ -2,8 +2,8 @@ import src.pipeline.pipeline_item as pi
 
 import src.output.text_file_output as tfo
 
-import src.postprocessing.output_preparation.compilers.solidity.compiled_solidity_data as compiled_sol
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.solidity.compiled_model_solidity as compiled_sol
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
 
 import src.files.file_utils as fu
 import src.utilities.extended_enum as extended_enum
@@ -96,7 +96,7 @@ class JinjaTextFileOutput(tfo.TextFileOutput):
         def from_list(td) -> dict[str, object]:
             content_and_filepath_to_output = []
             for t in td:
-                if isinstance(t, cgd.CompiledUnitWithID):
+                if isinstance(t, cuwid.CompiledUnitWithID):
                     content_and_filepath_to_output = self.append_translated_name_output(
                         content_and_filepath_to_output,
                         t.get_compiled(),

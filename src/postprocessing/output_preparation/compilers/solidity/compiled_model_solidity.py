@@ -1,18 +1,25 @@
 import typing
 from typing import Generator
 
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
-import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as gmd
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
+import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as cmd
+# import src.postprocessing.output_preparation.compilers.shared.templates.compiled_model_data_templated as cmdt
 
 KEY_DAO_COMMITTEES = "committees"
 KEY_DAOS_BY_ID = "daos_by_id"
 
 
-class CompiledSolidityCommittee(gmd.CompiledCommitteeData):
-    def __init__(self, id: str, output_full_path: str, compiled: dict):
-        super().__init__(id, output_full_path, compiled)
+class CompiledSolidityGovernanceArea(cmd.CompiledGovernanceAreaData):
+    def __init__(self, id: str, compiled: dict):
+        super().__init__(id, compiled)
+    # TODO: (04-02-2026) altro?
+
+
+class CompiledSolidityCommittee(cmd.CompiledCommitteeData):
+    def __init__(self, id: str,  compiled: dict):
+        super().__init__(id, compiled)
         self.compiled_conditions_by_name: dict[str,
-                                               cgd.CompiledUnitWithID] = {}
+                                               cuwid.CompiledUnitWithID] = {}
 
     def get_committee_id_from_data(self, committee_data: dict) -> str:
         """
@@ -20,19 +27,19 @@ class CompiledSolidityCommittee(gmd.CompiledCommitteeData):
         """
         if isinstance(committee_data, CompiledSolidityCommittee):
             return committee_data.id
-        return committee_data[cgd.KEY_ID] if isinstance(committee_data, dict) and cgd.KEY_ID in committee_data else self.id
+        return committee_data[cuwid.KEY_ID] if isinstance(committee_data, dict) and cuwid.KEY_ID in committee_data else self.id
 
-    def get_all_compiled_subparts_as_generator(self) -> Generator[cgd.CompiledUnitWithID, None, None]:
+    def get_all_compiled_subparts_as_generator(self) -> Generator[cuwid.CompiledUnitWithID, None, None]:
         if (self.compiled_conditions_by_name is None) or (len(self.compiled_conditions_by_name) <= 0):
             yield None
         for cc in self.compiled_conditions_by_name.values():
             yield cc
 
 
-class CompiledSolidityDAO(gmd.CompiledDAOData):
-    def __init__(self, id: str, output_full_path: str, compiled: dict):
-        super().__init__(id, output_full_path, compiled)
-        self.interfaces_and_dao_related_compiled_contracts: dict[str, cgd.CompiledUnitWithID] = {
+class CompiledSolidityDAO(cmd.CompiledDAOData):
+    def __init__(self, id: str,  compiled: dict):
+        super().__init__(id, compiled)
+        self.interfaces_and_dao_related_compiled_contracts: dict[str, cuwid.CompiledUnitWithID] = {
         }
 
     def get_dao_id_from_data(self, dao_data) -> str:
@@ -41,7 +48,7 @@ class CompiledSolidityDAO(gmd.CompiledDAOData):
         """
         if isinstance(dao_data, CompiledSolidityDAO):
             return dao_data.id
-        return dao_data[cgd.KEY_ID] if isinstance(dao_data, dict) and cgd.KEY_ID in dao_data else self.id
+        return dao_data[cuwid.KEY_ID] if isinstance(dao_data, dict) and cuwid.KEY_ID in dao_data else self.id
 
     def get_dao_committees_from_data(self, dao_data: dict) -> dict[str, CompiledSolidityCommittee]:
         """
@@ -52,9 +59,9 @@ class CompiledSolidityDAO(gmd.CompiledDAOData):
     def get_committee_id_from_data(self, committee_data: dict):
         return typing.cast(CompiledSolidityCommittee, committee_data).get_committee_id_from_data(committee_data) \
             if isinstance(committee_data, CompiledSolidityCommittee) \
-            else committee_data[cgd.KEY_ID]
+            else committee_data[cuwid.KEY_ID]
 
-    def get_all_compiled_subparts_as_generator(self) -> Generator[cgd.CompiledUnitWithID, None, None]:
+    def get_all_compiled_subparts_as_generator(self) -> Generator[cuwid.CompiledUnitWithID, None, None]:
         for sp in super().get_all_compiled_subparts_as_generator():
             if sp is not None:
                 yield sp
@@ -76,9 +83,9 @@ class CompiledSolidityDAO(gmd.CompiledDAOData):
         return j
 
 
-class CompiledSolidityDiagram(gmd.CompiledDiagramData):
-    def __init__(self, id: str, output_full_path: str, compiled: dict = None, can_diagram_be_compiled=True):
-        super().__init__(id, output_full_path, compiled)
+class CompiledSolidityDiagram(cmd.CompiledDiagramData):
+    def __init__(self, id: str,  compiled: dict = None, can_diagram_be_compiled=True):
+        super().__init__(id, compiled)
         self.can_diagram_be_compiled = can_diagram_be_compiled
 
     def get_daos_compiled_by_id(self):

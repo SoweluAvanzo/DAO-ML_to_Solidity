@@ -2,7 +2,7 @@ from typing import Generator
 
 import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.compilers.shared.templates.template_base as tb
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
 
 import src.utilities.utils as u
 
@@ -19,11 +19,11 @@ class CompilerTemplateBaseMultipart(tb.TemplateBase):
                          printer_debug=printer_debug
                          )
 
-    def get_all_compiled_parts_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
+    def get_all_compiled_parts_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cuwid.CompiledUnitWithID, None, None]:
         raise Exception(
             f"ERROR: get_all_compiled_parts_as_generator not implemented yet in {self.__class__.__name__}")
 
-    def get_all_compiled_parts(self, instance_data: dict, additional_data=None) -> list[cgd.CompiledUnitWithID]:
+    def get_all_compiled_parts(self, instance_data: dict, additional_data=None) -> list[cuwid.CompiledUnitWithID]:
         return [
             p
             for p in
@@ -33,5 +33,5 @@ class CompilerTemplateBaseMultipart(tb.TemplateBase):
             )
         ]
 
-    def compile_template(self, instance_data: dict, additional_data=None) -> list[cgd.CompiledUnitWithID]:
+    def compile_template(self, instance_data: dict, additional_data=None) -> list[cuwid.CompiledUnitWithID]:
         return self.get_all_compiled_parts(instance_data=instance_data, additional_data=additional_data)

@@ -5,7 +5,7 @@ import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_base as ctjb
 import src.postprocessing.output_preparation.compilers.shared.templates.compiler_template_base_multipart as tb_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
 
 import src.postprocessing.model_translation.shared.translation_result_model as trm
 
@@ -43,10 +43,10 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
 
     # checks
 
-    def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
+    def is_root_of_compilation(self, compiled_part: cuwid.CompiledUnitWithID) -> bool:
         return False
 
-    def is_template_skeleton_provider(self, obj):
+    def is_template_skeleton_provider(self, obj) -> bool:
         return isinstance(obj, template_provider.TemplateProviderByName)
 
     def check_instance_data(self, instance_data: dict, additional_data=None):
@@ -63,7 +63,7 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
                 f"template provider by name needed, but we got: {type(tpbn)}")
         return tpbn
 
-    def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
+    def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cuwid.CompiledUnitWithID, None, None]:
         """
         Override-designed
         """
@@ -71,7 +71,7 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
 
     #
 
-    def get_all_compiled_parts_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
+    def get_all_compiled_parts_as_generator(self, instance_data: dict, additional_data=None) -> Generator[cuwid.CompiledUnitWithID, None, None]:
         if additional_data is None:
             raise Exception(
                 f"Compile template ({self.__class__.__name__}) needs non-None additional_data (from inputs) to get stuff")
@@ -94,7 +94,7 @@ class CompilerTemplateJinjaMultipart(ctjb.CompilerTemplateJinjaBase, tb_m.Compil
                 self.key_is_result_as_list in additional_data and additional_data[self.key_is_result_as_list]):
             # return super(tb_m.CompilerTemplateBaseMultipart, self)
             return tb_m.CompilerTemplateBaseMultipart.compile_template(self, instance_data=diagram_instance_data, additional_data=additional_data)
-        compiled: cgd.CompiledUnitWithID = None
+        compiled: cuwid.CompiledUnitWithID = None
         for cp in self.get_all_compiled_parts_as_generator(instance_data=diagram_instance_data, additional_data=additional_data):
             if self.is_root_of_compilation(cp):
                 compiled = cp  # assumption: this check is True only ONE time

@@ -38,6 +38,7 @@ class TranslatedDAO(crsp.TranslatedSubpart):
                          is_convertible=is_convertible
                          )
         self.committees_by_id: dict[str, TranslatedCommittee] = {}
+        self.governance_area_by_id: dict[str, TranslatedGovernanceArea] = {}
 
     def get_specific_data_name(self):
         return "dao_specific_data"
@@ -46,10 +47,16 @@ class TranslatedDAO(crsp.TranslatedSubpart):
         self.committees_by_id[committee_translated.entity.get_id(
         )] = committee_translated
 
+    def add_translated_governance_area(self, governance_area_translated: TranslatedGovernanceArea):
+        self.governance_area_by_id[governance_area_translated.entity.get_id(
+        )] = governance_area_translated
+
     def toJSON(self):
         o = super().toJSON()
         o["committees_by_id"] = {
             i: self.committees_by_id[i].toJSON() for i in self.committees_by_id.keys()}
+        o["governance_area_by_id"] = {
+            i: self.governance_area_by_id[i].toJSON() for i in self.governance_area_by_id.keys()}
         return o
 
 

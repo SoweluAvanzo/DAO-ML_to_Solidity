@@ -1,7 +1,7 @@
 
 import src.pipeline.pipeline_item as pi
 
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
 import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as cmd
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_standard_model_multipart as c_t_j_sm_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
@@ -36,7 +36,7 @@ class CompilerSolidityTestsTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipa
     def get_compiled_file_extension(self) -> str:
         return consts_t.TESTS_FILE_EXTENSION
 
-    def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
+    def is_root_of_compilation(self, compiled_part: cuwid.CompiledUnitWithID):
         return isinstance(compiled_part, c_st_data.CompiledSolidityTest_Diagram)
 
     #

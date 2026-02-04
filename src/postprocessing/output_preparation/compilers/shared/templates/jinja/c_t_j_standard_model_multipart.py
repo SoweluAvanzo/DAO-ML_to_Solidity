@@ -4,7 +4,7 @@ import src.pipeline.pipeline_item as pi
 
 import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_t_j_multipart as ctj_m
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
 import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as cmd
 
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
@@ -186,7 +186,7 @@ class CompilerStandardModelMultipart_TemplateJinja(ctj_m.CompilerTemplateJinjaMu
 #
 #
 
-    def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cgd.CompiledUnitWithID, None, None]:
+    def compile_all_parts_as_generator(self, instance_data: dict, tpbn: template_provider.TemplateProviderByName, additional_data=None) -> Generator[cuwid.CompiledUnitWithID, None, None]:
         """
         This default implementation
         """

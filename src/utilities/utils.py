@@ -1,5 +1,7 @@
 import regex as re
 import src.files.file_utils as fu
+import types
+from typing import Generator
 
 
 def is_string_or_list(t):
@@ -9,6 +11,12 @@ def is_string_or_list(t):
         return False
     else:
         return None
+
+
+def is_generator(obj):
+    t = type(obj)
+    return isinstance(obj, Generator) or t == Generator or \
+        isinstance(obj, types.GeneratorType) or t == types.GeneratorType
 
 
 def to_camel_case(s: str) -> str:

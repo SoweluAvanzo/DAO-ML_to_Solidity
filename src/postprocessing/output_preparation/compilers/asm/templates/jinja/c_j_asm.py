@@ -4,7 +4,7 @@ import src.postprocessing.output_preparation.compilers.shared.templates.jinja.c_
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as template_provider
 import src.postprocessing.output_preparation.compilers.asm.templates.compiled_asm_data as cad
 # import src.postprocessing.model_translation.shared.templates.conversion_result_template as crt
-import src.postprocessing.output_preparation.compilers.shared.compiled_generic_data as cgd
+import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with_id as cuwid
 import src.postprocessing.output_preparation.compilers.shared.compiled_model_data as cmd
 
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
@@ -38,7 +38,7 @@ class CompilerASMTemplateJinja(c_t_j_sm_m.CompilerStandardModelMultipart_Templat
     def get_compiled_file_extension(self) -> str:
         return consts_t.ASM_FILE_EXTENSION
 
-    def is_root_of_compilation(self, compiled_part: cgd.CompiledUnitWithID):
+    def is_root_of_compilation(self, compiled_part: cuwid.CompiledUnitWithID):
         return isinstance(compiled_part, cad.CompiledASM_Diagram)
 
     #
