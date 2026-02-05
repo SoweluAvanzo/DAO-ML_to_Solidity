@@ -15,6 +15,7 @@ class SolidityTranslatorOptimizedConfigurable(stc.SolidityTranslatorConfigurable
                  key_translator_type: str = None,
                  key_translator_version: str = None,
                  key_translator_target: str = None,
+                 key_force_governance_area_split: str = None,
                  printer_debug: u.PrinterDebug = None
                  ):
         """
@@ -27,11 +28,12 @@ class SolidityTranslatorOptimizedConfigurable(stc.SolidityTranslatorConfigurable
                          key_translator_version=key_translator_version,
                          key_translator_target=key_translator_target,
                          key_translator_solidity_subtype=None,
+                         key_force_governance_area_split=key_force_governance_area_split,
                          printer_debug=printer_debug
                          )
 
     def get_default_translator_version(self, translator_type: str, additional_data: dict = None) -> str:
-        return j_o_v.JinjaOptimizedVersions.JO_1_0_0.value
+        return j_o_v.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value
 
     def get_default_translator_target(self, translator_type: str, translator_version: str, additional_data: dict = None) -> str:
         return toj_1_0_0.VERSION
@@ -41,13 +43,14 @@ class SolidityTranslatorOptimizedConfigurable(stc.SolidityTranslatorConfigurable
             f"in {type(self)}, called new_subclass_instance with translator_version = {translator_version}")
         translator_instance = None
         match translator_version:
-            case j_o_v.JinjaOptimizedVersions.JO_1_0_0.value:
+            case j_o_v.SolidityTranslatorJinjaOptimizedVersions.JO_1_0_0.value:
                 translator_instance = toj_1_0_0.SolidityTranslatorOptimizedJinja_1_0_0(
                     self.get_pipeline_item_data(),
-                    self.key_model,
-                    self.key_translator_type,
-                    self.key_translator_version,
-                    self.key_translator_target,
+                    key_model=self.key_model,
+                    key_translator_type=self.key_translator_type,
+                    key_translator_version=self.key_translator_version,
+                    key_translator_target=self.key_translator_target,
+                    key_force_governance_area_split=self.key_force_governance_area_split,
                     printer_debug=self.printer_debug
                 )
             case _:

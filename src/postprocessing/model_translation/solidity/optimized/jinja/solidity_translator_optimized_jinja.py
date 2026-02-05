@@ -14,13 +14,15 @@ class SolidityTranslatorOptimizedJinja(sol_transl_opt.SolidityTranslatorOptimize
                  key_translator_type: str = None,
                  key_translator_version: str = None,
                  key_translator_target: str = None,
+                 key_force_governance_area_split: str = None,
                  printer_debug: u.PrinterDebug = None
                  ):
         super().__init__(
             pipeline_item_data,
-            key_model,
-            key_translator_type,
-            key_translator_version,
-            key_translator_target,
+            key_model=key_model,
+            key_translator_type=key_translator_type,
+            key_translator_version=key_translator_version,
+            key_translator_target=key_translator_target,
+            key_force_governance_area_split=key_force_governance_area_split,
             printer_debug=printer_debug
         )

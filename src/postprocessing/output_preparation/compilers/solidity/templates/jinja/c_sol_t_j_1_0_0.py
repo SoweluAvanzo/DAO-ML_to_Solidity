@@ -14,6 +14,7 @@ import src.postprocessing.consts_template as consts_t
 import src.files.file_utils as file_utils
 import src.utilities.constants as consts
 import src.utilities.utils as u
+import src.utilities.errors as e_c
 
 KEY__TEMPLATE_FOLDER_PATH_BASE = "template_folder_path_base"
 KEY__DAO_FOLDER_OUTPUT_PATH = "dao_folder_output_path"

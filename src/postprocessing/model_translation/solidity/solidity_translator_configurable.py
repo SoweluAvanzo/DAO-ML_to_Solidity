@@ -20,6 +20,7 @@ class SolidityTranslatorConfigurable(mcc.ModelTranslatorConfigurable):
                  key_translator_version: str = None,
                  key_translator_target: str = None,
                  key_translator_solidity_subtype: str = None,
+                 key_force_governance_area_split: str = None,
                  printer_debug: u.PrinterDebug = None
                  ):
         super().__init__(pipeline_item_data, key_model,
@@ -29,6 +30,7 @@ class SolidityTranslatorConfigurable(mcc.ModelTranslatorConfigurable):
                          printer_debug=printer_debug
                          )
         self.key_translator_solidity_subtype = key_translator_solidity_subtype
+        self.key_force_governance_area_split = key_force_governance_area_split
 
     def get_default_translator_solidity_subtype(self, additional_data: dict = None) -> str:
         """
