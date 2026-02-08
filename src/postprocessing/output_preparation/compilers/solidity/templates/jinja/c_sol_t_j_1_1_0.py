@@ -18,6 +18,10 @@ import src.utilities.errors as e_c
 
 
 class CompilerSolidityTemplateJinja_1_1_0(tjs_1_0_0.CompilerSolidityTemplateJinja_1_0_0):
+    """
+    (05-02-2026) deprecated
+    """
+
     def __init__(self, pipeline_item_data: pi.PIData,
                  optional_external_data=None,
                  key_diagram_instance_data: str = None,
@@ -42,4 +46,4 @@ class CompilerSolidityTemplateJinja_1_1_0(tjs_1_0_0.CompilerSolidityTemplateJinj
 
     def compile_governance_area(self, diagram_translated: trmt.TranslatedDiagramTemplated, dao_translated: trmt.TranslatedDAOTemplated, governance_area_translated: trmt.TranslatedGovernanceAreaTemplated, additional_data=None) -> cmst.CompiledSolidityGovernanceAreaTemplated | Generator[cmdt.CompiledWithOutputPath, None, None]:
         raise Exception(
-            f"ERROR: {e_c.ERROR_TEXT__NOT_IMPLEMENTED} in {self.__class__.__name__} in 04-02-2026")
+            f"ERROR: {e_c.ERROR_TEXT__NOT_IMPLEMENTED} in {self.__class__.__name__} in 04-02-2026. It should be, but it's probably already implemented in the parent class. Check the parent class for implementation. If it's not implemented there, implement it here.")

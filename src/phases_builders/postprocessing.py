@@ -216,6 +216,8 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             folder_voting_protocols=folder_voting_protocols
         )
 
+        # TODO  usare "SolidityTranslatorConfiguration" per definire VARIE cose
+
         # ... prepare the list of dependencies for the translator
         k_translator_sol = self.new_unique_key("k_translator_sol")
         translator_deps = [

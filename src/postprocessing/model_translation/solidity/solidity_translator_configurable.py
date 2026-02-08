@@ -1,5 +1,7 @@
 import src.pipeline.pipeline_item as pi
+
 import src.model.diagram_manager as dm
+
 import src.postprocessing.model_translation.shared.model_translator_base as mcb
 import src.postprocessing.model_translation.model_translator_configurable as mcc
 import src.postprocessing.model_translation.solidity.translation_types_solidity as tts
