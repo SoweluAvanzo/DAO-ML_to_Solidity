@@ -10,7 +10,7 @@ import src.phases_builders.output as pb_o
 
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as t_prov_by_name
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 
 # import src.launchers.cmd_args as cmd_args
 import src.configurations as configs

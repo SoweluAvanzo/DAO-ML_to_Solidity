@@ -15,7 +15,7 @@ import src.postprocessing.output_preparation.compilers.shared.templates.jinja as
 JINJA_TEMPLATE_NAME = "test_jinja"
 JINJA_TEMPLATE_EXTENSION = "jinja"
 JINJA_TEMPLATE_FILEPATH = files.concat_folder_filename(
-    ".", "Templates", "test_scripts", f"{JINJA_TEMPLATE_NAME}.{JINJA_TEMPLATE_EXTENSION}")
+    ".", "Templates", "tests_sol", f"{JINJA_TEMPLATE_NAME}.{JINJA_TEMPLATE_EXTENSION}")
 
 OUTPUT_COMPILED = files.concat_folder_filename(
     ".", "outputs", f"{JINJA_TEMPLATE_NAME}.compiled")

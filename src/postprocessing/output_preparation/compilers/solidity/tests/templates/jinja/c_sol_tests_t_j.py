@@ -10,7 +10,7 @@ import src.postprocessing.output_preparation.compilers.solidity.tests.compiled_s
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.solidity.tests.solidity_tests_translator as st_t
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 
 
 """

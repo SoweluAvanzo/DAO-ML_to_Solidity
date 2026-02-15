@@ -25,7 +25,7 @@ import src.postprocessing.output_preparation.compilers.solidity.templates.jinja.
 import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_asm as c_asm_t_j
 import src.postprocessing.output_preparation.compilers.solidity.tests.templates.jinja.c_sol_tests_t_j as c_sol_tests_t_j
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 
 import src.pipeline.utilities.pi_printer as pri
 import src.pipeline.utilities.pi_str as pstr

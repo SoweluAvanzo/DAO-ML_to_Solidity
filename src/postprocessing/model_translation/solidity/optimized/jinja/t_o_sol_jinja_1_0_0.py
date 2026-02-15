@@ -17,7 +17,7 @@ import src.model.committee as c
 # import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 import src.model.enums.relation_type as rt
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 import src.utilities.utils as u
 import src.utilities.constants as consts
 import src.files.file_utils as fu

@@ -16,7 +16,7 @@ import src.postprocessing.model_translation.asm.translator_asm_versions as t_asm
 import src.postprocessing.model_translation.asm.t_j_asm_1_0_0 as t_j_asm_1_0_0
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.template_provider_by_name as t_prov_by_name
 import src.postprocessing.output_preparation.compilers.shared.templates.template_providers.tpbn_txt_file as template_by_name_txt
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 
 import src.files.file_utils as files
 import src.utilities.logger_debug as logger_debug

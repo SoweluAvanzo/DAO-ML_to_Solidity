@@ -1,7 +1,7 @@
 import src.pipeline.pipeline_item as pi
 
 import src.postprocessing.model_translation.asm.t_j_asm as t_j_asm_base
-import src.postprocessing.consts_template as c_t
+import src.postprocessing.consts as c_t
 
 import src.model.dao as dao_m
 import src.model.diagram_manager as diagram_manager_m

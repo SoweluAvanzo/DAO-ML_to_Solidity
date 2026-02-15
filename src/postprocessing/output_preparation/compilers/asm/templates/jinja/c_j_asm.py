@@ -10,7 +10,7 @@ import src.postprocessing.output_preparation.compilers.shared.compiled_model_dat
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.asm.t_j_asm as t_j_asm
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 
 """
 No differences at the moment from the super (Jinja Base) class.

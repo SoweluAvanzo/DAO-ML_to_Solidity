@@ -5,7 +5,7 @@ import src.postprocessing.model_translation.shared.model_translator_subparts as 
 import src.postprocessing.model_translation.shared.translation_result_base as crb
 import src.postprocessing.model_translation.shared.templates.translation_result_model_templated as trmt
 import src.postprocessing.model_translation.shared.translation_result_model as trm
-import src.postprocessing.consts_template as c_t
+import src.postprocessing.consts as c_t
 
 import src.model.dao as dao_m
 import src.model.diagram_manager as diagram_manager_m

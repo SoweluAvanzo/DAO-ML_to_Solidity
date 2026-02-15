@@ -2,7 +2,7 @@ from jinja2 import Template
 
 import src.pipeline.pipeline_item as pi
 import src.postprocessing.output_preparation.compilers.shared.templates.template_base as tb
-import src.postprocessing.consts_template as const_t
+import src.postprocessing.consts as const_t
 
 import src.utilities.utils as u
 

@@ -1,6 +1,6 @@
 import src.pipeline.pipeline_item as pi
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 
 import src.files.file_utils as files
 import src.utilities.utils as u

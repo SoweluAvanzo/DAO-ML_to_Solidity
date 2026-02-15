@@ -10,7 +10,7 @@ import src.postprocessing.model_translation.shared.templates.translation_result_
 
 import src.postprocessing.model_translation.solidity.optimized.jinja.t_o_sol_jinja_1_0_0 as conv_sol_jinja_1_0_0
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 import src.files.file_utils as file_utils
 import src.utilities.constants as consts
 import src.utilities.utils as u

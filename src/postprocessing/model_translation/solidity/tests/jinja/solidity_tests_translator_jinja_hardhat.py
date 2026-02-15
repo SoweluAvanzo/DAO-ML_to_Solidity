@@ -11,7 +11,7 @@ import src.model.permission as p
 import src.model.enums.user_functionalities_group_size as user_functionalities_group_size_module
 import src.model.enums.entity_type_controllable as entity_type_controllable
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 
 import src.files.file_utils as fu
 

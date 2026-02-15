@@ -25,7 +25,7 @@ import src.postprocessing.output_preparation.compilers.asm.templates.jinja.c_j_a
 import src.postprocessing.output_preparation.json.model_to_json as pp_o_json
 
 
-import src.postprocessing.consts_template as consts_t
+import src.postprocessing.consts as consts_t
 import src.utilities.utils as u
 import src.utilities.errors as e_c
 
@@ -217,6 +217,11 @@ class PostProcessingFactory(pb.PipelineItemFactory):
         )
 
         # TODO  usare "SolidityTranslatorConfiguration" per definire VARIE cose
+        additional_data_for_translator = {
+
+            # TODO additional_data_for_translator
+            "key_governance_area_split_configuration": None
+        }
 
         # ... prepare the list of dependencies for the translator
         k_translator_sol = self.new_unique_key("k_translator_sol")
@@ -229,7 +234,8 @@ class PostProcessingFactory(pb.PipelineItemFactory):
             key_translator_type=k_translator_type_sol,
             key_translator_version=k_version_translator_sol,
             key_translator_target=k_translator_target_sol,
-            printer_debug=self.printer_debug
+            printer_debug=self.printer_debug,
+            additional_data=additional_data_for_translator
         )
 
         # ... templates_provider management

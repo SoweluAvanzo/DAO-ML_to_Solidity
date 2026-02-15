@@ -9,7 +9,7 @@ import src.postprocessing.output_preparation.compilers.shared.compiled_unit_with
 import src.postprocessing.output_preparation.compilers.shared.templates.template_base as tb
 import src.postprocessing.output_preparation.compilers.solidity.compiled_model_solidity as cms
 
-import src.postprocessing.consts_template as const_t
+import src.postprocessing.consts as const_t
 import src.utilities.utils as u
 
 
