@@ -8,6 +8,10 @@ import src.utilities.utils as u
 
 
 class CompilerTemplateBaseMultipart(tb.TemplateBase):
+    """
+    Defines a compiler that produces multiple files as a list as part of its output ("compile_template").
+    """
+
     def __init__(self, pipeline_item_data: pi.PIData,
                  optional_external_data=None,
                  key_template_instance_data: str = None,

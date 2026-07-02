@@ -6,17 +6,23 @@ class TemplateProviderByName:
     Could be a file reader (like "src.output.JinjaTextFileOutput", or a "src.input.TextFileInput"), a thing returning 
     the template skeleton as a string (or array of string), a DataBase connection, an API call, ...
     """
+
     def __init__(self, delegator=None):
         self.delegator = delegator
 
-    def actual__provide_template_skeleton_by_name(self, template_name):
-        raise Exception("actual__provide_template_skeleton_by_name Not implemented yet")
+    def actual__provide_template_skeleton_by_name(self, template_name: str):
+        """
+        Fetches the template content (the skeleton), depending on the actual implementation,
+        by the provided name.
+        """
+        raise Exception(
+            "actual__provide_template_skeleton_by_name Not implemented yet")
 
-    def provide_template_skeleton_by_name(self, template_name):
+    def provide_template_skeleton_by_name(self, template_name: str):
         if self.delegator is not None:
             if isinstance(self.delegator, TemplateProviderByName):
                 return self.delegator.provide_template_skeleton_by_name(template_name)
         return self.actual__provide_template_skeleton_by_name(template_name)
 
-    def __call__(self, template_name:str):
+    def __call__(self, template_name: str):
         return self.provide_template_skeleton_by_name(template_name)
