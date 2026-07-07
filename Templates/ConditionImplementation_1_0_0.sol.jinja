@@ -1,0 +1,12 @@
+// SPDX-License-Identifier: MIT
+pragma solidity {{solidity_version}};
+
+import "../interfaces/ICondition.sol";
+
+contract {{condition_name}}Condition is ICondition {
+    function evaluate(address user) external view override returns (bool) {
+        {{condition_logic}} 
+        
+        return {{return_value}}; 
+    }
+}

@@ -1,0 +1,15 @@
+{# TODO: dummy template, just for demonstration #}
+    
+        function set_asdfg(address user, bool is_enabled, int something_else){{"{"}}
+            require(user_asdfg[user] == Asdfg(0), "user already set");
+
+            user_asdfg[user] = Asdfg(user, is_enabled, something_else);
+
+            emit AsdfgSet(user, is_enabled, something_else);
+        {{"}"}}
+        
+
+        function can_asdfg(address user) external can_asdfg(msg.sender, user) {{"{"}}
+            ;
+        {{"}"}}
+

@@ -1,0 +1,36 @@
+import src.pipeline.pipeline_item as pi
+import src.utilities.utils as u
+
+
+class InputBase(pi.PipelineItem):
+    def __init__(self, pipeline_item_data: pi.PIData,
+                 printer_debug: u.PrinterDebug = None
+                 ):
+        super().__init__(
+            pipeline_item_data,
+            printer_debug=printer_debug
+        )
+        self.inputs_from_run = None
+
+    def get_input_as_iterable(self):
+        '''
+        Returns the input as a stream, an iterable of strings
+        '''
+        return None
+
+    def get_input(self) -> list:
+        '''
+        Returns a list of data to be taken as input (or, similarly, an iterable).
+        Each row should be a String.
+        Could consume the result from #get_input_as_iterable(self) 
+        '''
+        input_iterable = self.get_input_as_iterable()
+        if input_iterable is None:
+            return None
+        return [x for x in input_iterable]
+
+    def run(self, inputs: dict) -> any:
+        self.inputs_from_run = inputs
+        input_got = self.get_input()
+        self.inputs_from_run = None
+        return input_got

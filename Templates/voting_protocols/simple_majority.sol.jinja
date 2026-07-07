@@ -3,23 +3,28 @@ pragma solidity {{solidity_version}};
 
 // @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
 
-{% for import in imports %}
-{{ import }}
-{% endfor %}
+{% if is_custom %}
+import "@openzeppelin/contracts/governance/Governor.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "./interfaces/IPermissionManager.sol";
+{% endif %}
 
 contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction{{inherited_contracts}} {
     
     // State variables
-    {{state_var_declarations}}
+    { % if is_custom % }IPermissionManager public permissionManager;{% endif %}
 
     // Constructor
-    constructor(IVotes _token{{constructor_parameters}})
+    constructor(IVotes _token{ % if is_custom % }, {% for param in constructor_parameters%}{% if loop.index0 != 0 %}, {% endif %}{{param.param_type}} {{param.param_name}}{% endfor %} {% endif %})
         Governor("{{contract_name}}")
         GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(0)
     {
-        {{constructor_actions}}
+        { % if is_custom % }permissionManager = IPermissionManager(_permissionManager);{% endif %}
     }
 
     function castVote(uint256 proposalId, uint8 support)
@@ -27,7 +32,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple
         override
         returns (uint256)
     {
-        {{vote_requirement}}
+        { % if is_custom % }{% if optimized %}require(permissionManager.canVote(msg.sender, {{voting_permission_index}}), "User cannot vote");{% else %}require(permissionManager.isCommitteeMember(msg.sender, {{voting_permission_index}})==1, "User cannot vote");{% endif %}{% endif %}
         return super.castVote(proposalId, support);
     }
 
@@ -37,7 +42,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple
         override
         returns (uint256)
     {
-        {{proposal_requirement}}
+        { % if is_custom % }{% if optimized %}require(permissionManager.canPropose(msg.sender, {{proposal_permission_index}}), "User cannot propose");{% else %}require(permissionManager.isCommitteeMember(msg.sender, {{proposal_permission_index}})==2, "User cannot propose");{% endif %}{% endif %}
         return super.propose(targets, values, calldatas, description);
     }
 

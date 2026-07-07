@@ -89,13 +89,13 @@ class SimpleSolidityTranslator(Translator):
             for role in self.context.dao.roles.values():   
                 lines.append(f"    uint {role.role_name} = {i};")
                 self.role_to_final_index[role.role_id] = i
-                self.context.entity_to_data[role.role_id] = newEntityData(final_id=role.role_id, name=role.role_name, index=i, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE)
+                self.context.entity_to_data[role.role_id] = newEntityData(final_id=role.role_id, name=role.role_name, index=i, original_id=role.role_id, entity_type=EntityTypeControllable.ROLE.value)
                 i+=1
             lines.append(f"// committee declarations")
             
             for committee in self.context.dao.committees.values():
                 lines.append(f"    uint {committee.committee_description} = {i};")
-                self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=committee.committee_id, name=committee.committee_description, index=i, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
+                self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=committee.committee_id, name=committee.committee_description, index=i, original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE.value)
                 #new committee permission indices insertion, which is used in the generation of the committee for handling the membership logic.
                 self.committee_permission_indices[committee.committee_description] = i
                 self.role_to_final_index[committee.committee_id] = i
@@ -127,13 +127,13 @@ class SimpleSolidityTranslator(Translator):
                         if role.role_name not in topological_order:
                             indexes[role.role_name] = x
                             self.role_to_final_index[role.role_id] = x
-                            self.context.entity_to_data[role.role_id] = newEntityData(final_id=role.role_id, name=role.role_name, index=indexes[role.role_id], original_id=role.role_id, entity_type=EntityTypeControllable.ROLE)
+                            self.context.entity_to_data[role.role_id] = newEntityData(final_id=role.role_id, name=role.role_name, index=indexes[role.role_id], original_id=role.role_id, entity_type=EntityTypeControllable.ROLE.value)
                             x+=1
                     for committee in self.context.dao.committees.values():
                         if committee.committee_description not in topological_order:
                             indexes[committee.committee_description] = x
                             self.role_to_final_index[committee.committee_id] = x
-                            self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=committee.committee_id, name=committee.committee_description, index=indexes[committee.committee_id], original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE)
+                            self.context.entity_to_data[committee.committee_id] = newEntityData(final_id=committee.committee_id, name=committee.committee_description, index=indexes[committee.committee_id], original_id=committee.committee_id, entity_type=EntityTypeControllable.COMMITTEE.value)
                             x+=1
                     
                     top_indexes = {node: i+x for i, node in enumerate(topological_order)}

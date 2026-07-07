@@ -3,14 +3,19 @@ pragma solidity {{solidity_version}};
 
 // @title {{contract_name}} in {{dao_name}}, using the {{decision_making_method_name}} protocol
 
-{% for import in imports %}
-{{ import }}
-{% endfor %}
+{% if is_custom %}
+import "@openzeppelin/contracts/governance/Governor.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import "./interfaces/IPermissionManager.sol";
+{% endif %}
 
 contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction{{inherited_contracts}} {
 
     // State variables
-    {{state_var_declarations}}
+    { % if is_custom % }IPermissionManager public permissionManager;{% endif %}
 
     struct Proposal {
         bool challenged;
@@ -24,7 +29,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple
     mapping(uint256 => Proposal) public proposals; // Tracking the status of each proposal
     mapping(uint256 => mapping(address => uint256)) public stakers; // Tracking stakers for each proposal
 
-    constructor(IVotes _token{{constructor_parameters}}, uint256 _challengePeriod, uint256 _requiredStake)
+    constructor(IVotes _token{ % if is_custom % }, {% for param in constructor_parameters%}{% if loop.index0 != 0 %}, {% endif %}{{param.param_type}} {{param.param_name}}{% endfor %} {% endif %}, uint256 _challengePeriod, uint256 _requiredStake)
         Governor("{{contract_name}}")
         GovernorSettings(7200 /* 1 day */, 50400 /* 1 week */, 0)
         GovernorVotes(_token)
@@ -32,7 +37,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple
     {
         challengePeriod = _challengePeriod; // Set the challenge period duration
         requiredStake = _requiredStake; // Set the minimum stake required
-        {{constructor_actions}}
+        { % if is_custom % }permissionManager = IPermissionManager(_permissionManager);{% endif %}
     }
 
     // Propose a new governance action
@@ -99,7 +104,7 @@ contract {{contract_name}} is Governor, GovernorSettings, GovernorCountingSimple
     {
         Proposal storage proposal = proposals[proposalId];
         require(proposal.challenged, "Cannot vote on an unchallenged proposal");
-        {{vote_requirement}}
+        { % if is_custom % }{% if optimized %}require(permissionManager.canVote(msg.sender, {{voting_permission_index}}), "User cannot vote");{% else %}require(permissionManager.isCommitteeMember(msg.sender, {{voting_permission_index}})==1, "User cannot vote");{% endif %}{% endif %}
         return super.castVote(proposalId, support);
     }
 
