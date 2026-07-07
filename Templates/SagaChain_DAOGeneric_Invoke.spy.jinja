@@ -1,0 +1,51 @@
+# {{ dao_name if dao_name is defined else 'SagaChain DAO' }} - generic follow-on invocation script
+#
+# Rendered by Templates/SagaChain_DAOGeneric_Invoke.spy.jinja
+#
+# THIS IS A SAGAPYTHON TRANSACTION SCRIPT, NOT PLAIN PYTHON (see the header comment of
+# Templates/SagaChain_DAOGeneric_Deploy.spy.jinja and Templates/SagaChain_DAOGeneric_Explanation.md
+# for the full explanation). It cannot be run with `python this_file.spy` or imported.
+#
+# One generic script covers every DAO interaction (assign_role, grant_permission,
+# propose_change_request, vote_change_request, finalize_change_request,
+# execute_algorithm, ...) instead of one near-duplicate script per method, matching the
+# "load an existing object by LOID, then call a method on it" pattern demonstrated in
+# sagapython/product/testtransactionscripts/classassetupdate.py and newownedobject.py:
+#   objloid = LOID(<hex/base64 LOID string>)
+#   objvar = ClsObjVar(objloid)
+#   objvar.SomeMethod(args...)
+#
+# Fill in target_object_loid / target_method / target_args at render time:
+#   - target_object_loid: the LOID string (as logged by the Deploy script, e.g. the "dao"
+#     object's LOID for assign_role/grant_permission/initialize_committees/has_permission,
+#     or one of the "asset_N" LOIDs for propose_change_request/vote_change_request/
+#     finalize_change_request/execute_algorithm).
+#   - target_method: the method name to call on that object, e.g. "assign_role".
+#   - target_args: a list of strings, each a valid Python literal expression for one
+#     positional argument, e.g. ['"alice"', '"bob"', '64']. This template only fills them
+#     in verbatim - it has no way to know your runtime values or their Python repr itself.
+
+
+def __hdr():
+    hdr = {
+        'accts': CMIConst.SPSystemAccount,
+        'seq': {{ sagapython_sequence_number if sagapython_sequence_number is defined else 1001 }},
+        'maxGU': 10,
+        'feePerGU': 1,
+        'extraPerGU': 2
+    }
+    return hdr
+
+
+def __body():
+    target_loid = LOID("{{ target_object_loid if target_object_loid is defined else 'REPLACE_WITH_TARGET_OBJECT_LOID' }}")
+    target_obj = ClsObjVar(target_loid)
+
+    result = target_obj.{{ target_method if target_method is defined else 'REPLACE_WITH_METHOD_NAME' }}(
+{% for arg in (target_args if target_args is defined else []) %}
+        {{ arg }}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+    )
+    Log("{{ target_method if target_method is defined else 'REPLACE_WITH_METHOD_NAME' }} result: ", result)
+    return True

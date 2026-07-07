@@ -1,0 +1,428 @@
+# {{ dao_name }} - SagaChain deployment transaction script
+# {{ mission_statement }}
+#
+# Rendered by Templates/SagaChain_DAOGeneric_Deploy.spy.jinja
+#
+# THIS IS A SAGAPYTHON TRANSACTION SCRIPT, NOT PLAIN PYTHON.
+# It follows the __hdr()/__CMIClasses()/__body() contract that SagaPython's spexec.py
+# extracts, recompiles, and exec()s separately with CMI-injected globals (SagaClass,
+# SagaMethod, SagaField, CMIConst, SPDecConst, ClsObjVar, LOID, Log, ...). It cannot be
+# run with `python this_file.spy` or imported - it only means something after being
+# signed (`spclient`) and executed (`sptransactionexecutor`) against a SagaPython
+# object-state database. See Templates/SagaChain_DAOGeneric_Explanation.md for the full
+# rationale, the concept-mapping table, and - importantly - the caveats: this variant
+# has NOT been executed or validated against the real CMI loader (no Docker/LevelDB/
+# signing toolchain available here, and upstream's own README says direct access isn't
+# currently enabled).
+#
+# All small integer constants below (bit widths, masks, entity counts, packed role/
+# committee ids, permission indices) are inlined as literals at render time, rather than
+# stored as shared class-level constants or read via closures - SagaPython persists and
+# re-executes each @SagaMethod's source independently (per sagapython/product/CMIClass.py
+# ClassTableEntry.DoMethod), so nothing guarantees a closure over an outer scope, or a
+# plain (non-SagaField) class attribute, survives into that later, separate exec().
+
+
+def __hdr():
+    hdr = {
+        'accts': CMIConst.SPSystemAccount,
+        'seq': {{ sagapython_sequence_number if sagapython_sequence_number is defined else 1000 }},
+        'maxGU': 10,
+        'feePerGU': 1,
+        'extraPerGU': 2
+    }
+    return hdr
+
+
+def __CMIClasses():
+
+    # SagaChain Sec. 5.1/5.3: the DAO itself is a first-class SagaOS object. Its `roles`
+    # field is a SagaChain ClassReferenceAsset-style mapping (Sec. 5.5): account -> packed
+    # role/committee id (index in the low {{ control_relation_id_bit_size }} bits, control
+    # bitmask in the remaining high bits) - same encoding as both the Solidity and the
+    # standalone-Python SagaChain templates in this project, for cross-target consistency.
+    @SagaClass(CMIConst.SPClassObject)
+    class {{ dao_name }}:
+        roles = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        role_permissions = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        committee_initialization_blocked = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=bool)
+
+        @SagaMethod()
+        def __init__(self, owner: str):
+            self.roles = {}
+            self.role_permissions = {}
+            self.committee_initialization_blocked = False
+{% for ep in entities_permissions %}
+            self.role_permissions[{{ ep.index_entity_in_dao }}] = {{ ep.bitflag }}  # #{{ loop.index0 }}) {{ ep.entity_name }}
+{% endfor %}
+{% if dao_owner %}
+            self.roles[owner] = {{ (roles_computed_data.values() | list)[roles|length - 1].final_id }}  # {{ dao_name }}Owner
+{% endif %}
+
+        @SagaMethod()
+        def initialize_committees(self, sender: str{% for c in committees_names_list %}, {{ space_to_underscore_fn(c) }}: str{% endfor %}):
+            if self.roles.get(sender, 0) != {{ (roles_computed_data.values() | list)[roles|length - 1].final_id }}:
+                raise RuntimeError("Only the owner can initialize the Dao")
+{% if committees_names_list|length > 0 %}
+            if self.committee_initialization_blocked:
+                raise RuntimeError("Invalid committee initialization")
+{% for committee_id, committee_data in committees_computed_data.items() %}
+            self.roles[{{ space_to_underscore_fn(committees_names_list[loop.index0]) }}] = {{ committee_data.final_id }}  # {{ committee_data.name }}
+{% endfor %}
+            self.committee_initialization_blocked = True
+{% endif %}
+
+        @SagaMethod()
+        def can_control(self, controller_role: int, controlled_role: int) -> bool:
+            controlled_bitmask = controlled_role >> {{ control_relation_id_bit_size }}
+            controller_index_bit = 1 << (controller_role & {{ id_mask }})
+            return (controlled_bitmask & controller_index_bit) != 0
+
+        @SagaMethod()
+        def assign_role(self, sender: str, user: str, role: int):
+            index_new_role = role & {{ control_relation_mask }}
+            if not (index_new_role < {{ entities_amount }}):
+                raise RuntimeError("the new role must be a valid one")
+            user_role_id = self.roles.get(user, 0)
+            sender_role = self.roles.get(sender, 0)
+            sender_role_index_bit = 1 << (sender_role & {{ id_mask }})
+            controls_user = ((user_role_id >> {{ control_relation_id_bit_size }}) & sender_role_index_bit) != 0
+            if not (user_role_id == 0 or controls_user):
+                raise RuntimeError("the given controller can't perform the given operation on the given controlled user")
+            controlled_bitmask = role >> {{ control_relation_id_bit_size }}
+            if (controlled_bitmask & sender_role_index_bit) == 0:
+                raise RuntimeError("the given controller can't perform the given operation on the given controlled role")
+            self.roles[user] = role
+
+        @SagaMethod()
+        def revoke_role(self, sender: str, user: str, role: int):
+            index_new_role = role & {{ control_relation_mask }}
+            if not (index_new_role < {{ entities_amount }}):
+                raise RuntimeError("the new role must be a valid one")
+            user_role_id = self.roles.get(user, 0)
+            sender_role = self.roles.get(sender, 0)
+            sender_role_index_bit = 1 << (sender_role & {{ id_mask }})
+            controls_user = ((user_role_id >> {{ control_relation_id_bit_size }}) & sender_role_index_bit) != 0
+            if not controls_user:
+                raise RuntimeError("the given controller can't perform the given operation on the given controlled user")
+            controlled_bitmask = role >> {{ control_relation_id_bit_size }}
+            if (controlled_bitmask & sender_role_index_bit) == 0:
+                raise RuntimeError("the given controller can't perform the given operation on the given controlled role")
+            if user_role_id != role:
+                raise RuntimeError("User's role and the role to be removed don't coincide")
+            del self.roles[user]
+
+        @SagaMethod()
+        def has_role(self, user: str) -> int:
+            return self.roles.get(user, 0)
+
+        @SagaMethod()
+        def has_permission(self, user: str, permission_index: int) -> bool:
+            role_index = self.roles.get(user, 0) & {{ id_mask }}
+            return (self.role_permissions.get(role_index, 0) & (1 << permission_index)) != 0
+
+        @SagaMethod()
+        def grant_permission(self, sender: str, role: int, permission_index: int):
+            sender_role_index = self.roles.get(sender, 0) & {{ id_mask }}
+            if (self.role_permissions.get(sender_role_index, 0) & (1 << permission_index)) == 0:
+                raise RuntimeError("User does not have this permission")
+            controlled_bitmask = role >> {{ control_relation_id_bit_size }}
+            sender_role_index_bit = 1 << sender_role_index
+            if (controlled_bitmask & sender_role_index_bit) == 0:
+                raise RuntimeError("cannot grant permission, as the control relation is lacking")
+            role_index = role & {{ id_mask }}
+            self.role_permissions[role_index] = self.role_permissions.get(role_index, 0) | (1 << permission_index)
+
+        @SagaMethod()
+        def revoke_permission(self, sender: str, role: int, permission_index: int):
+            sender_role_index = self.roles.get(sender, 0) & {{ id_mask }}
+            if (self.role_permissions.get(sender_role_index, 0) & (1 << permission_index)) == 0:
+                raise RuntimeError("User does not have this permission")
+            controlled_bitmask = role >> {{ control_relation_id_bit_size }}
+            sender_role_index_bit = 1 << sender_role_index
+            if (controlled_bitmask & sender_role_index_bit) == 0:
+                raise RuntimeError("cannot revoke permission, as the control relation is lacking")
+            role_index = role & {{ id_mask }}
+            self.role_permissions[role_index] = self.role_permissions.get(role_index, 0) & ~(1 << permission_index)
+{% for perm in permissions %}
+{% if not (perm.voting_right or perm.proposal_right) %}
+
+        @SagaMethod()
+        def {{ function_permission_name_by_id[perm.id] }}(self, sender: str):
+            role_index = self.roles.get(sender, 0) & {{ id_mask }}
+            if (self.role_permissions.get(role_index, 0) & (1 << {{ permission_index_by_id[perm.id] }})) == 0:
+                raise RuntimeError("User does not have this permission")
+            # TODO: Implement the function logic here
+{% endif %}
+{% endfor %}
+{% if voting_function %}
+
+        @SagaMethod()
+        def can_vote(self, user: str, permission_index: int) -> bool:
+            role_index = self.roles.get(user, 0) & {{ id_mask }}
+            return (self.role_permissions.get(role_index, 0) & (1 << permission_index)) != 0
+{% endif %}
+{% if proposal_function %}
+
+        @SagaMethod()
+        def can_propose(self, user: str, permission_index: int) -> bool:
+            role_index = self.roles.get(user, 0) & {{ id_mask }}
+            return (self.role_permissions.get(role_index, 0) & (1 << permission_index)) != 0
+{% endif %}
+
+    # SagaChain Sec. 8.1 "Governance Voting Asset": one queued change request, itself a
+    # first-class object (its own LOID) rather than a struct embedded in a list - closer
+    # to the whitepaper's object model than the standalone-Python template's dataclass.
+    # No asset_ref/back-reference is stored here: the owning OperationalSmartAsset always
+    # calls into a ChangeRequest (never the reverse), so every value this class needs
+    # (majority_type, requires_plenary, voting_duration_seconds) is passed as an explicit
+    # argument by the caller instead of being cross-read from another object - this avoids
+    # relying on any un-evidenced cross-object field-read pattern (see the Explanation doc).
+    @SagaClass(CMIConst.SPClassObject)
+    class ChangeRequest:
+        change_type = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=str)
+        proposer = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=str)
+        param_key = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        param_value = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        new_algorithm_ref = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        voting_deadline = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=float)
+        votes_for = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        votes_against = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        committee_approved = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=bool)
+        plenary_open = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=bool)
+        plenary_votes_for = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        plenary_votes_against = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+
+        @SagaMethod()
+        def __init__(self, change_type: str, proposer: str, param_key, param_value, new_algorithm_ref, voting_duration_seconds: int):
+            import time
+            self.change_type = change_type
+            self.proposer = proposer
+            self.param_key = param_key
+            self.param_value = param_value
+            self.new_algorithm_ref = new_algorithm_ref
+            self.voting_deadline = time.time() + voting_duration_seconds
+            self.votes_for = []
+            self.votes_against = []
+            self.committee_approved = False
+            self.plenary_open = False
+            self.plenary_votes_for = []
+            self.plenary_votes_against = []
+
+        @SagaMethod()
+        def is_committee_approved(self) -> bool:
+            return self.committee_approved
+
+        @SagaMethod()
+        def is_plenary_open(self) -> bool:
+            return self.plenary_open
+
+        @SagaMethod()
+        def get_change_type(self) -> str:
+            return self.change_type
+
+        @SagaMethod()
+        def get_param_key(self):
+            return self.param_key
+
+        @SagaMethod()
+        def get_param_value(self):
+            return self.param_value
+
+        @SagaMethod()
+        def get_new_algorithm_ref(self):
+            return self.new_algorithm_ref
+
+        @SagaMethod()
+        def vote_committee(self, sender: str, support: bool):
+            import time
+            if time.time() >= self.voting_deadline:
+                raise RuntimeError("voting window closed")
+            if sender in self.votes_for or sender in self.votes_against:
+                raise RuntimeError("already voted")
+            if support:
+                self.votes_for.append(sender)
+            else:
+                self.votes_against.append(sender)
+
+        @SagaMethod()
+        def vote_plenary(self, sender: str, support: bool):
+            import time
+            if time.time() >= self.voting_deadline:
+                raise RuntimeError("voting window closed")
+            if sender in self.plenary_votes_for or sender in self.plenary_votes_against:
+                raise RuntimeError("already voted")
+            if support:
+                self.plenary_votes_for.append(sender)
+            else:
+                self.plenary_votes_against.append(sender)
+
+        # SagaChain Sec. 8.3 governance mandates (majority_type: "Majority"/"Supermajority"/
+        # "Unanimous") plus the optional plenary ratification round for major changes.
+        # Returns one of: "still_open" | "open_plenary" | "execute" | "abandon" | "already_settled".
+        @SagaMethod()
+        def finalize(self, majority_type: str, requires_plenary: bool, voting_duration_seconds: int) -> str:
+            import time
+            if not self.committee_approved:
+                if time.time() < self.voting_deadline:
+                    return "still_open"
+                votes_for = len(self.votes_for)
+                votes_against = len(self.votes_against)
+                total = votes_for + votes_against
+                passed = False
+                if total > 0:
+                    if majority_type == "Unanimous":
+                        passed = (votes_against == 0)
+                    elif majority_type == "Supermajority":
+                        passed = (votes_for * 3 >= total * 2)
+                    else:
+                        passed = (votes_for * 2 > total)
+                if not passed:
+                    return "abandon"
+                self.committee_approved = True
+                if requires_plenary:
+                    self.plenary_open = True
+                    self.voting_deadline = time.time() + voting_duration_seconds
+                    return "open_plenary"
+                return "execute"
+            elif self.plenary_open:
+                if time.time() < self.voting_deadline:
+                    return "still_open"
+                if len(self.plenary_votes_for) > len(self.plenary_votes_against):
+                    return "execute"
+                return "abandon"
+            return "already_settled"
+
+    # SagaChain Sec. 6/Sec. 8: one governed Operational Smart Asset per DAO-ML GovernanceArea.
+    # `dao_ref` is this asset's link back to its owning DAO object - used only through method
+    # calls on it (dao_ref.has_permission(...), dao_ref.has_role(...)), never through direct
+    # cross-object field reads, since only the object-to-held-child-method-call pattern is
+    # actually evidenced in SagaPython's own examples (sagafield_decorator.py's ClsTwo calling
+    # self.ob.getName()).
+    @SagaClass(CMIConst.SPClassObject)
+    class OperationalSmartAsset:
+        name = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=str)
+        governing_permission_index = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=int)
+        dao_ref = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        state = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=str)
+        algorithm_ref = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        requires_community_ratification = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=bool)
+        voting_duration_seconds = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=int)
+        majority_type = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected, spftype=str)
+        parameters = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+        current_request = SagaField(spff=SPDecConst.spfread | SPDecConst.spfwrite | SPDecConst.spfprotected)
+
+        @SagaMethod()
+        def __init__(self, name: str, governing_permission_index: int, dao_ref, requires_community_ratification: bool, voting_duration_seconds: int, majority_type: str):
+            self.name = name
+            self.governing_permission_index = governing_permission_index
+            self.dao_ref = dao_ref
+            self.state = "Active"
+            self.algorithm_ref = None
+            self.requires_community_ratification = requires_community_ratification
+            self.voting_duration_seconds = voting_duration_seconds
+            self.majority_type = majority_type
+            self.parameters = {}
+            self.current_request = None
+
+        @SagaMethod()
+        def get_state(self) -> str:
+            return self.state
+
+        @SagaMethod()
+        def get_parameter(self, param_key):
+            return self.parameters.get(param_key)
+
+        @SagaMethod()
+        def propose_change_request(self, sender: str, change_type: str, param_key=None, param_value=None, new_algorithm_ref=None):
+            if not self.dao_ref.has_permission(sender, self.governing_permission_index):
+                raise RuntimeError("caller cannot govern this Operational Smart Asset")
+            if self.state == "Deleted":
+                raise RuntimeError("asset has been deleted")
+            if self.current_request is not None:
+                # SagaChain Sec. 8.3: FIFO, one outstanding change request per asset
+                raise RuntimeError("asset already has an outstanding change request")
+            self.current_request = ChangeRequest.new(self.dao_ref, change_type, sender, param_key, param_value, new_algorithm_ref, self.voting_duration_seconds)[0]
+
+        @SagaMethod()
+        def vote_change_request(self, sender: str, support: bool):
+            req = self.current_request
+            if req is None:
+                raise RuntimeError("no change request")
+            if not req.is_committee_approved():
+                if not self.dao_ref.has_permission(sender, self.governing_permission_index):
+                    raise RuntimeError("caller is not a registered committee member for this asset")
+                req.vote_committee(sender, support)
+            elif req.is_plenary_open():
+                if self.dao_ref.has_role(sender) == 0:
+                    # SagaChain Sec. 8.2: one person, one vote - never weighted by permissions or tokens held
+                    raise RuntimeError("only DAO members may cast a plenary vote")
+                req.vote_plenary(sender, support)
+            else:
+                raise RuntimeError("no open voting round for this change request")
+
+        @SagaMethod()
+        def finalize_change_request(self, sender: str):
+            req = self.current_request
+            if req is None:
+                raise RuntimeError("no change request")
+            outcome = req.finalize(self.majority_type, self.requires_community_ratification, self.voting_duration_seconds)
+            if outcome == "still_open":
+                raise RuntimeError("voting still open")
+            if outcome == "abandon":
+                self.current_request = None
+                return "abandoned"
+            if outcome == "open_plenary":
+                return "plenary_open"
+            if outcome == "execute":
+                change_type = req.get_change_type()
+                if change_type == "Start" or change_type == "Reset":
+                    self.state = "Active"
+                elif change_type == "Stop":
+                    self.state = "Stopped"
+                elif change_type == "Pause":
+                    self.state = "Paused"
+                elif change_type == "DeleteAsset":
+                    self.state = "Deleted"
+                elif change_type == "ParameterChange":
+                    self.parameters[req.get_param_key()] = req.get_param_value()
+                elif change_type == "AlgorithmChange":
+                    self.algorithm_ref = req.get_new_algorithm_ref()
+                # "Custom": no built-in effect; a swapped algorithm_ref is expected to
+                # interpret custom change requests through its own execute() method.
+                self.current_request = None
+                return "executed"
+            return "already_settled"
+
+        @SagaMethod()
+        def execute_algorithm(self, sender: str, data):
+            # Day-to-day use of the asset: delegates to whichever object `algorithm_ref`
+            # currently points at. "Algorithm change" (SagaChain Sec. 8.3, "the new function
+            # must match the exact signature of the old one") becomes: swap the reference to
+            # a different pre-deployed object that implements the same execute(asset, data)
+            # method - arguably a more natural fit for SagaPython's object-reference-and-
+            # method-dispatch model than the standalone template's inspect.signature check.
+            if not self.dao_ref.has_permission(sender, self.governing_permission_index):
+                raise RuntimeError("caller cannot govern this Operational Smart Asset")
+            if self.state != "Active":
+                raise RuntimeError("Operational Smart Asset is not Active")
+            if self.algorithm_ref is None:
+                raise RuntimeError("no algorithm implementation set")
+            return self.algorithm_ref.execute(self, data)
+
+
+def __body():
+    # NOTE: fill in the real deployer/owner address before signing this script - it is
+    # only a placeholder here, since __body() has no external parameterization mechanism
+    # of its own (the whole script is compiled and exec()d as-is).
+    dao = {{ dao_name }}.new(CMIConst.SPSystemAccount, "{{ sagapython_owner_account if sagapython_owner_account is defined else 'REPLACE_WITH_OWNER_ACCOUNT' }}")[0]
+    Log("{{ dao_name }} LOID: ", ClsObjVar.GetLOID(dao).oid)
+{% set governance_area_groups = permissions | selectattr('ref_gov_area') | groupby('ref_gov_area') %}
+{% set _voting_duration_default = governance_default_voting_duration_seconds if governance_default_voting_duration_seconds is defined else 259200 %}
+{% for area_id, perms_in_area in governance_area_groups %}
+{% set primary_perm = perms_in_area[0] %}
+    asset_{{ loop.index0 }} = OperationalSmartAsset.new(dao, "{{ area_id }}", {{ permission_index_by_id[primary_perm.id] }}, dao, False, {{ _voting_duration_default }}, "Majority")[0]
+    Log("OperationalSmartAsset '{{ area_id }}' LOID: ", ClsObjVar.GetLOID(asset_{{ loop.index0 }}).oid)
+{% endfor %}
+
+    return True

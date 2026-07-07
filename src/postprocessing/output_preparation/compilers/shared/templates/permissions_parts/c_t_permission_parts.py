@@ -10,9 +10,14 @@ import src.utilities.utils as u
 # class SolidityCompiledParts(ext_enum.ExtendedEnum):
 #    IMPORTS = 1
 #    CLASS_EXTENSION = 2
-#    INSTANCE_DATA = 3
-#    MODIFIERS = 4
-#    FUNCTIONS = 5
+#    ENUMS = 3
+#    STRUCTS = 4
+#    EVENTS = 5
+#    INSTANCE_DATA = 6
+#    MODIFIERS = 7
+#    FUNCTIONS = 8
+
+RECIPE_FILENAME = "recipe.json"
 
 
 class CompilerTemplateMultipartPermissionParts(tb_m.CompilerTemplateBaseMultipart):
